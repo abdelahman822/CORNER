@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Corner</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-firestore-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-storage-compat.min.js"></script>
+<style>
+:root{
+  --bg:#0a0d0c;
+  --bg-elev:#141814;
+  --bg-elev2:#1c211c;
+  --pitch:#22a35a;
+  --pitch-dark:#125c33;
+  --gold:#e7b33e;
+  --red:#d6455a;
+  --white:#f4f6f3;
+  --muted:#8b968f;
+  --line:rgba(244,246,243,.09);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--white);
+  font-family:'Inter',Tahoma,'Segoe UI',Arial,sans-serif;overflow:hidden;scrollbar-width:thin;scrollbar-color:rgba(231,179,62,.7) rgba(20,24,20,.25);}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:920px;margin:0 auto;
+  background:var(--bg);box-shadow:0 0 40px rgba(0,0,0,.6);overflow:auto;overscroll-behavior:contain;} 
+#screen-splash{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:200;}
+#screen-splash img{max-width:72%;max-height:72%;width:auto;height:auto;object-fit:contain;display:block;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:rgba(20,24,20,.25);border-radius:999px;}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(231,179,62,.95),rgba(34,163,90,.95));border-radius:999px;border:2px solid transparent;background-clip:padding-box;}
+/* Responsive adjustments */
+@media (max-width:520px){
+  #app{max-width:520px}
+}
+@media (min-width:900px){
+  .team-grid{grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .team-logo{width:86px;height:86px}
+  .team-card{padding:18px}
+}
+.brand{font-family:Arial Black,Arial,sans-serif;letter-spacing:1px;font-weight:900;}
+.hidden{display:none!important;}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+input,textarea{font-family:inherit;outline:none;}
+a{color:inherit;}
+
+/* ---------- AUTH ---------- */
+#screen-auth{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:32px 26px;background:
+   radial-gradient(circle at 30% 15%,rgba(34,163,90,.25),transparent 55%),
+   radial-gradient(circle at 80% 85%,rgba(231,179,62,.12),transparent 50%),var(--bg);}
+.auth-logo{font-size:44px;color:var(--white);margin-bottom:2px;}
+.auth-logo span{color:var(--pitch);}
+.auth-sub{color:var(--muted);font-size:13px;margin-bottom:34px;letter-spacing:.5px;}
+.photo-picker{width:104px;height:104px;border-radius:20px;border:2px dashed var(--line);
+  display:flex;align-items:center;justify-content:center;background:var(--bg-elev);margin-bottom:22px;
+  position:relative;overflow:hidden;flex-shrink:0;}
+.photo-picker img{width:100%;height:100%;object-fit:cover;}
+.photo-picker .ph{color:var(--muted);font-size:30px;}
+.auth-input{width:100%;max-width:300px;background:var(--bg-elev);border:1px solid var(--line);
+  border-radius:14px;padding:15px 16px;color:var(--white);font-size:15px;margin-bottom:14px;text-align:center;}
+.btn-primary{width:100%;max-width:300px;background:var(--pitch);color:#08150d;font-weight:800;
+  font-size:15px;border-radius:14px;padding:15px;margin-bottom:12px;transition:transform .15s;}
+.btn-primary:active{transform:scale(.97);}
+.btn-google{width:100%;max-width:300px;background:var(--bg-elev2);color:var(--white);
+  font-size:14px;border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:center;gap:10px;
+  border:1px solid var(--line);}
+.divider-or{color:var(--muted);font-size:12px;margin:10px 0;}
+.auth-hint{color:var(--muted);font-size:11px;margin-top:18px;text-align:center;max-width:280px;line-height:1.7;}
+
+/* ---------- ONBOARDING ---------- */
+#screen-onboard{flex:1;display:flex;flex-direction:column;padding:20px 20px calc(20px + var(--safe-bottom));min-height:0;}
+#ob-step-team,#ob-step-follow,#ob-step-bg{flex:1;display:flex;flex-direction:column;min-height:0;}
+.ob-title{font-size:20px;font-weight:800;margin:10px 0 4px;}
+.ob-sub{color:var(--muted);font-size:13px;margin-bottom:18px;}
+.league-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;}
+.league-tab{flex-shrink:0;padding:9px 16px;border-radius:20px;background:var(--bg-elev);
+  color:var(--muted);font-size:13px;font-weight:700;border:1px solid var(--line);}
+.league-tab.active{background:var(--pitch);color:#08150d;border-color:var(--pitch);}
+.team-grid{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-bottom:14px;}
+.team-grid::-webkit-scrollbar{width:10px;}
+.team-grid::-webkit-scrollbar-track{background:rgba(255,255,255,.04);border-radius:999px;}
+.team-grid::-webkit-scrollbar-thumb{background:rgba(231,179,62,.45);border-radius:999px;}
+.team-card{display:flex;flex-direction:row;align-items:center;gap:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border:1px solid var(--line);cursor:pointer;transition:transform .12s,box-shadow .12s;position:relative;text-align:right;}
+.team-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.team-card .team-left{width:84px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.team-card .team-left img{width:72px;height:72px;border-radius:12px;object-fit:contain;background:var(--bg-elev)}
+.team-card .team-right{flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:center}
+.team-card .label{font-size:15px;font-weight:900;color:var(--white);margin-bottom:4px}
+.team-card .sublabel{font-size:13px;color:var(--muted)}
+.team-card.selected{border-color:var(--gold);box-shadow:0 22px 50px rgba(231,179,62,.06)}
+.team-card .chk{position:absolute;top:8px;left:8px;font-size:14px;color:var(--gold);}
+.ob-footer{display:flex;gap:10px;padding-top:12px;padding-bottom:12px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.12));position:sticky;bottom:0;z-index:8;padding:12px 12px;backdrop-filter:blur(6px);}
+.btn-ghost{flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);
+  border-radius:14px;padding:14px;font-size:14px;font-weight:700;}
+.btn-next{flex:2;background:var(--pitch);color:#08150d;border-radius:14px;padding:14px;font-weight:800;font-size:14px;}
+.bg-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.bg-opt{height:150px;border-radius:18px;border:3px solid transparent;position:relative;overflow:hidden;
+  display:flex;align-items:flex-end;padding:10px;font-size:12px;font-weight:800;}
+.bg-opt.selected{border-color:var(--gold);}
+.bg-opt span{background:rgba(0,0,0,.4);padding:4px 8px;border-radius:8px;}
+
+/* ---------- SHELL / NAV ---------- */
+#screen-shell{flex:1;display:flex;flex-direction:column;min-height:0;}
+.main-view{flex:1;min-height:0;position:relative;overflow:hidden;}
+.tab-panel{position:absolute;inset:0;overflow-y:auto;}
+.bottom-nav{display:flex;align-items:center;justify-content:space-around;
+  background:rgba(10,13,12,.96);border-top:1px solid var(--line);
+  padding:9px 4px calc(9px + var(--safe-bottom));backdrop-filter:blur(10px);z-index:50;}
+.nav-btn{background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;
+  gap:3px;font-size:9px;font-weight:700;padding:4px 8px;}
+.nav-btn.active{color:var(--pitch);}
+.nav-btn .ic{font-size:21px;line-height:1;}
+.nav-plus{width:42px;height:32px;background:var(--pitch);border-radius:10px;display:flex;
+  align-items:center;justify-content:center;color:#08150d;font-size:20px;font-weight:900;margin-top:-2px;}
+
+/* ---------- FEED ---------- */
+.feed-scroll{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;}
+.video-slide{height:100%;width:100%;scroll-snap-align:start;position:relative;background:#000;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.video-slide video{
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* تم التغيير ليظهر الفيديو كاملاً دون قص */
+  background: #000;
+}
+.vs-top{position:absolute;top:calc(14px + var(--safe-top));left:14px;right:14px;display:flex;
+  justify-content:space-between;z-index:5;}
+.icon-btn{background:rgba(0,0,0,.4);width:34px;height:34px;border-radius:50%;color:#fff;font-size:16px;
+  display:flex;align-items:center;justify-content:center;}
+.vs-side{position:absolute;left:10px;bottom:110px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:5;}
+.side-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;color:#fff;}
+.side-btn .circ{width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.4);display:flex;
+  align-items:center;justify-content:center;font-size:22px;border:2px solid transparent;}
+.side-btn .circ.avatar{padding:0;overflow:hidden;background:var(--bg-elev2);}
+.side-btn .circ.avatar img{width:100%;height:100%;object-fit:cover;}
+.side-btn .cnt{font-size:11px;font-weight:800;}
+.side-btn.active-goal .circ{background:var(--pitch);border-color:var(--pitch);}
+.side-btn.active-red .circ{background:var(--red);border-color:var(--red);}
+.follow-badge{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);background:var(--gold);
+  color:#3a2a05;font-size:13px;font-weight:900;width:19px;height:19px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;}
+.vs-bottom{position:absolute;left:14px;right:78px;bottom:calc(16px + var(--safe-bottom));z-index:5;color:#fff;}
+.vs-channel{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.vs-channel .cname{font-weight:800;font-size:14.5px;}
+.vs-fbtn{background:transparent;border:1.5px solid #fff;color:#fff;font-size:11px;font-weight:800;
+  padding:3px 12px;border-radius:7px;}
+.vs-fbtn.following{background:rgba(255,255,255,.25);}
+.vs-desc{font-size:13.5px;line-height:1.5;text-shadow:0 1px 4px rgba(0,0,0,.6);}
+.vs-desc .tag{color:var(--gold);font-weight:700;}
+.goal-pop{position:absolute;font-size:70px;pointer-events:none;animation:goalpop .9s ease-out forwards;z-index:9;}
+@keyframes goalpop{0%{transform:scale(.3);opacity:0;}30%{transform:scale(1.15);opacity:1;}70%{opacity:1;}100%{transform:scale(1.3) translateY(-40px);opacity:0;}}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;
+  color:var(--muted);text-align:center;padding:40px;gap:10px;}
+.empty-state .big{font-size:38px;}
+
+/* ---------- SHEETS / MODALS ---------- */
+.sheet-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:60;display:flex;align-items:flex-end;}
+.sheet{background:var(--bg-elev);width:100%;border-radius:20px 20px 0 0;max-height:78%;display:flex;
+  flex-direction:column;animation:sheetup .22s ease-out;}
+@keyframes sheetup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.sheet-handle{width:36px;height:4px;background:var(--line);border-radius:3px;margin:10px auto 6px;}
+.sheet-title{text-align:center;font-weight:800;font-size:14px;padding:4px 14px 10px;border-bottom:1px solid var(--line);}
+.sheet-body{flex:1;overflow-y:auto;padding:10px 14px;}
+.comment-row{display:flex;gap:9px;padding:10px 0;border-bottom:1px solid var(--line);}
+.comment-row img{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-elev2);}
+.comment-name{font-size:12px;font-weight:800;color:var(--gold);}
+.comment-text{font-size:13px;margin-top:2px;line-height:1.4;}
+.comment-actions{display:flex;gap:14px;margin-top:5px;font-size:11px;color:var(--muted);}
+.sheet-input-bar{display:flex;gap:8px;padding:10px 14px calc(10px + var(--safe-bottom));border-top:1px solid var(--line);}
+.sheet-input-bar input{flex:1;background:var(--bg-elev2);border:1px solid var(--line);border-radius:20px;
+  padding:10px 14px;color:#fff;font-size:13px;}
+.sheet-input-bar button{background:var(--pitch);color:#08150d;font-weight:800;border-radius:20px;padding:0 16px;font-size:13px;}
+.list-row{display:flex;align-items:center;justify-content:space-between;padding:12px 4px;border-bottom:1px solid var(--line);font-size:14px;}
+.list-row .chk{width:20px;height:20px;border-radius:6px;border:2px solid var(--muted);display:flex;align-items:center;justify-content:center;}
+.list-row.saved .chk{background:var(--pitch);border-color:var(--pitch);color:#08150d;}
+.new-list-row{display:flex;gap:8px;padding:10px 0;}
+.new-list-row input{flex:1;background:var(--bg-elev2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:#fff;font-size:13px;}
+.new-list-row button{background:var(--gold);color:#3a2a05;font-weight:800;border-radius:10px;padding:0 14px;}
+.share-row{display:flex;align-items:center;gap:12px;padding:13px 0;font-size:14px;border-bottom:1px solid var(--line);}
+.menu-item{padding:14px 4px;border-bottom:1px solid var(--line);font-size:14px;display:flex;justify-content:space-between;}
+
+/* ---------- SEARCH ---------- */
+.search-bar-wrap{display:flex;gap:8px;padding:calc(12px + var(--safe-top)) 14px 10px;position:sticky;top:0;
+  background:var(--bg);z-index:5;border-bottom:1px solid var(--line);}
+.search-bar-wrap input{flex:1;background:var(--bg-elev);border:1px solid var(--line);border-radius:14px;
+  padding:11px 14px;color:#fff;font-size:14px;}
+.search-bar-wrap button{background:var(--pitch);color:#08150d;font-weight:800;border-radius:14px;padding:0 16px;font-size:13px;}
+.history-chip{display:inline-flex;align-items:center;gap:8px;background:var(--bg-elev);border:1px solid var(--line);
+  border-radius:16px;padding:8px 12px;margin:4px 6px 4px 0;font-size:12.5px;}
+.history-chip .x{color:var(--muted);font-size:11px;}
+.search-list{padding:6px 14px;}
+.sr-user{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+.sr-user img{width:42px;height:42px;border-radius:12px;object-fit:cover;background:var(--bg-elev2);}
+.sr-vid-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:8px;}
+.sr-vid-grid .thumb{aspect-ratio:9/14;background:var(--bg-elev2);border-radius:8px;overflow:hidden;position:relative;}
+.sr-vid-grid .thumb video{width:100%;height:100%;object-fit:cover;}
+.sr-vid-grid .thumb .vc{position:absolute;bottom:4px;right:6px;font-size:10px;background:rgba(0,0,0,.5);padding:2px 5px;border-radius:5px;}
+.section-label{font-size:12px;color:var(--muted);font-weight:800;margin:14px 0 6px;}
+
+/* ---------- UPLOAD ---------- */
+.upload-panel{padding:calc(16px + var(--safe-top)) 18px 20px;display:flex;flex-direction:column;height:100%;}
+.upload-drop{border:2px dashed var(--line);border-radius:18px;height:180px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;color:var(--muted);gap:8px;background:var(--bg-elev);position:relative;overflow:hidden;}
+.upload-drop video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.upload-drop .lbl{position:relative;z-index:2;background:rgba(0,0,0,.4);padding:6px 12px;border-radius:8px;}
+.upload-ta{margin-top:14px;background:var(--bg-elev);border:1px solid var(--line);border-radius:14px;
+  padding:12px 14px;color:#fff;font-size:14px;min-height:90px;resize:none;}
+.upload-progress{height:6px;background:var(--bg-elev2);border-radius:4px;overflow:hidden;margin-top:14px;}
+.upload-progress .bar{height:100%;background:var(--pitch);width:0%;transition:width .2s;}
+
+/* ---------- VAR ---------- */
+.var-card{background:var(--bg-elev);border:1px solid var(--line);border-radius:16px;margin:12px 14px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.5);}
+.var-card img{width:100%;max-height:260px;object-fit:cover;display:block;background:#000;}
+.var-body{padding:14px 16px;}
+.var-q{font-size:14px;line-height:1.6;margin-bottom:10px;}
+.var-votes{display:flex;gap:8px;margin-bottom:10px;}
+.var-vote{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg-elev2);
+  font-size:13px;font-weight:800;color:var(--white);}
+.var-vote.yes.picked{background:var(--pitch);color:#08150d;border-color:var(--pitch);}
+.var-vote.no.picked{background:var(--red);color:#fff;border-color:var(--red);}
+.var-bar{height:9px;border-radius:5px;overflow:hidden;display:flex;background:var(--bg-elev2);margin-bottom:6px;}
+.var-bar .y{background:var(--pitch);height:100%;}
+.var-bar .n{background:var(--red);height:100%;}
+.var-pct{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+.fab{position:absolute;left:16px;bottom:calc(16px + var(--safe-bottom));width:52px;height:52px;border-radius:50%;
+  background:var(--gold);color:#3a2a05;font-size:26px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 16px rgba(0,0,0,.4);z-index:20;}
+
+/* ---------- COMMUNITY ---------- */
+.post-box{margin:calc(12px + var(--safe-top)) 14px 6px;background:var(--bg-elev);border:1px solid var(--line);
+  border-radius:14px;padding:12px 14px;}
+.post-box textarea{width:100%;background:transparent;border:none;color:#fff;font-size:14px;resize:none;min-height:50px;}
+.post-box .row{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;}
+.post-card{margin:0 14px 14px;background:var(--bg-elev);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.45);}
+.post-head{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.post-head img{width:36px;height:36px;border-radius:10px;object-fit:cover;background:var(--bg-elev2);}
+.post-head .nm{font-weight:800;font-size:13.5px;}
+.post-head .tm{font-size:11px;color:var(--muted);}
+.post-text{font-size:14px;line-height:1.6;margin-bottom:8px;}
+.post-img{width:100%;border-radius:10px;margin-bottom:8px;max-height:320px;object-fit:cover;}
+.post-actions{display:flex;gap:16px;font-size:12.5px;color:var(--muted);}
+.post-actions .liked{color:var(--pitch);}
+
+/* ---------- PROFILE ---------- */
+.profile-wrap{padding:calc(14px + var(--safe-top)) 16px 24px;}
+.player-card{position:relative;border-radius:22px;padding:22px 18px;min-height:210px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;border:1px solid rgba(231,179,62,.4);}
+.player-card::before{content:"";position:absolute;top:-40%;right:-30%;width:220px;height:220px;
+  background:radial-gradient(circle,rgba(231,179,62,.35),transparent 65%);}
+.pc-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:2;}
+.pc-avatar{width:66px;height:66px;border-radius:16px;overflow:hidden;border:2px solid var(--gold);background:var(--bg-elev2);}
+.pc-avatar img{width:100%;height:100%;object-fit:cover;}
+.pc-followers{text-align:center;}
+.pc-followers b{font-size:26px;display:block;font-family:Arial Black,sans-serif;}
+.pc-followers span{font-size:10px;color:rgba(244,246,243,.75);}
+.pc-name{font-size:19px;font-weight:900;margin-top:14px;position:relative;z-index:2;}
+.pc-team{font-size:12.5px;color:var(--gold);font-weight:700;margin-top:2px;position:relative;z-index:2;display:flex;align-items:center;gap:7px;}
+.pc-team-logo{width:22px;height:22px;border-radius:6px;object-fit:contain;background:rgba(255,255,255,.08);flex-shrink:0;}
+.pc-crest-bg{position:absolute;top:-18px;left:-18px;width:150px;height:150px;object-fit:contain;opacity:.12;z-index:1;pointer-events:none;filter:saturate(0) brightness(1.6);}
+.followed-teams-label{font-size:12px;color:var(--muted);font-weight:800;margin:16px 0 8px;}
+.followed-teams-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px;}
+.ft-chip{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;width:58px;}
+.ft-chip img{width:44px;height:44px;border-radius:12px;object-fit:contain;background:var(--bg-elev);border:1px solid var(--line);padding:4px;}
+.ft-chip span{font-size:9.5px;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px;}
+.profile-stats{display:flex;gap:10px;margin:16px 0;}
+.pstat{flex:1;background:var(--bg-elev);border-radius:12px;padding:10px;text-align:center;}
+.pstat b{display:block;font-size:16px;}
+.pstat span{font-size:10.5px;color:var(--muted);}
+.profile-actions{display:flex;gap:10px;margin-bottom:16px;}
+.profile-tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:8px;}
+.ptab{flex:1;text-align:center;padding:10px;font-size:13px;font-weight:700;color:var(--muted);border-bottom:2px solid transparent;}
+.ptab.active{color:var(--white);border-color:var(--pitch);}
+.my-video-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;}
+.my-video-grid .thumb{aspect-ratio:9/14;background:var(--bg-elev);border-radius:8px;overflow:hidden;position:relative;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.my-video-grid .thumb:hover{transform:translateY(-6px);box-shadow:0 12px 26px rgba(0,0,0,.6)}
+.my-video-grid .thumb video{width:100%;height:100%;object-fit:cover;}
+.my-video-grid .thumb .vc{position:absolute;bottom:3px;right:5px;font-size:9.5px;background:rgba(0,0,0,.55);padding:2px 5px;border-radius:5px;}
+.list-tile{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px;font-weight:700;}
+.list-tile .n{width:38px;height:38px;border-radius:10px;background:var(--bg-elev);display:flex;align-items:center;justify-content:center;color:var(--gold);}
+
+/* ---------- SETTINGS ---------- */
+.settings-wrap{padding:calc(14px + var(--safe-top)) 18px 24px;}
+.set-section{margin-bottom:18px;}
+.set-label{font-size:12px;color:var(--muted);font-weight:800;margin-bottom:8px;}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;background:var(--bg-elev);
+  border-radius:12px;margin-bottom:8px;font-size:14px;}
+.toggle{width:42px;height:24px;border-radius:14px;background:var(--bg-elev2);position:relative;transition:.2s;}
+.toggle.on{background:var(--pitch);}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s;}
+.toggle.on::after{transform:translateX(-18px);}
+.btn-danger{width:100%;background:rgba(214,69,90,.15);color:var(--red);border-radius:12px;padding:13px;font-weight:800;font-size:14px;margin-bottom:8px;}
+.toast{position:absolute;bottom:calc(90px + var(--safe-bottom));left:50%;transform:translateX(-50%);
+  background:rgba(20,24,20,.95);border:1px solid var(--line);color:#fff;font-size:13px;padding:10px 18px;
+  border-radius:12px;z-index:100;white-space:nowrap;animation:toastin .25s ease-out;}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,10px);}to{opacity:1;transform:translate(-50%,0);}}
+.top-header{display:flex;align-items:center;gap:10px;padding:calc(14px + var(--safe-top)) 16px 12px;
+  border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:4;}
+.top-header .back{font-size:20px;color:var(--muted);}
+.top-header .t{font-weight:800;font-size:16px;}
+.loader{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);}
+.ob-signout{text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px;}
+.ob-signout span{color:var(--gold);text-decoration:underline;cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="screen-splash">
+    <img src="2.png" alt="Loading">
+  </div>
+  <!-- AUTH -->
+  <div id="screen-auth" class="hidden">
+    <div class="auth-logo brand">C<span>O</span>RNER</div>
+    <div class="auth-sub">شبكة كورة. عيش كل هدف.</div>
+    <label class="photo-picker" id="photoPicker">
+      <span class="ph">📷</span>
+      <input type="file" accept="image/*" capture="user" id="photoInput" style="display:none">
+    </label>
+    <input class="auth-input" id="nameInput" placeholder="اكتب اسمك" maxlength="30">
+    <button class="btn-primary" id="btnSignIn">دخول</button>
+    <div class="divider-or">أو</div>
+    <button class="btn-google" id="btnGoogle">
+      <span>G</span> الدخول بحساب جوجل
+    </button>
+    <button class="btn-ghost" id="btnGuest" style="margin-top:8px">تجربة سريعة (ضيف)</button>
+    <div class="auth-hint">بالدخول أنت توافق على استخدام اسمك وصورتك داخل التطبيق فقط.</div>
+  </div>
+
+  <!-- ONBOARD -->
+  <div id="screen-onboard" class="hidden">
+    <div id="ob-step-team">
+      <div class="ob-signout">مش انت؟ <span id="obSignOutLink">تسجيل خروج</span></div>
+      <div class="ob-title">اختر فريقك المفضل</div>
+      <div class="ob-sub">اختر دوري ثم فريقك</div>
+      <div class="league-tabs" id="obLeagueTabs"></div>
+      <div class="team-grid" id="obTeamGrid"></div>
+      <div class="ob-footer">
+        <button class="btn-next" id="obConfirm1" style="flex:1;margin-right:8px" disabled>موافق</button>
+        <button class="btn-ghost" id="obNext1">التالي</button>
+      </div>
+    </div>
+    <div id="ob-step-follow" class="hidden" style="display:none;flex-direction:column;height:100%;">
+      <div class="ob-title">تابع فرقك</div>
+      <div class="ob-sub">اختر كل الفرق اللي بتتابعها (اختياري - تقدر تختار أكتر من واحد)</div>
+      <div class="league-tabs" id="obLeagueTabs2"></div>
+      <div class="team-grid" id="obTeamGrid2"></div>
+      <div class="ob-footer">
+        <button class="btn-ghost" id="obBack2">رجوع</button>
+        <button class="btn-next" id="obNext2">التالي</button>
+      </div>
+    </div>
+    <div id="ob-step-bg" class="hidden" style="display:none;flex-direction:column;height:100%;">
+      <div class="ob-title">اختر خلفية كارتك</div>
+      <div class="ob-sub">شكل بطاقة البروفايل بتاعتك</div>
+      <div class="bg-grid" id="obBgGrid"></div>
+      <div class="ob-footer">
+        <button class="btn-ghost" id="obBack3">رجوع</button>
+        <button class="btn-next" id="obFinish">دخول التطبيق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHELL -->
+  <div id="screen-shell" class="hidden">
+    <div class="main-view" id="mainView">
+      <div class="tab-panel" id="panel-home"></div>
+      <div class="tab-panel hidden" id="panel-search"></div>
+      <div class="tab-panel hidden" id="panel-var"></div>
+      <div class="tab-panel hidden" id="panel-community"></div>
+      <div class="tab-panel hidden" id="panel-profile"></div>
+      <div class="tab-panel hidden" id="panel-settings"></div>
+      <div id="sheetHost"></div>
+      <div id="toastHost"></div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-btn active" data-tab="home"><span class="ic">🏠</span>الرئيسية</button>
+      <button class="nav-btn" data-tab="search"><span class="ic">🔍</span>بحث</button>
+      <button class="nav-btn" data-tab="upload"><span class="nav-plus">+</span></button>
+      <button class="nav-btn" data-tab="var"><span class="ic">🟨</span>VAR</button>
+      <button class="nav-btn" data-tab="community"><span class="ic">📰</span>المجتمع</button>
+      <button class="nav-btn" data-tab="profile"><span class="ic">👤</span>حسابي</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== FIREBASE INIT ===================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyC4sWGVzpPvHRatN_rZOdJjlITtKPyxHPM",
+  authDomain: "corner-e5b5e.firebaseapp.com",
+  databaseURL: "https://corner-e5b5e-default-rtdb.firebaseio.com",
+  projectId: "corner-e5b5e",
+  storageBucket: "corner-e5b5e.firebasestorage.app",
+  messagingSenderId: "135776020121",
+  appId: "1:135776020121:web:8839ae2da3fa2bce99ba08",
+  measurementId: "G-7JFDN5VL1B"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+const FieldValue = firebase.firestore.FieldValue;
+
+/* ===================== REAL DATA: LEAGUES / TEAMS ===================== */
+const LEAGUES = {
+  "الدوري الإنجليزي": ["أرسنال","أستون فيلا","بورنموث","برينتفورد","برايتون","تشيلسي","كوفنتري سيتي","كريستال بالاس","إيفرتون","فولهام","هال سيتي","إبسويتش تاون","ليدز يونايتد","ليفربول","مانشستر سيتي","مانشستر يونايتد","نيوكاسل يونايتد","نوتنغهام فورست","سندرلاند","توتنهام هوتسبير"],
+  "الدوري الإسباني": ["ريال مدريد","برشلونة","أتلتيكو مدريد","أتلتيك بيلباو","فياريال","ريال بيتيس","ريال سوسيداد","إشبيلية","فالنسيا","سيلتا فيغو","رايو فاليكانو","أوساسونا","خيتافي","ألافيس","إسبانيول","إلتشي","ليفانتي","راسينغ سانتاندير","ديبورتيفو لاكورونيا","مالقة"],
+  "الدوري الإيطالي": ["إنتر ميلان","نابولي","ميلان","يوفنتوس","أتالانتا","روما","لاتسيو","بولونيا","فيورنتينا","تورينو","أودينيزي","جنوى","كالياري","كومو","بارما","فيرونا","فينيسيا","فروزينوني","مونزا","بيزا"],
+  "الدوري الألماني": ["بايرن ميونخ","باير ليفركوزن","بوروسيا دورتموند","آر بي لايبزيغ","في بي شتوتغارت","اتحاد برلين","فيردر بريمن","آينتراخت فرانكفورت","فرايبورغ","ماينتس 05","بوروسيا مونشنغلادباخ","أوغسبورغ","هوفنهايم","كولن","هامبورغ","شالكه 04","إلفرسبيرغ","بادربورن"],
+  "الدوري الفرنسي": ["باريس سان جيرمان","مارسيليا","موناكو","ليل","ليون","نيس","لانس","رين","ستراسبورغ","تولوز","ريمس","أنجيه","أوكسير","بريست","لوهافر","لوريان","تروا","لومان"]
+};
+const LEAGUE_NAMES = Object.keys(LEAGUES);
+const CARD_BACKGROUNDS = [
+  {id:"night", label:"سماء الاستاد", css:"linear-gradient(160deg,#0b2a1c,#04120b 70%)"},
+  {id:"grass", label:"العشب", css:"linear-gradient(160deg,#1f7a45,#0c2f1a 75%)"},
+  {id:"gold", label:"العلم الذهبي", css:"linear-gradient(160deg,#7a5a12,#1a1406 75%)"},
+  {id:"derby", label:"الديربي", css:"linear-gradient(160deg,#3a1620,#150609 75%)"}
+];
+
+// Optional manual mapping: Arabic team name -> Wikipedia page title (English or localized)
+const TEAM_WIKI_MAP = {
+  // ENGLISH LEAGUE
+  'أرسنال':'Arsenal_F.C.','أستون فيلا':'Aston_Villa_F.C.','بورنموث':'Bournemouth','برينتفورد':'Brentford_F.C.','برايتون':'Brighton_%26_Hove_Albion_F.C.','تشيلسي':'Chelsea_F.C.','كوفنتري سيتي':'Coventry_City_F.C.','كريستال بالاس':'Crystal_Palace_F.C.','إيفرتون':'Everton_F.C.','فولهام':'Fulham_F.C.','هال سيتي':'Hull_City_A.F.C.','إبسويتش تاون':'Ipswich_Town_F.C.','ليدز يونايتد':'Leeds_United_F.C.','ليفربول':'Liverpool_F.C.','مانشستر سيتي':'Manchester_City_F.C.','مانشستر يونايتد':'Manchester_United_F.C.','نيوكاسل يونايتد':'Newcastle_United_F.C.','نوتنغهام فورست':'Nottingham_Forest_F.C.','سندرلاند':'Sunderland_A.F.C.','توتنهام هوتسبير':'Tottenham_Hotspur_F.C.',
+  // SPANISH
+  'ريال مدريد':'Real_Madrid_CF','برشلونة':'FC_Barcelona','أتلتيكو مدريد':'Atlético_de_Madrid','أتلتيك بيلباو':'Athletic_Club','فياريال':'Villarreal_CF','ريال بيتيس':'Real_Betis','ريال سوسيداد':'Real_Sociedad','إشبيلية':'Sevilla_FC','فالنسيا':'Valencia_CF','سيلتا فيغو':'Celta_de_Vigo','رايو فاليكانو':'Rayo_Vallecano_de_Madrid','أوساسونا':'CA_Osasuna','خيتافي':'Getafe_CF','ألافيس':'Deportivo_Alavés','إسبانيول':'RCD_Espanyol','إلتشي':'Elche_CF','ليفانتي':'Levante_UD','راسينغ سانتاندير':'Racing_de_Santander','ديبورتيفو لاكورونيا':'Deportivo_de_La_Coruña','مالقة':'Málaga_CF',
+  // ITALY
+  'إنتر ميلان':'Inter_Milan','نابولي':'SSC_Napoli','ميلان':'AC_Milan','يوفنتوس':'Juventus_F.C.','أتالانتا':'Atalanta_BC','روما':'AS_Roma','لاتسيو':'SS_Lazio','بولونيا':'Bologna_F.C.','فيورنتينا':'ACF_Fiorentina','تورينو':'Torino_FC','أودينيزي':'Udinese_Calcio','جنوى':'Genoa_CFC','كالياري':'Cagliari_Calcio','كومو':'Como_1907','بارما':'Parma_Calcio_1913','فيرونا':'Hellas_Verona_F.C.','فينيسيا':'Venezia_F.C.','فروزينوني':'Frosinone_Calcio','مونزا':'AC_Monza','بيزا':'Pisa_S.C.',
+  // GERMANY
+  'بايرن ميونخ':'FC_Bayern_Munich','باير ليفركوزن':'Bayer_04_Leverkusen','بوروسيا دورتموند':'Borussia_Dortmund','آر بي لايبزيغ':'RB_Leipzig','في بي شتوتغارت':'VfB_Stuttgart','اتحاد برلين':'1._FC_Union_Berlin','فيردر بريمن':'SV_Werder_Bremen','آينتراخت فرانكفورت':'Eintracht_Frankfurt','فرايبورغ':'SC_Freiburg','ماينتس 05':'1._FSV_Mainz_05','بوروسيا مونشنغلادباخ':'Borussia_Mönchengladbach','أوغسبورغ':'FC_Augsburg','هوفنهايم':'TSG_1899_Hoffenheim','كولن':'1._FC_Koln','هامبورغ':'Hamburger_SV','شالكه 04':'FC_Schalke_04','إلفرسبيرغ':'VfL_Osnabrück','بادربورن':'SC_Paderborn_07',
+  // FRANCE
+  'باريس سان جيرمان':'Paris_Saint-Germain_F.C.','مارسيليا':'Olympique_de_Marseille','موناكو':'AS_Monaco','ليل':'LOSC_Lille','ليون':'Olympique_Lyonnais','نيس':'OGC_Nice','لانس':'RC_Lens','رين':'Stade_Rennais_FC','ستراسبورغ':'RC_Strasbourg','تولوز':'Toulouse_FC','ريمس':'Stade_de_Reims','أنجيه':'Angers_SCO','أوكسير':'AJ_Auxerre','بريست':'Stade_Brestois_29','لوهافر':'Le_Havre_AC','لوريان':'FC_Lorient','تروا':'ESTAC_Troyes','لومان':'Le_Mans_FC'
+};
+
+/* ===================== STATE ===================== */
+let currentUser=null, userData=null, activeTab='home';
+let feedUnsub=null, feedVideos=[], activeVideoIndex=0;
+let obSelectedLeague=LEAGUE_NAMES[0], obFavTeam=null, obFollowSet=new Set(), obBg="night";
+let currentCommentsVideoId=null, commentsUnsub=null, postCommentsUnsub=null;
+let varUnsub=null;
+let communityUnsub=null;
+let sessionViewedIds = new Set();
+
+/* ===================== HELPERS ===================== */
+function $(sel){return document.querySelector(sel);}
+function $all(sel){return document.querySelectorAll(sel);}
+function esc(s){return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function fmtNum(n){n=n||0;if(n>=1000000)return (n/1000000).toFixed(1)+"م";if(n>=1000)return (n/1000).toFixed(1)+"ك";return n;}
+function timeAgo(ts){
+  if(!ts) return "";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const s = Math.floor((Date.now()-d.getTime())/1000);
+  if(s<60) return "الآن";
+  if(s<3600) return Math.floor(s/60)+" د";
+  if(s<86400) return Math.floor(s/3600)+" س";
+  return Math.floor(s/86400)+" ي";
+}
+function renderHashtags(text){
+  return esc(text).replace(/#([\u0600-\u06FFa-zA-Z0-9_]+)/g,'<span class="tag" data-hashtag="$1">#$1</span>');
+}
+function toast(msg){
+  const host=$("#toastHost");
+  const el=document.createElement("div");
+  el.className="toast"; el.textContent=msg;
+  host.appendChild(el);
+  setTimeout(()=>el.remove(),2200);
+}
+function uid(){return currentUser ? currentUser.uid : null;}
+
+/* ===================== AUTH FLOW ===================== */
+let pickedPhotoFile=null;
+$("#photoPicker").addEventListener("click",()=>$("#photoInput").click());
+$("#photoInput").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  pickedPhotoFile=f;
+  const url=URL.createObjectURL(f);
+  $("#photoPicker").innerHTML=`<img src="${url}">`;
+});
+
+$("#btnSignIn").addEventListener("click", async ()=>{
+  const name=$("#nameInput").value.trim();
+  if(!name){toast("اكتب اسمك الأول");return;}
+  $("#btnSignIn").textContent="جاري الدخول...";
+  try{
+    const cred = await auth.signInAnonymously();
+    await finishProfileSetup(cred.user, name, pickedPhotoFile);
+  }catch(err){
+    console.error(err); toast("حصل خطأ: "+err.message);
+    $("#btnSignIn").textContent="دخول";
+  }
+});
+
+$("#btnGoogle").addEventListener("click", async ()=>{
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    const cred = await auth.signInWithPopup(provider);
+    await finishProfileSetup(cred.user, cred.user.displayName||"لاعب كورنر", null, cred.user.photoURL);
+  }catch(err){
+    console.error(err);
+    toast("تعذر الدخول بجوجل (قد يكون بسبب النافذة المنبثقة). جرّب الاسم بدل كده.");
+  }
+});
+
+$("#btnGuest").addEventListener("click", async ()=>{
+  try{
+    $("#btnGuest").textContent = 'جاري...';
+    const cred = await auth.signInAnonymously();
+    const gname = 'ضيف-' + Math.random().toString(36).slice(2,7);
+    await finishProfileSetup(cred.user, gname, null);
+  }catch(e){ console.error(e); toast('تعذر إنشاء حساب الضيف'); }
+  finally{ if($("#btnGuest")) $("#btnGuest").textContent = 'تجربة سريعة (ضيف)'; }
+});
+
+async function finishProfileSetup(user, name, file, existingPhotoURL){
+  let photoURL = existingPhotoURL || "";
+  if(file){
+    const ref = storage.ref(`profile_photos/${user.uid}.jpg`);
+    await ref.put(file);
+    photoURL = await ref.getDownloadURL();
+  }
+  await user.updateProfile({displayName:name, photoURL});
+  const userRef = db.collection("users").doc(user.uid);
+  const snap = await userRef.get();
+  if(!snap.exists){
+    await userRef.set({
+      uid:user.uid, displayName:name, displayNameLower:name.toLowerCase(),
+      photoURL, followersCount:0, followingCount:0, favTeam:null, followTeams:[],
+      cardBg:"night", onboarded:false, notifications:true, blockedUsers:[], searchHistory:[],
+      createdAt:FieldValue.serverTimestamp()
+    });
+  }
+  currentUser = user;
+  const fresh = await userRef.get();
+  userData = fresh.data();
+
+  // If there was an onboarding action pending (user selected team before signing in), apply it now
+  try{
+    const pending = localStorage.getItem('pendingOnboard');
+    if(pending){
+      const p = JSON.parse(pending);
+      // merge and update user doc
+      await userRef.update({
+        favTeam: p.favTeam || userData.favTeam,
+        followTeams: p.followTeams || userData.followTeams || [],
+        cardBg: p.cardBg || userData.cardBg || 'night',
+        onboarded: true
+      });
+      // refresh userData
+      const refreshed = await userRef.get(); userData = refreshed.data();
+      localStorage.removeItem('pendingOnboard');
+      enterApp();
+      return;
+    }
+  }catch(e){ console.warn('applyPendingOnboard failed', e); }
+
+  if(!userData.onboarded){ showOnboarding(); } else { enterApp(); }
+}
+
+auth.onAuthStateChanged(async user=>{
+  // Handles auto sign-in on page reload (session persists via Firebase Auth).
+  if(user && !currentUser){
+    currentUser = user;
+    const snap = await db.collection("users").doc(user.uid).get();
+    if(snap.exists){
+      userData = snap.data();
+      if(userData.onboarded) enterApp(); else showOnboarding();
+      return;
+    }
+  }
+  if(!user){
+    hideSplash();
+    $("#screen-auth").classList.remove("hidden");
+    $("#screen-onboard").classList.add("hidden");
+    $("#screen-shell").classList.add("hidden");
+  }
+});
+
+/* ===================== ONBOARDING ===================== */
+function buildLeagueTabs(container, onPick){
+  container.innerHTML = LEAGUE_NAMES.map(l=>`<button class="league-tab ${l===obSelectedLeague?'active':''}" data-l="${esc(l)}">${esc(l)}</button>`).join("");
+  container.querySelectorAll(".league-tab").forEach(btn=>{
+    btn.addEventListener("click",()=>{obSelectedLeague=btn.dataset.l; onPick();});
+  });
+}
+function showOnboarding(){
+  hideSplash();
+  $("#screen-auth").classList.add("hidden");
+  $("#screen-onboard").classList.remove("hidden");
+  renderObStep1();
+}
+function renderObStep1(){
+  $("#ob-step-team").style.display="block"; $("#ob-step-team").classList.remove("hidden");
+  $("#ob-step-follow").classList.add("hidden"); $("#ob-step-follow").style.display="none";
+  $("#ob-step-bg").classList.add("hidden"); $("#ob-step-bg").style.display="none";
+  buildLeagueTabs($("#obLeagueTabs"), renderObTeamGrid1);
+  renderObTeamGrid1();
+}
+// generate a deterministic color from a string
+function colorFor(s){
+  let h=0; for(let i=0;i<s.length;i++) h = (h<<5)-h + s.charCodeAt(i);
+  h = Math.abs(h);
+  const hue = h % 360; const sat = 45 + (h % 30); const light = 25 + (h % 20);
+  return `linear-gradient(135deg,hsl(${hue} ${sat}% ${light}% / 0.95), hsl(${(hue+30)%360} ${Math.max(30,sat-10)}% ${Math.max(18,light-8)}% / 0.95))`;
+}
+
+function renderObTeamGrid1(){
+  buildLeagueTabs($("#obLeagueTabs"), renderObTeamGrid1);
+  const grid=$("#obTeamGrid");
+  grid.innerHTML = LEAGUES[obSelectedLeague].map(t=>{
+    const avatar = TEAM_LOGO_CACHE[t] || fallbackTeamAvatar(t);
+    return `<div class="team-card ${obFavTeam===t?'selected':''}" data-t="${esc(t)}">
+      ${obFavTeam===t?'<span class="chk">★</span>':''}
+      <div class="team-left"><img data-team="${esc(t)}" src="${avatar}" class="team-img"></div>
+      <div class="team-right"><div class="label">${esc(t)}</div><div class="sublabel">اختر فريقك</div></div>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".team-card").forEach(c=>c.addEventListener("click",()=>{obFavTeam=c.dataset.t; renderObTeamGrid1();}));
+  // toggle confirm button visibility
+  const conf = document.getElementById('obConfirm1'); if(conf){
+    if(obFavTeam){ conf.removeAttribute('disabled'); conf.disabled = false; conf.classList.remove('disabled'); }
+    else { conf.setAttribute('disabled',''); conf.disabled = true; conf.classList.add('disabled'); }
+  }
+  // try to populate real logos in background (defensive call)
+  try{
+    if(typeof populateTeamLogos === 'function') populateTeamLogos(grid);
+    else if(window && typeof window.populateTeamLogos === 'function') window.populateTeamLogos(grid);
+    else console.warn('populateTeamLogos not available yet');
+  }catch(e){ console.warn('populateTeamLogos invocation failed', e); }
+}
+
+function slugifyTeam(name){
+  try{
+    const normalized = name.normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
+    // keep ascii letters/numbers and Arabic block plus spaces and dashes
+    const cleaned = normalized.toLowerCase().replace(/[^0-9a-zA-Z\u0600-\u06FF\s\-]/g,'');
+    return cleaned.trim().replace(/\s+/g,'-');
+  }catch(e){
+    return name.replace(/\s+/g,'-').replace(/[^0-9a-zA-Z\-]/g,'').toLowerCase();
+  }
+}
+
+// Real crest resolver: uses TEAM_WIKI_MAP (Arabic team name -> Wikipedia page title) as the
+// primary, reliable source of real club badges (Wikipedia's REST summary API returns the
+// article's lead image, which for club pages is almost always the crest). Falls back to a
+// clean initials badge only if no real crest could be found. Results are cached so the same
+// team is only fetched once no matter how many grids/cards reference it.
+const TEAM_LOGO_CACHE = {}; // team name -> resolved image URL
+const TEAM_LOGO_PENDING = {}; // team name -> in-flight promise
+
+function fallbackTeamAvatar(team){
+  return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(team) +
+    '&background=17231a&color=e7b33e&size=256&bold=true&font-size=0.4';
+}
+
+async function fetchWikiThumbnail(pageTitle){
+  try{
+    const resp = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+pageTitle, {headers:{'Accept':'application/json'}});
+    if(resp.ok){
+      const jd = await resp.json();
+      // prefer the higher-res "originalimage" when present, otherwise the thumbnail
+      if(jd && jd.originalimage && jd.originalimage.source) return jd.originalimage.source;
+      if(jd && jd.thumbnail && jd.thumbnail.source) return jd.thumbnail.source;
+    }
+  }catch(e){ /* ignore, try next source */ }
+  return null;
+}
+
+async function resolveTeamLogo(team){
+  if(!team) return fallbackTeamAvatar('؟');
+  const normalized = String(team).trim();
+  if(normalized === 'بورنموث' || normalized === 'Bournemouth'){
+    TEAM_LOGO_CACHE[team] = './1.png';
+    return TEAM_LOGO_CACHE[team];
+  }
+  if(TEAM_LOGO_CACHE[team]) return TEAM_LOGO_CACHE[team];
+  if(TEAM_LOGO_PENDING[team]) return TEAM_LOGO_PENDING[team];
+  const p = (async ()=>{
+    // 1) known Wikipedia page title for this team (most reliable — real crest)
+    const page = TEAM_WIKI_MAP[team];
+    if(page){
+      const url = await fetchWikiThumbnail(page);
+      if(url) { TEAM_LOGO_CACHE[team]=url; return url; }
+    }
+    // 2) try searching Arabic Wikipedia directly by team name as a best-effort fallback
+    try{
+      const ar = await fetch('https://ar.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(team));
+      if(ar.ok){
+        const jd = await ar.json();
+        const src = (jd.originalimage && jd.originalimage.source) || (jd.thumbnail && jd.thumbnail.source);
+        if(src){ TEAM_LOGO_CACHE[team]=src; return src; }
+      }
+    }catch(e){}
+    // 3) clean initials badge as last resort
+    const fb = fallbackTeamAvatar(team);
+    TEAM_LOGO_CACHE[team]=fb;
+    return fb;
+  })();
+  TEAM_LOGO_PENDING[team] = p;
+  const result = await p;
+  delete TEAM_LOGO_PENDING[team];
+  return result;
+}
+
+async function populateTeamLogos(grid){
+  if(!grid) return;
+  const imgs = grid.querySelectorAll('img.team-img[data-team]');
+  await Promise.all(Array.from(imgs).map(async img=>{
+    const team = img.dataset.team;
+    try{
+      const url = await resolveTeamLogo(team);
+      if(url) img.src = url;
+    }catch(e){ /* keep placeholder */ }
+  }));
+}
+
+$("#obNext1").addEventListener("click",()=>{
+  if(!obFavTeam){toast("اختر فريقك المفضل الأول");return;}
+  $("#ob-step-team").style.display="none";
+  $("#ob-step-follow").style.display="flex"; $("#ob-step-follow").classList.remove("hidden");
+  buildLeagueTabs($("#obLeagueTabs2"), renderObTeamGrid2);
+  renderObTeamGrid2();
+});
+
+// "موافق" (confirm) button: acts exactly like "التالي" (next) — just validates the
+// selection and advances to the follow-teams step. Sign-in only happens later,
+// at the final "دخول التطبيق" step (obFinish), which already handles guests correctly.
+$("#obConfirm1").addEventListener("click", (e)=>{
+  e.preventDefault();
+  if(!obFavTeam){ toast("اختر فريقك المفضل الأول"); return; }
+  $("#obNext1").click();
+});
+
+// Lets the user go back to the sign-in screen if a previous guest/test session
+// was auto-restored by Firebase (this is what skips the auth screen on reload).
+const _obSignOutLink = document.getElementById('obSignOutLink');
+if(_obSignOutLink){
+  _obSignOutLink.addEventListener('click', async ()=>{
+    try{ localStorage.removeItem('pendingOnboard'); await auth.signOut(); }catch(e){}
+    location.reload();
+  });
+}
+function renderObTeamGrid2(){
+  buildLeagueTabs($("#obLeagueTabs2"), renderObTeamGrid2);
+  const grid=$("#obTeamGrid2");
+  grid.innerHTML = LEAGUES[obSelectedLeague].map(t=>{
+    const avatar = TEAM_LOGO_CACHE[t] || fallbackTeamAvatar(t);
+    return `<div class="team-card ${obFollowSet.has(t)?'selected':''}" data-t="${esc(t)}">
+      ${obFollowSet.has(t)?'<span class="chk">✓</span>':''}
+      <div class="team-left"><img data-team="${esc(t)}" src="${avatar}" class="team-img"></div>
+      <div class="team-right"><div class="label">${esc(t)}</div><div class="sublabel">تابع الفريق</div></div>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".team-card").forEach(c=>c.addEventListener("click",()=>{
+    const t=c.dataset.t;
+    if(obFollowSet.has(t)) obFollowSet.delete(t); else obFollowSet.add(t);
+    renderObTeamGrid2();
+  }));
+  // try to populate real logos in background (defensive call)
+  try{
+    if(typeof populateTeamLogos === 'function') populateTeamLogos(grid);
+    else if(window && typeof window.populateTeamLogos === 'function') window.populateTeamLogos(grid);
+    else console.warn('populateTeamLogos not available yet');
+  }catch(e){ console.warn('populateTeamLogos invocation failed', e); }
+}
+$("#obBack2").addEventListener("click",()=>{
+  $("#ob-step-follow").style.display="none";
+  $("#ob-step-team").style.display="block";
+});
+$("#obNext2").addEventListener("click",()=>{
+  $("#ob-step-follow").style.display="none";
+  $("#ob-step-bg").style.display="flex"; $("#ob-step-bg").classList.remove("hidden");
+  renderObBgGrid();
+});
+function renderObBgGrid(){
+  const grid=$("#obBgGrid");
+  grid.innerHTML = CARD_BACKGROUNDS.map(b=>
+    `<div class="bg-opt ${obBg===b.id?'selected':''}" data-b="${b.id}" style="background:${b.css}"><span>${b.label}</span></div>`
+  ).join("");
+  grid.querySelectorAll(".bg-opt").forEach(o=>o.addEventListener("click",()=>{obBg=o.dataset.b; renderObBgGrid();}));
+}
+$("#obBack3").addEventListener("click",()=>{
+  $("#ob-step-bg").style.display="none";
+  $("#ob-step-follow").style.display="flex";
+});
+$("#obFinish").addEventListener("click", async ()=>{
+  // If not signed in yet, save onboarding choices locally then prompt sign-in
+  if(!uid()){
+    localStorage.setItem('pendingOnboard', JSON.stringify({ favTeam:obFavTeam, followTeams:Array.from(obFollowSet), cardBg:obBg }));
+    toast('حفظت إعداداتك مؤقتًا، سجّل دخول وسيتم تطبيقها');
+    // show auth screen so user can sign up
+    $('#screen-onboard').classList.add('hidden');
+    $('#screen-auth').classList.remove('hidden');
+    return;
+  }
+  $("#obFinish").textContent="جاري الحفظ...";
+  await db.collection("users").doc(uid()).update({
+    favTeam:obFavTeam, followTeams:Array.from(obFollowSet), cardBg:obBg, onboarded:true
+  });
+  const snap = await db.collection("users").doc(uid()).get();
+  userData = snap.data();
+  enterApp();
+});
+
+/* ===================== APP SHELL / NAV ===================== */
+function hideSplash(){
+  const splash = $("#screen-splash");
+  if(splash) splash.classList.add('hidden');
+}
+function enterApp(){
+  hideSplash();
+  $("#screen-auth").classList.add("hidden");
+  $("#screen-onboard").classList.add("hidden");
+  $("#screen-shell").classList.remove("hidden");
+  switchTab("home");
+}
+$all(".nav-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const tab=btn.dataset.tab;
+    if(tab==='upload'){ openUploadSheet(); return; }
+    switchTab(tab);
+  });
+});
+function switchTab(tab){
+  activeTab=tab;
+  $all(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
+  ["home","search","var","community","profile","settings"].forEach(t=>{
+    $("#panel-"+t).classList.toggle("hidden", t!==tab);
+  });
+  if(tab==="home") renderHomeFeed();
+  if(tab==="search") renderSearchPanel();
+  if(tab==="var") renderVarPanel();
+  if(tab==="community") renderCommunityPanel();
+  if(tab==="profile") renderProfilePanel();
+  if(tab==="settings") renderSettingsPanel();
+}
+
+/* ===================== HOME FEED ===================== */
+function isBlocked(ownerUid){
+  const list = Array.isArray(userData && userData.blockedUsers) ? userData.blockedUsers : [];
+  return list.includes(ownerUid);
+}
+
+async function blockUser(ownerUid){
+  const u = uid();
+  if(!u || !ownerUid){ toast('تعذر الحظر'); return false; }
+  const currentBlocked = Array.isArray(userData && userData.blockedUsers) ? userData.blockedUsers : [];
+  if(currentBlocked.includes(ownerUid)){
+    toast('هذا الحساب محظور بالفعل');
+    return true;
+  }
+  try{
+    const userRef = db.collection('users').doc(u);
+    await userRef.set({ blockedUsers: FieldValue.arrayUnion(ownerUid) }, { merge: true });
+    const fresh = await userRef.get();
+    userData = fresh.data() || {};
+    if(!Array.isArray(userData.blockedUsers)) userData.blockedUsers = [];
+    if(!userData.blockedUsers.includes(ownerUid)) userData.blockedUsers.push(ownerUid);
+    if(Array.isArray(feedVideos)){
+      feedVideos = feedVideos.filter(fv => fv.ownerUid !== ownerUid);
+      drawFeed();
+    }
+    toast('تم الحظر، لن تشاهد فيديوهات هذا الحساب');
+    return true;
+  }catch(err){
+    console.error('blockUser failed', err);
+    toast('فشل الحظر، جرّب مرة أخرى');
+    return false;
+  }
+}
+const HOME_FEED_LIMIT = 30;
+function prioritizeHomeFeed(videos){
+  const following = Array.isArray(userData && userData.followingChannels) ? userData.followingChannels : [];
+  const favTeam = userData && userData.favTeam;
+  const followedSet = new Set(following || []);
+  const followed = [];
+  const sameTeam = [];
+  const others = [];
+  videos.forEach(v=>{
+    if(followedSet.has(v.ownerUid)) followed.push(v);
+    else if(favTeam && v.ownerFavTeam === favTeam) sameTeam.push(v);
+    else others.push(v);
+  });
+  const sortByDate = arr => arr.sort((a,b)=>((b.createdAt && b.createdAt.seconds?b.createdAt.seconds:0) - (a.createdAt && a.createdAt.seconds?a.createdAt.seconds:0)));
+  sortByDate(followed);
+  sortByDate(sameTeam);
+  sortByDate(others);
+  const targetFollowed = Math.ceil(HOME_FEED_LIMIT * 0.8);
+  const targetOthers = HOME_FEED_LIMIT - Math.min(targetFollowed, followed.length);
+  const selected = followed.slice(0, targetFollowed);
+  const remainder = sameTeam.concat(others).slice(0, targetOthers);
+  return selected.concat(remainder).slice(0, HOME_FEED_LIMIT);
+}
+function renderHomeFeed(){
+  const panel=$("#panel-home");
+  if(feedUnsub) return;
+  panel.innerHTML = `<div class="feed-scroll" id="feedScroll"><div class="loader">جاري تحميل الفيديوهات...</div></div>`;
+  feedUnsub = db.collection("videos").orderBy("createdAt","desc").limit(60)
+    .onSnapshot(qs=>{
+      if(!qs){ panel.innerHTML=`<div class="empty-state"><div class="big">⚠️</div>تعذر تحميل الفيديوهات</div>`; return; }
+      const allVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
+      feedVideos = prioritizeHomeFeed(allVideos);
+      drawFeed();
+    }, err=>{ console.error(err); panel.innerHTML=`<div class="empty-state"><div class="big">⚠️</div>تعذر تحميل الفيديوهات</div>`; });
+}
+/* ===================== FEED DRAW & REACTION FIX ===================== */
+
+function drawFeed(){
+  const scrollEl=$("#feedScroll");
+  if(!scrollEl) return;
+  if(feedVideos.length===0){
+    scrollEl.innerHTML = `<div class="empty-state"><div class="big">⚽</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
+    return;
+  }
+
+  // إذا كانت الفيديوهات معروضة بالفعل في الشاشة، نقوم بتحديث الأرقام والحالات فقط بدون مسح الـ HTML أو إعادة تشغيل الفيديو
+  const existingSlides = scrollEl.querySelectorAll(".video-slide");
+  if(existingSlides.length > 0) {
+    feedVideos.forEach((v) => {
+      const slide = scrollEl.querySelector(`.video-slide[data-id="${v.id}"]`);
+      if(slide) {
+        updateSlideFromData(slide, v);
+      }
+    });
+    return;
+  }
+
+  // الرسم لأول مرة فقط عند فتح التطبيق
+  scrollEl.innerHTML = feedVideos.map((v,i)=>videoSlideHTML(v,i)).join("");
+  scrollEl.querySelectorAll(".video-slide").forEach((slide,i)=>bindVideoSlide(slide, feedVideos[i]));
+
+  setupFeedObserver();
+}
+
+async function doReaction(videoId, type){
+  const u=uid(); if(!u){toast("سجل دخولك الأول");return;}
+  
+  // 1. تحديث لحظي سريع للشاشة (بدون ما الفيديو يعيد أو يقطع)
+  const slide = document.querySelector(`.video-slide[data-id="${videoId}"]`);
+  if(slide) {
+    const goalBtn = slide.querySelector('[data-act="goal"]');
+    const redBtn = slide.querySelector('[data-act="red"]');
+    const goalCnt = goalBtn ? goalBtn.querySelector('.cnt') : null;
+    const redCnt = redBtn ? redBtn.querySelector('.cnt') : null;
+
+    let gCount = goalCnt ? (parseInt(goalCnt.textContent) || 0) : 0;
+    let rCount = redCnt ? (parseInt(redCnt.textContent) || 0) : 0;
+
+    if(type === 'goal') {
+      if(goalBtn.classList.contains('active-goal')) {
+        goalBtn.classList.remove('active-goal');
+        if(goalCnt) goalCnt.textContent = fmtNum(Math.max(0, gCount - 1));
+      } else {
+        goalBtn.classList.add('active-goal');
+        if(goalCnt) goalCnt.textContent = fmtNum(gCount + 1);
+        if(redBtn && redBtn.classList.contains('active-red')) {
+          redBtn.classList.remove('active-red');
+          if(redCnt) redCnt.textContent = fmtNum(Math.max(0, rCount - 1));
+        }
+      }
+    } else if(type === 'red') {
+      if(redBtn.classList.contains('active-red')) {
+        redBtn.classList.remove('active-red');
+        if(redCnt) redCnt.textContent = fmtNum(Math.max(0, rCount - 1));
+      } else {
+        redBtn.classList.add('active-red');
+        if(redCnt) redCnt.textContent = fmtNum(rCount + 1);
+        if(goalBtn && goalBtn.classList.contains('active-goal')) {
+          goalBtn.classList.remove('active-goal');
+          if(goalCnt) goalCnt.textContent = fmtNum(Math.max(0, gCount - 1));
+        }
+      }
+    }
+  }
+
+  // 2. تحديث قاعدة البيانات في الخلفية
+  const ref = db.collection("videos").doc(videoId);
+  try {
+    await db.runTransaction(async t=>{
+      const doc = await t.get(ref);
+      if(!doc.exists) return;
+      const data = doc.data();
+      const reactions = data.reactions || {};
+      const current = reactions[u];
+      let goalsCount = data.goalsCount||0, redCount = data.redCount||0;
+      if(current === type){
+        delete reactions[u];
+        if(type==='goal') goalsCount--; else redCount--;
+      } else {
+        if(current==='goal') goalsCount--;
+        if(current==='red') redCount--;
+        reactions[u]=type;
+        if(type==='goal') goalsCount++; else redCount++;
+      }
+      t.update(ref,{reactions, goalsCount:Math.max(0,goalsCount), redCount:Math.max(0,redCount)});
+    });
+  } catch(e) {
+    console.error("Reaction failed:", e);
+  }
+}
+
+let feedObserver = null;
+function setupFeedObserver(){
+  if(feedObserver) feedObserver.disconnect();
+  feedObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      const vidEl = en.target.querySelector("video");
+      if(!vidEl) return;
+      if(en.isIntersecting && en.intersectionRatio>0.6){
+        vidEl.play().catch(()=>{});
+        const vId = en.target.dataset.id;
+        activeVideoIndex = feedVideos.findIndex(v=>v.id===vId);
+        maybeCountView(vId);
+      } else {
+        vidEl.pause();
+      }
+    });
+  },{threshold:[0,0.6]});
+  document.querySelectorAll(".video-slide").forEach(s=>feedObserver.observe(s));
+}
+
+function applyVideoChanges(qs){
+  const scrollEl = $("#feedScroll"); if(!scrollEl) return;
+  const changes = qs.docChanges ? qs.docChanges() : [];
+  // fallback to full redraw when many changes or first time
+  if(changes.length===0 || changes.length>10 || feedVideos.length===0){
+    feedVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
+    drawFeed(); return;
+  }
+  try{
+    // apply incremental
+    changes.forEach(ch=>{
+      const d = ch.doc; const v = {id:d.id,...d.data()};
+      if(isBlocked(v.ownerUid)){
+        // never (re)show a blocked owner's video — treat as a removal instead
+        const pos = feedVideos.findIndex(x=>x.id===v.id);
+        if(pos>-1) feedVideos.splice(pos,1);
+        const slide = scrollEl.querySelector(`.video-slide[data-id="${v.id}"]`);
+        if(slide) slide.remove();
+        return;
+      }
+      if(ch.type==='added'){
+        // insert into feedVideos at newIndex (guarded)
+        let idx = (ch.newIndex!=null && ch.newIndex>=0)?ch.newIndex:0;
+        idx = Math.min(idx, feedVideos.length);
+        feedVideos.splice(idx,0,v);
+        // create DOM and insert at position
+        const html = videoSlideHTML(v, idx);
+        const tmp = document.createElement('div'); tmp.innerHTML = html;
+        const node = tmp.firstElementChild;
+        const children = scrollEl.querySelectorAll('.video-slide');
+        if(children[idx]) scrollEl.insertBefore(node, children[idx]); else scrollEl.appendChild(node);
+        bindVideoSlide(node, v);
+      } else if(ch.type==='modified'){
+        let idx = (ch.newIndex!=null && ch.newIndex>=0)?ch.newIndex:feedVideos.findIndex(x=>x.id===v.id);
+        let oldIdx = (ch.oldIndex!=null && ch.oldIndex>=0)?ch.oldIndex:feedVideos.findIndex(x=>x.id===v.id);
+        if(oldIdx===-1 && idx===-1){
+          // unknown positions — fallback
+          throw new Error('invalid index in modified');
+        }
+        // clamp
+        idx = Math.min(Math.max(0, idx), Math.max(0, feedVideos.length-1));
+        if(oldIdx>-1) feedVideos.splice(oldIdx,1);
+        // ensure not inserting duplicates
+        const exists = feedVideos.find(x=>x.id===v.id);
+        if(!exists) feedVideos.splice(idx,0,v); else {
+          // replace
+          const p = feedVideos.findIndex(x=>x.id===v.id);
+          if(p>-1) feedVideos[p]=v;
+        }
+        // update DOM for this id
+        const slide = scrollEl.querySelector(`.video-slide[data-id="${v.id}"]`);
+        if(slide){ updateSlideFromData(slide, v); }
+        // if index changed, move node
+        const children = scrollEl.querySelectorAll('.video-slide');
+        if(slide && children[idx] && children[idx]!==slide){
+          scrollEl.insertBefore(slide, children[idx]);
+        }
+      } else if(ch.type==='removed'){
+        const pos = feedVideos.findIndex(x=>x.id===v.id);
+        if(pos>-1) feedVideos.splice(pos,1);
+        const slide = scrollEl.querySelector(`.video-slide[data-id="${v.id}"]`);
+        if(slide) slide.remove();
+      }
+    });
+    // best-effort: keep feedVideos ordered by createdAt desc when possible
+    try{
+      feedVideos.sort((a,b)=>{
+        const ta = (a.createdAt && a.createdAt.seconds)?a.createdAt.seconds:0;
+        const tb = (b.createdAt && b.createdAt.seconds)?b.createdAt.seconds:0;
+        return tb - ta;
+      });
+      // ensure DOM order matches feedVideos array — cheap approach: if mismatch detected, fallback to full redraw
+      const elems = Array.from(scrollEl.querySelectorAll('.video-slide'));
+      let mismatch=false;
+      for(let i=0;i<Math.min(elems.length, feedVideos.length); i++){
+        if(elems[i].dataset.id !== feedVideos[i].id){ mismatch=true; break; }
+      }
+      if(mismatch){ drawFeed(); return; }
+    }catch(e){ /* ignore */ }
+    // re-attach observer to include new slides
+    setupFeedObserver();
+  }catch(e){
+    console.error('applyVideoChanges failed', e);
+    feedVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
+    drawFeed();
+  }
+}
+
+function updateSlideFromData(slide, v){
+  // avoid resetting video playback; update counters and text
+  const vid = slide.querySelector('video');
+  if(vid && vid.src !== v.videoURL){ try{ const cur = vid.currentTime; vid.src = v.videoURL; vid.currentTime = cur; }catch(e){} }
+  const cname = slide.querySelector('.cname'); if(cname) cname.textContent = v.ownerName||'مستخدم';
+  const avatarImg = slide.querySelector('.circ.avatar img'); if(avatarImg) avatarImg.src = v.ownerPhoto||avatarImg.src;
+  const goalBtn = slide.querySelector('[data-act="goal"] .cnt'); if(goalBtn) goalBtn.textContent = fmtNum(v.goalsCount);
+  const redBtn = slide.querySelector('[data-act="red"] .cnt'); if(redBtn) redBtn.textContent = fmtNum(v.redCount);
+  const commBtn = slide.querySelector('[data-act="comments"] .cnt'); if(commBtn) commBtn.textContent = fmtNum(v.commentsCount);
+  const desc = slide.querySelector('.vs-desc'); if(desc) desc.innerHTML = renderHashtags(v.description||'');
+  // reaction active classes
+  const myReaction = (v.reactions && v.reactions[uid()]) || null;
+  const goalSide = slide.querySelector('[data-act="goal" ]'); if(goalSide) goalSide.classList.toggle('active-goal', myReaction==='goal');
+  const redSide = slide.querySelector('[data-act="red" ]'); if(redSide) redSide.classList.toggle('active-red', myReaction==='red');
+}
+
+function maybeCountView(videoId){
+  if(!videoId || sessionViewedIds.has(videoId)) return;
+  sessionViewedIds.add(videoId);
+  setTimeout(()=>{
+    // count only if still viewed (best-effort real, precise, single-count view)
+    db.collection("videos").doc(videoId).update({views:FieldValue.increment(1)}).catch(()=>{});
+  },3000);
+}
+function videoSlideHTML(v,i){
+  const myReaction = (v.reactions && v.reactions[uid()]) || null;
+  const following = (userData && userData.followingChannels && userData.followingChannels.includes(v.ownerUid));
+  return `
+    <div class="video-slide" data-id="${v.id}" data-owner="${v.ownerUid}">
+    <video src="${esc(v.videoURL)}" playsinline autoplay loop preload="metadata"></video>
+    <div class="vs-top">
+      <div class="icon-btn mute-btn">🔊</div>
+      <div class="icon-btn menu-btn">⋮</div>
+    </div>
+    <div class="vs-side">
+      <button class="side-btn" data-act="profile-open" data-owner="${v.ownerUid}">
+        <div class="circ avatar">${v.ownerPhoto?`<img src="${esc(v.ownerPhoto)}">`:'👤'}</div>
+      </button>
+      <button class="side-btn ${myReaction==='goal'?'active-goal':''}" data-act="goal">
+        <div class="circ">⚽</div><div class="cnt">${fmtNum(v.goalsCount)}</div>
+      </button>
+      <button class="side-btn ${myReaction==='red'?'active-red':''}" data-act="red">
+        <div class="circ">🟥</div><div class="cnt">${fmtNum(v.redCount)}</div>
+      </button>
+      <button class="side-btn" data-act="comments">
+        <div class="circ">💬</div><div class="cnt">${fmtNum(v.commentsCount)}</div>
+      </button>
+      <button class="side-btn" data-act="save">
+        <div class="circ">🔖</div><div class="cnt">حفظ</div>
+      </button>
+      <button class="side-btn" data-act="message">
+        <div class="circ">✉️</div><div class="cnt">مراسلة</div>
+      </button>
+      <button class="side-btn" data-act="share">
+        <div class="circ">↗️</div><div class="cnt">مشاركة</div>
+      </button>
+    </div>
+    <div class="vs-bottom">
+      <div class="vs-channel">
+        ${v.ownerFavTeam?`<img class="vs-team-logo" data-team="${esc(v.ownerFavTeam)}" src="" style="display:none">`:""}
+        <span class="cname">${esc(v.ownerName||"مستخدم")}</span>
+        <button class="vs-fbtn ${following?'following':''}" data-act="follow">${following?'متابَع':'متابعة'}</button>
+      </div>
+      <div class="vs-desc">${renderHashtags(v.description||"")}</div>
+    </div>
+  </div>`;
+}
+function bindVideoSlide(slide, v){
+  const vidEl = slide.querySelector("video");
+  const muteBtn = slide.querySelector(".mute-btn");
+  vidEl.muted = false;
+  muteBtn.textContent = vidEl.muted ? "🔇" : "🔊";
+  muteBtn.addEventListener("click",e=>{
+    e.stopPropagation(); vidEl.muted=!vidEl.muted; e.currentTarget.textContent = vidEl.muted?"🔇":"🔊";
+  });
+  slide.addEventListener("click",e=>{
+    if(e.target.closest(".vs-top,.vs-side,.vs-bottom")) return;
+    if(vidEl.paused) vidEl.play(); else vidEl.pause();
+  });
+  slide.addEventListener("dblclick",e=>{
+    doReaction(v.id,"goal");
+    spawnGoalPop(slide, e.clientX - slide.getBoundingClientRect().left, e.clientY - slide.getBoundingClientRect().top);
+  });
+  slide.querySelector('[data-act="goal"]').addEventListener("click",()=>doReaction(v.id,"goal"));
+  slide.querySelector('[data-act="red"]').addEventListener("click",()=>doReaction(v.id,"red"));
+  slide.querySelector('[data-act="comments"]').addEventListener("click",()=>openCommentsSheet(v.id));
+  slide.querySelector('[data-act="save"]').addEventListener("click",()=>openSaveSheet(v.id));
+  slide.querySelector('[data-act="share"]').addEventListener("click",()=>openShareSheet(v.id));
+  slide.querySelector('[data-act="follow"]').addEventListener("click",()=>toggleFollowChannel(v.ownerUid));
+  slide.querySelector('[data-act="message"]').addEventListener("click",()=>openChatSheet(v.ownerUid, v.ownerName, v.ownerPhoto));
+  slide.querySelector('.menu-btn').addEventListener("click",()=>openVideoMenuSheet(v));
+  slide.querySelectorAll('[data-act="profile-open"]').forEach(b=>b.addEventListener("click",()=>openOtherProfile(v.ownerUid)));
+  slide.querySelectorAll(".tag").forEach(t=>t.addEventListener("click",e=>{
+    e.stopPropagation();
+    switchTab("search");
+    setTimeout(()=>{ $("#searchInput").value="#"+t.dataset.hashtag; runSearch("#"+t.dataset.hashtag); },50);
+  }));
+}
+function spawnGoalPop(slide,x,y){
+  const el=document.createElement("div"); el.className="goal-pop"; el.textContent="⚽";
+  el.style.left=(x-35)+"px"; el.style.top=(y-35)+"px";
+  slide.appendChild(el); setTimeout(()=>el.remove(),900);
+}
+async function doReaction(videoId, type){
+  const u=uid(); if(!u){toast("سجل دخولك الأول");return;}
+  const ref = db.collection("videos").doc(videoId);
+  await db.runTransaction(async t=>{
+    const doc = await t.get(ref);
+    const data = doc.data();
+    const reactions = data.reactions || {};
+    const prev = reactions[type==='goal'?'goal':'red']; // unused
+    const current = reactions[u];
+    let goalsCount = data.goalsCount||0, redCount = data.redCount||0;
+    if(current === type){
+      delete reactions[u];
+      if(type==='goal') goalsCount--; else redCount--;
+    } else {
+      if(current==='goal') goalsCount--;
+      if(current==='red') redCount--;
+      reactions[u]=type;
+      if(type==='goal') goalsCount++; else redCount++;
+    }
+    t.update(ref,{reactions, goalsCount:Math.max(0,goalsCount), redCount:Math.max(0,redCount)});
+  });
+}
+async function toggleFollowChannel(targetUid){
+  const u=uid(); if(!u||u===targetUid) return;
+  const myRef = db.collection("users").doc(u);
+  const theirRef = db.collection("users").doc(targetUid);
+  const mySnap = await myRef.get();
+  const list = mySnap.data().followingChannels || [];
+  const isF = list.includes(targetUid);
+  await db.runTransaction(async t=>{
+    if(isF){
+      t.update(myRef,{followingChannels:FieldValue.arrayRemove(targetUid), followingCount:FieldValue.increment(-1)});
+      t.update(theirRef,{followersCount:FieldValue.increment(-1)});
+    } else {
+      t.update(myRef,{followingChannels:FieldValue.arrayUnion(targetUid), followingCount:FieldValue.increment(1)});
+      t.update(theirRef,{followersCount:FieldValue.increment(1)});
+    }
+  });
+  const fresh = await myRef.get(); userData = fresh.data();
+  updateFollowButtons();
+  if(activeTab==='profile') renderProfilePanel();
+}
+
+function updateFollowButtons(){
+  // Update follow buttons on visible video slides without full redraw
+  const slides = document.querySelectorAll('.video-slide');
+  slides.forEach(s=>{
+    const owner = s.dataset.owner;
+    const btn = s.querySelector('[data-act="follow"]');
+    if(!btn) return;
+    const following = (userData && userData.followingChannels || []).includes(owner);
+    btn.textContent = following ? 'متابَع' : 'متابعة';
+    btn.classList.toggle('following', following);
+    btn.style.background = following ? 'rgba(255,255,255,.15)' : '';
+    btn.style.color = following ? '#fff' : '';
+  });
+}
+
+/* ===================== SHEETS: COMMENTS / SAVE / SHARE / MENU ===================== */
+function openSheet(html){
+  $("#sheetHost").innerHTML = `<div class="sheet-backdrop" id="sheetBackdrop">${html}</div>`;
+  $("#sheetBackdrop").addEventListener("click",e=>{ if(e.target.id==="sheetBackdrop") closeSheet(); });
+}
+function closeSheet(){
+  $("#sheetHost").innerHTML="";
+  if(commentsUnsub){ commentsUnsub(); commentsUnsub=null; }
+  if(postCommentsUnsub){ postCommentsUnsub(); postCommentsUnsub=null; }
+  // unsubscribe open reply listeners
+  Object.keys(videoRepliesUnsubs||{}).forEach(k=>{ try{ videoRepliesUnsubs[k](); }catch(e){}; delete videoRepliesUnsubs[k]; });
+  Object.keys(postRepliesUnsubs||{}).forEach(k=>{ try{ postRepliesUnsubs[k](); }catch(e){}; delete postRepliesUnsubs[k]; });
+  // unsubscribe chats
+  Object.keys(chatsUnsubs||{}).forEach(k=>{ try{ chatsUnsubs[k](); }catch(e){}; delete chatsUnsubs[k]; });
+}
+
+function openCommentsSheet(videoId){
+  currentCommentsVideoId = videoId;
+  openSheet(`
+    <div class="sheet" style="height:65%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">التعليقات</div>
+      <div class="sheet-body" id="commentsBody"><div class="loader">جاري التحميل...</div></div>
+      <div class="sheet-input-bar">
+        <input id="commentInput" placeholder="اكتب تعليق...">
+        <button id="commentSendBtn">إرسال</button>
+      </div>
+    </div>`);
+  $("#commentSendBtn").addEventListener("click", submitComment);
+  $("#commentInput").addEventListener("keydown", e=>{ if(e.key==="Enter") submitComment(); });
+  if(commentsUnsub) commentsUnsub();
+  commentsUnsub = db.collection("videos").doc(videoId).collection("comments").orderBy("createdAt","desc")
+    .onSnapshot(qs=>{
+      const body=$("#commentsBody"); if(!body) return;
+      if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">💬</div>لسه مفيش تعليقات</div>`; return; }
+      body.innerHTML = qs.docs.map(d=>{
+        const c=d.data();
+        const liked = (c.likes||[]).includes(uid());
+        const repliesCount = c.repliesCount||0;
+        return `<div class="comment-row" data-cid="${d.id}">
+          <img src="${esc(c.userPhoto||'')}" onerror="this.style.background='#1c211c'">
+          <div>
+            <div class="comment-name">${esc(c.userName)}</div>
+            <div class="comment-text">${esc(c.text)}</div>
+            <div class="comment-actions">
+              <span data-act="like" style="${liked?'color:var(--pitch);font-weight:800;':''}">❤ ${fmtNum((c.likes||[]).length)}</span>
+              <span data-act="replyBtn" style="margin-left:10px;cursor:pointer">رد</span>
+              <span data-act="showReplies" style="margin-left:8px;cursor:pointer">💬 ${fmtNum(repliesCount)}</span>
+              <span>${timeAgo(c.createdAt)}</span>
+            </div>
+            <div class="replies" data-cid="${d.id}" style="margin-top:8px;"></div>
+          </div>
+        </div>`;
+      }).join("");
+      body.querySelectorAll('[data-act="like"]').forEach(el=>{
+        el.addEventListener("click",()=>{
+          const cid = el.closest(".comment-row").dataset.cid;
+          toggleCommentLike(videoId,cid);
+        });
+      });
+      // reply / show replies handlers
+      body.querySelectorAll('[data-act="replyBtn"]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const row = btn.closest('.comment-row');
+          const cid = row.dataset.cid;
+          // insert inline reply input
+          if(row.querySelector('.reply-input')) return; // already open
+          const ri = document.createElement('div'); ri.className='reply-input'; ri.style.marginTop='8px';
+          ri.innerHTML = `<input placeholder="اكتب رد..." style="width:70%;padding:8px;border-radius:10px;background:var(--bg-elev2);border:1px solid var(--line);color:#fff;margin-left:6px"> <button style="padding:8px 10px;background:var(--pitch);color:#08150d;border-radius:10px">رد</button>`;
+          row.querySelector('div').appendChild(ri);
+          const input = ri.querySelector('input'); const send = ri.querySelector('button');
+          send.addEventListener('click', async ()=>{
+            const text = input.value.trim(); if(!text) return; input.value='';
+            await db.collection('videos').doc(videoId).collection('comments').doc(cid).collection('replies').add({
+              text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp()
+            });
+            await db.collection('videos').doc(videoId).collection('comments').doc(cid).update({repliesCount:FieldValue.increment(1)});
+            ri.remove();
+          });
+        });
+      });
+      body.querySelectorAll('[data-act="showReplies"]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const cid = btn.closest('.comment-row').dataset.cid;
+          const container = btn.closest('.comment-row').querySelector('.replies');
+          toggleShowVideoReplies(videoId, cid, container);
+        });
+      });
+    });
+}
+async function submitComment(){
+  const input=$("#commentInput"); const text=input.value.trim();
+  if(!text) return;
+  input.value="";
+  const videoId=currentCommentsVideoId;
+  await db.collection("videos").doc(videoId).collection("comments").add({
+    text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||"", likes:[], repliesCount:0,
+    createdAt:FieldValue.serverTimestamp()
+  });
+  await db.collection("videos").doc(videoId).update({commentsCount:FieldValue.increment(1)});
+}
+async function toggleCommentLike(videoId,cid){
+  const ref = db.collection("videos").doc(videoId).collection("comments").doc(cid);
+  const snap = await ref.get();
+  const likes = snap.data().likes||[];
+  if(likes.includes(uid())) await ref.update({likes:FieldValue.arrayRemove(uid())});
+  else await ref.update({likes:FieldValue.arrayUnion(uid())});
+}
+
+// --- Post comments sheet (for community posts) ---
+function openPostCommentsSheet(postId){
+  if(postCommentsUnsub){ postCommentsUnsub(); postCommentsUnsub=null; }
+  openSheet(`
+    <div class="sheet" style="height:65%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">تعليقات المنشور</div>
+      <div class="sheet-body" id="postCommentsBody"><div class="loader">جاري التحميل...</div></div>
+      <div class="sheet-input-bar">
+        <input id="postCommentInput" placeholder="اكتب تعليق...">
+        <button id="postCommentSendBtn">إرسال</button>
+      </div>
+    </div>`);
+  $("#postCommentSendBtn").addEventListener("click", async ()=>{
+    const text = $("#postCommentInput").value.trim(); if(!text) return; $("#postCommentInput").value="";
+    await db.collection("posts").doc(postId).collection("comments").add({
+      text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||"", likes:[], repliesCount:0, createdAt:FieldValue.serverTimestamp()
+    });
+    await db.collection("posts").doc(postId).update({commentsCount:FieldValue.increment(1)});
+  });
+  postCommentsUnsub = db.collection("posts").doc(postId).collection("comments").orderBy("createdAt","desc")
+    .onSnapshot(qs=>{
+      const body=$("#postCommentsBody"); if(!body) return;
+      if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">💬</div>لسه مفيش تعليقات</div>`; return; }
+      body.innerHTML = qs.docs.map(d=>{
+        const c=d.data(); const liked = (c.likes||[]).includes(uid()); const repliesCount = c.repliesCount||0;
+        return `<div class="comment-row" data-cid="${d.id}"><img src="${esc(c.userPhoto||'')}" onerror="this.style.background='#1c211c'"><div><div class="comment-name">${esc(c.userName)}</div><div class="comment-text">${esc(c.text)}</div><div class="comment-actions"><span data-act="like" style="${liked?'color:var(--pitch);font-weight:800;':''}">❤ ${fmtNum((c.likes||[]).length)}</span><span data-act="replyBtn" style="margin-left:10px;cursor:pointer">رد</span><span data-act="showReplies" style="margin-left:8px;cursor:pointer">💬 ${fmtNum(repliesCount)}</span><span>${timeAgo(c.createdAt)}</span></div><div class="replies" data-cid="${d.id}" style="margin-top:8px;"></div></div></div>`;
+      }).join("");
+      body.querySelectorAll('[data-act="like"]').forEach(el=>{
+        el.addEventListener("click",()=>{
+          const cid = el.closest(".comment-row").dataset.cid;
+          const ref = db.collection("posts").doc(postId).collection("comments").doc(cid);
+          ref.get().then(snap=>{
+            const likes = (snap.data() && snap.data().likes) || [];
+            if(likes.includes(uid())) ref.update({likes:FieldValue.arrayRemove(uid())}); else ref.update({likes:FieldValue.arrayUnion(uid())});
+          });
+        });
+      });
+      // reply / show replies handlers
+      body.querySelectorAll('[data-act="replyBtn"]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const row = btn.closest('.comment-row'); const cid = row.dataset.cid;
+          if(row.querySelector('.reply-input')) return;
+          const ri = document.createElement('div'); ri.className='reply-input'; ri.style.marginTop='8px';
+          ri.innerHTML = `<input placeholder="اكتب رد..." style="width:70%;padding:8px;border-radius:10px;background:var(--bg-elev2);border:1px solid var(--line);color:#fff;margin-left:6px"> <button style="padding:8px 10px;background:var(--pitch);color:#08150d;border-radius:10px">رد</button>`;
+          row.querySelector('div').appendChild(ri);
+          const input = ri.querySelector('input'); const send = ri.querySelector('button');
+          send.addEventListener('click', async ()=>{
+            const text = input.value.trim(); if(!text) return; input.value='';
+            await db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').add({
+              text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp()
+            });
+            await db.collection('posts').doc(postId).collection('comments').doc(cid).update({repliesCount:FieldValue.increment(1)});
+            ri.remove();
+          });
+        });
+      });
+      body.querySelectorAll('[data-act="showReplies"]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const cid = btn.closest('.comment-row').dataset.cid;
+          const container = btn.closest('.comment-row').querySelector('.replies');
+          toggleShowPostReplies(postId, cid, container);
+        });
+      });
+    });
+}
+
+// replies management
+const videoRepliesUnsubs = {};
+const postRepliesUnsubs = {};
+// chats management
+const chatsUnsubs = {};
+
+function chatIdFor(a,b){ return [a,b].sort().join('_'); }
+
+function openChatSheet(targetUid, targetName, targetPhoto){
+  if(!uid()){ toast('سجل دخول عشان تتواصل'); return; }
+  const cid = chatIdFor(uid(), targetUid);
+  openSheet(`
+    <div class="sheet" style="height:70%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">محادثة مع ${esc(targetName||'مستخدم')}</div>
+      <div class="sheet-body" id="chatBody" style="display:flex;flex-direction:column;">
+        <div id="chatList" style="flex:1;overflow:auto;padding-bottom:8px;"></div>
+      </div>
+      <div class="sheet-input-bar"><input id="chatInput" placeholder="اكتب رسالة..."><button id="chatSendBtn">إرسال</button></div>
+    </div>`);
+  const listEl = document.getElementById('chatList');
+  const sendBtn = document.getElementById('chatSendBtn');
+  const input = document.getElementById('chatInput');
+  // unsubscribe previous if exists
+  if(chatsUnsubs[cid]){ chatsUnsubs[cid](); delete chatsUnsubs[cid]; }
+  const chatRef = db.collection('chats').doc(cid).collection('messages').orderBy('createdAt','asc');
+  const unsub = chatRef.onSnapshot(qs=>{
+    listEl.innerHTML = qs.docs.map(d=>{
+      const m = d.data();
+      const me = m.from===uid();
+      return `<div style="display:flex;${me?'justify-content:flex-end;':'justify-content:flex-start;'};padding:6px 0"><div style="max-width:72%;background:${me?'var(--pitch)':'var(--bg-elev2)'};color:${me?'#08150d':'#fff'};padding:10px;border-radius:12px">${esc(m.text)}<div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:${me?'right':'left'}">${timeAgo(m.createdAt)}</div></div></div>`;
+    }).join('');
+    listEl.scrollTop = listEl.scrollHeight;
+  });
+  chatsUnsubs[cid]=unsub;
+  sendBtn.addEventListener('click', async ()=>{
+    const t = input.value.trim(); if(!t) return; input.value='';
+    const msgRef = db.collection('chats').doc(cid).collection('messages');
+    await msgRef.add({text:t, from:uid(), to:targetUid, createdAt:FieldValue.serverTimestamp()});
+  });
+}
+
+function toggleShowVideoReplies(videoId, cid, container){
+  if(!container) return;
+  if(container.dataset.open==='1'){
+    // close
+    if(videoRepliesUnsubs[cid]){ videoRepliesUnsubs[cid](); delete videoRepliesUnsubs[cid]; }
+    container.innerHTML = '';
+    container.dataset.open='0';
+    return;
+  }
+  container.innerHTML = `<div class="loader" style="padding:8px;">جاري تحميل الردود...</div>`;
+  const unsub = db.collection('videos').doc(videoId).collection('comments').doc(cid).collection('replies').orderBy('createdAt','desc')
+    .onSnapshot(qs=>{
+      if(qs.empty){ container.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:8px 0;">لا توجد ردود بعد</div>`; return; }
+      container.innerHTML = qs.docs.map(d=>{
+        const r=d.data(); const liked = (r.likes||[]).includes(uid());
+        return `<div class="reply-row" data-rid="${d.id}" style="display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><img src="${esc(r.userPhoto||'')}" style="width:30px;height:30px;border-radius:8px;object-fit:cover" onerror="this.style.background='#1c211c'"><div style="flex:1"><div style="font-weight:800;font-size:12px">${esc(r.userName)}</div><div style="font-size:13px;margin-top:4px">${esc(r.text)}</div><div style="font-size:11px;color:var(--muted);margin-top:6px"><span data-act="likeReply">❤ ${fmtNum((r.likes||[]).length)}</span> <span style="margin-left:8px">${timeAgo(r.createdAt)}</span> <span style=\"margin-left:8px;cursor:pointer;color:var(--muted)\" data-act=\"replyToReply\">رد</span></div><div class=\"subreplies\" style=\"margin-top:8px;padding-left:6px;border-left:2px solid rgba(255,255,255,.03)\"></div></div></div>`;
+      }).join('');
+      container.querySelectorAll('[data-act="likeReply"]').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          const idx = Array.from(container.querySelectorAll('[data-act="likeReply"]')).indexOf(el);
+          const doc = qs.docs[idx]; if(!doc) return;
+          const ref = db.collection('videos').doc(videoId).collection('comments').doc(cid).collection('replies').doc(doc.id);
+          ref.get().then(snap=>{
+            const likes = (snap.data() && snap.data().likes) || [];
+            if(likes.includes(uid())) ref.update({likes:FieldValue.arrayRemove(uid())}); else ref.update({likes:FieldValue.arrayUnion(uid())});
+          });
+        });
+      });
+      // attach reply-to-reply handlers and load any existing subreplies once
+      container.querySelectorAll('[data-act="replyToReply"]').forEach((btn, idx)=>{
+        btn.addEventListener('click', ()=>{
+          const row = btn.closest('.reply-row'); if(!row) return;
+          if(row.querySelector('.reply-input')) return;
+          const rid = row.dataset.rid;
+          const ri = document.createElement('div'); ri.className='reply-input'; ri.style.marginTop='8px';
+          ri.innerHTML = `<input placeholder="اكتب رد..." style="width:70%;padding:8px;border-radius:10px;background:var(--bg-elev2);border:1px solid var(--line);color:#fff;margin-left:6px"> <button style="padding:8px 10px;background:var(--pitch);color:#08150d;border-radius:10px">رد</button>`;
+          row.appendChild(ri);
+          const input = ri.querySelector('input'); const send = ri.querySelector('button');
+          send.addEventListener('click', async ()=>{
+            const text = input.value.trim(); if(!text) return; input.value='';
+            const ref = db.collection('videos').doc(videoId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies');
+            const created = await ref.add({ text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp() });
+            // append to DOM
+            const sub = row.querySelector('.subreplies');
+            const el = document.createElement('div'); el.innerHTML = `<div style="display:flex;gap:8px;padding:6px 0"><img src="${esc(userData.photoURL||'')}" style="width:26px;height:26px;border-radius:6px;object-fit:cover"><div style="font-size:13px;"><b style=\"font-weight:800;\">${esc(userData.displayName)}</b><div style=\"margin-top:4px;\">${esc(text)}</div></div></div>`;
+            sub.insertBefore(el, sub.firstChild);
+            ri.remove();
+          });
+        });
+      });
+      // load existing subreplies for each reply (one-time fetch)
+      container.querySelectorAll('.reply-row').forEach((rEl, i)=>{
+        const rid = rEl.dataset.rid; const subWrap = rEl.querySelector('.subreplies');
+        db.collection('videos').doc(videoId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies').orderBy('createdAt','desc').get().then(sqs=>{
+          if(sqs.empty) return;
+          sqs.docs.forEach(sd=>{
+            const s = sd.data(); const el=document.createElement('div'); el.innerHTML = `<div style="display:flex;gap:8px;padding:6px 0"><img src="${esc(s.userPhoto||'')}" style="width:26px;height:26px;border-radius:6px;object-fit:cover"><div style="font-size:13px;"><b style=\"font-weight:800;\">${esc(s.userName)}</b><div style=\"margin-top:4px;\">${esc(s.text)}</div></div></div>`;
+            subWrap.appendChild(el);
+          });
+        }).catch(()=>{});
+      });
+    });
+  videoRepliesUnsubs[cid]=unsub; container.dataset.open='1';
+}
+
+function toggleShowPostReplies(postId, cid, container){
+  if(!container) return;
+  if(container.dataset.open==='1'){
+    if(postRepliesUnsubs[cid]){ postRepliesUnsubs[cid](); delete postRepliesUnsubs[cid]; }
+    container.innerHTML = '';
+    container.dataset.open='0';
+    return;
+  }
+  container.innerHTML = `<div class="loader" style="padding:8px;">جاري تحميل الردود...</div>`;
+  const unsub = db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').orderBy('createdAt','desc')
+    .onSnapshot(qs=>{
+      if(qs.empty){ container.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:8px 0;">لا توجد ردود بعد</div>`; return; }
+      container.innerHTML = qs.docs.map(d=>{
+        const r=d.data(); const liked = (r.likes||[]).includes(uid());
+        return `<div class="reply-row" data-rid="${d.id}" style="display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><img src="${esc(r.userPhoto||'')}" style="width:30px;height:30px;border-radius:8px;object-fit:cover" onerror="this.style.background='#1c211c'"><div style="flex:1"><div style="font-weight:800;font-size:12px">${esc(r.userName)}</div><div style="font-size:13px;margin-top:4px">${esc(r.text)}</div><div style="font-size:11px;color:var(--muted);margin-top:6px"><span data-act="likeReply">❤ ${fmtNum((r.likes||[]).length)}</span> <span style="margin-left:8px">${timeAgo(r.createdAt)}</span> <span style=\"margin-left:8px;cursor:pointer;color:var(--muted)\" data-act=\"replyToReply\">رد</span></div><div class=\"subreplies\" style=\"margin-top:8px;padding-left:6px;border-left:2px solid rgba(255,255,255,.03)\"></div></div></div>`;
+      }).join('');
+      container.querySelectorAll('[data-act="likeReply"]').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          const idx = Array.from(container.querySelectorAll('[data-act="likeReply"]')).indexOf(el);
+          const doc = qs.docs[idx]; if(!doc) return;
+          const ref = db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').doc(doc.id);
+          ref.get().then(snap=>{
+            const likes = (snap.data() && snap.data().likes) || [];
+            if(likes.includes(uid())) ref.update({likes:FieldValue.arrayRemove(uid())}); else ref.update({likes:FieldValue.arrayUnion(uid())});
+          });
+        });
+      });
+      // attach reply-to-reply handlers and load any existing subreplies once
+      container.querySelectorAll('[data-act="replyToReply"]').forEach((btn, idx)=>{
+        btn.addEventListener('click', ()=>{
+          const row = btn.closest('.reply-row'); if(!row) return;
+          if(row.querySelector('.reply-input')) return;
+          const rid = row.dataset.rid;
+          const ri = document.createElement('div'); ri.className='reply-input'; ri.style.marginTop='8px';
+          ri.innerHTML = `<input placeholder="اكتب رد..." style="width:70%;padding:8px;border-radius:10px;background:var(--bg-elev2);border:1px solid var(--line);color:#fff;margin-left:6px"> <button style="padding:8px 10px;background:var(--pitch);color:#08150d;border-radius:10px">رد</button>`;
+          row.appendChild(ri);
+          const input = ri.querySelector('input'); const send = ri.querySelector('button');
+          send.addEventListener('click', async ()=>{
+            const text = input.value.trim(); if(!text) return; input.value='';
+            const ref = db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies');
+            const created = await ref.add({ text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp() });
+            // append to DOM
+            const sub = row.querySelector('.subreplies');
+            const el = document.createElement('div'); el.innerHTML = `<div style="display:flex;gap:8px;padding:6px 0"><img src="${esc(userData.photoURL||'')}" style="width:26px;height:26px;border-radius:6px;object-fit:cover"><div style="font-size:13px;"><b style=\"font-weight:800;\">${esc(userData.displayName)}</b><div style=\"margin-top:4px;\">${esc(text)}</div></div></div>`;
+            sub.insertBefore(el, sub.firstChild);
+            ri.remove();
+          });
+        });
+      });
+      // load existing subreplies for each reply (one-time fetch)
+      container.querySelectorAll('.reply-row').forEach((rEl, i)=>{
+        const rid = rEl.dataset.rid; const subWrap = rEl.querySelector('.subreplies');
+        db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies').orderBy('createdAt','desc').get().then(sqs=>{
+          if(sqs.empty) return;
+          sqs.docs.forEach(sd=>{
+            const s = sd.data(); const el=document.createElement('div'); el.innerHTML = `<div style="display:flex;gap:8px;padding:6px 0"><img src="${esc(s.userPhoto||'')}" style="width:26px;height:26px;border-radius:6px;object-fit:cover"><div style="font-size:13px;"><b style=\"font-weight:800;\">${esc(s.userName)}</b><div style=\"margin-top:4px;\">${esc(s.text)}</div></div></div>`;
+            subWrap.appendChild(el);
+          });
+        }).catch(()=>{});
+      });
+    });
+  postRepliesUnsubs[cid]=unsub; container.dataset.open='1';
+}
+
+function openSaveSheet(videoId){
+  if(!uid()){ toast('سجل دخول أو جرب كضيف لحفظ الفيديو'); return; }
+  db.collection("users").doc(uid()).collection("lists").get().then(qs=>{
+    const lists = qs.docs.map(d=>({id:d.id,...d.data()}));
+    openSheet(`
+      <div class="sheet" style="height:55%">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">الحفظ في قائمة</div>
+        <div class="sheet-body">
+          <div class="new-list-row">
+            <input id="newListName" placeholder="اسم قائمة جديدة">
+            <button id="createListBtn">إنشاء</button>
+          </div>
+          <div id="listsBody">
+            ${lists.length? lists.map(l=>`
+              <div class="list-row ${((l.videoIds||[]).includes(videoId))?'saved':''}" data-lid="${l.id}">
+                <span>${esc(l.name)}</span><span class="chk">${(l.videoIds||[]).includes(videoId)?'✓':''}</span>
+              </div>`).join("") : `<div style="color:var(--muted);font-size:13px;padding:14px 0;">لسه مفيش قوائم، اعمل واحدة فوق</div>`}
+          </div>
+        </div>
+      </div>`);
+    $("#createListBtn").addEventListener("click", async ()=>{
+      const name=$("#newListName").value.trim(); if(!name){ toast('اكتب اسم القائمة'); return; }
+      await db.collection("users").doc(uid()).collection("lists").add({name, videoIds:[], createdAt:FieldValue.serverTimestamp()});
+      toast('تم إنشاء القائمة');
+      openSaveSheet(videoId);
+    });
+    document.querySelectorAll(".list-row").forEach(row=>{
+      row.addEventListener("click", async ()=>{
+        const lid=row.dataset.lid;
+        const ref=db.collection("users").doc(uid()).collection("lists").doc(lid);
+        const snap=await ref.get(); const ids=snap.data().videoIds||[];
+        if(ids.includes(videoId)) await ref.update({videoIds:FieldValue.arrayRemove(videoId)});
+        else await ref.update({videoIds:FieldValue.arrayUnion(videoId)});
+        toast('تم التحديث');
+        openSaveSheet(videoId);
+      });
+    });
+  });
+}
+
+function openShareSheet(videoId){
+  const link = location.origin + location.pathname + "?v=" + videoId;
+  openSheet(`
+    <div class="sheet" style="height:auto">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">مشاركة الفيديو</div>
+      <div class="sheet-body">
+        <div class="share-row" id="shareCopy"><span>📋</span> نسخ الرابط</div>
+        <div class="share-row" id="shareWA"><span>💬</span> واتساب</div>
+        <div class="share-row" id="shareNative"><span>↗️</span> مشاركة عبر التطبيقات</div>
+      </div>
+    </div>`);
+  $("#shareCopy").addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText(link); toast("تم نسخ الرابط"); }catch(e){ toast(link); }
+    closeSheet();
+  });
+  $("#shareWA").addEventListener("click", ()=>{
+    window.open("https://wa.me/?text="+encodeURIComponent(link),"_blank");
+    closeSheet();
+  });
+  $("#shareNative").addEventListener("click", async ()=>{
+    if(navigator.share){ try{ await navigator.share({url:link}); }catch(e){} }
+    else toast("المشاركة المباشرة غير مدعومة على هذا المتصفح");
+    closeSheet();
+  });
+}
+
+
+function openVideoMenuSheet(v){
+  openSheet(`
+    <div class="sheet" style="height:auto">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${esc(v.title||"تفاصيل الفيديو")}</div>
+      <div class="sheet-body">
+        <div class="menu-item"><span>الوصف</span><span style="max-width:60%;text-align:left;color:var(--muted);">${esc(v.description||"-")}</span></div>
+        <div class="menu-item"><span>عدد المشاهدات</span><span>${fmtNum(v.views)}</span></div>
+        <div class="menu-item"><span>عدد الأهداف</span><span>${fmtNum(v.goalsCount)}</span></div>
+        <div class="menu-item" id="blockChannelBtn" style="color:var(--red);cursor:pointer;">حظر هذا الحساب</div>
+      </div>
+    </div>`);
+  $("#blockChannelBtn").addEventListener("click", async ()=>{
+    const ok = await blockUser(v.ownerUid);
+    if(ok){ closeSheet(); }
+  });
+}
+
+/* ===================== UPLOAD ===================== */
+let uploadFile=null;
+function openUploadSheet(){
+  uploadFile=null;
+  openSheet(`
+    <div class="sheet" style="height:82%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">فيديو جديد</div>
+      <div class="sheet-body">
+        <label class="upload-drop" id="uploadDrop">
+          <span class="lbl">اختر فيديو من جهازك</span>
+          <input type="file" accept="video/*" id="uploadFileInput" style="display:none">
+        </label>
+        <textarea class="upload-ta" id="uploadDesc" placeholder="اكتب وصف ...  استخدم # لعمل هاشتاج مثال: #الأهلي"></textarea>
+        <div class="upload-progress hidden" id="uploadProgWrap"><div class="bar" id="uploadBar"></div></div>
+      </div>
+      <div class="sheet-input-bar">
+        <button id="uploadSubmitBtn" style="flex:1;background:var(--pitch);color:#08150d;border-radius:14px;font-weight:800;">تحميل</button>
+      </div>
+    </div>`);
+  $("#uploadDrop").addEventListener("click",()=>$("#uploadFileInput").click());
+  $("#uploadFileInput").addEventListener("change",e=>{
+    const f=e.target.files[0]; if(!f) return;
+    uploadFile=f;
+    const url=URL.createObjectURL(f);
+    $("#uploadDrop").innerHTML = `<video src="${url}" muted></video><span class="lbl">${esc(f.name)}</span>`;
+  });
+  $("#uploadSubmitBtn").addEventListener("click", submitUpload);
+}
+async function submitUpload(){
+  if(!uploadFile){toast("اختر فيديو الأول");return;}
+  const desc = $("#uploadDesc").value.trim();
+  const hashtags = (desc.match(/#([\u0600-\u06FFa-zA-Z0-9_]+)/g)||[]).map(h=>h.slice(1));
+  const btn=$("#uploadSubmitBtn"); btn.textContent="جاري الرفع...";
+  $("#uploadProgWrap").classList.remove("hidden");
+  const path = `videos/${uid()}/${Date.now()}_${uploadFile.name}`;
+  const ref = storage.ref(path);
+  const task = ref.put(uploadFile);
+  task.on("state_changed", snap=>{
+    const pct = Math.round(100*snap.bytesTransferred/snap.totalBytes);
+    $("#uploadBar").style.width = pct+"%";
+  }, err=>{
+    console.error(err); toast("فشل الرفع: "+err.message); btn.textContent="تحميل";
+  }, async ()=>{
+    const videoURL = await ref.getDownloadURL();
+    await db.collection("videos").add({
+      videoURL, description:desc, hashtags, ownerUid:uid(), ownerName:userData.displayName,
+      ownerPhoto:userData.photoURL||"", ownerFavTeam:userData.favTeam||null,
+      goalsCount:0, redCount:0, commentsCount:0, views:0,
+      reactions:{}, createdAt:FieldValue.serverTimestamp()
+    });
+    toast("تم رفع الفيديو");
+    closeSheet();
+    switchTab("home");
+  });
+}
+
+/* ===================== SEARCH ===================== */
+function renderSearchPanel(){
+  const panel=$("#panel-search");
+  panel.innerHTML = `
+    <div class="search-bar-wrap">
+      <input id="searchInput" placeholder="ابحث عن لاعب، فريق، أو #هاشتاج">
+      <button id="searchBtn">بحث</button>
+    </div>
+    <div class="search-list" id="searchList"></div>`;
+  $("#searchBtn").addEventListener("click", ()=>runSearch($("#searchInput").value.trim()));
+  $("#searchInput").addEventListener("keydown", e=>{ if(e.key==="Enter") runSearch($("#searchInput").value.trim()); });
+  renderSearchHistory();
+}
+async function renderSearchHistory(){
+  const list=$("#searchList");
+  const snap = await db.collection("users").doc(uid()).get();
+  const hist = (snap.data().searchHistory)||[];
+  if(hist.length===0){ list.innerHTML=""; return; }
+  list.innerHTML = `<div class="section-label">عمليات بحث سابقة</div>` +
+    hist.slice().reverse().map(h=>`<span class="history-chip" data-q="${esc(h)}">${esc(h)} <span class="x" data-remove="${esc(h)}">✕</span></span>`).join("");
+  list.querySelectorAll(".history-chip").forEach(chip=>{
+    chip.addEventListener("click",e=>{
+      if(e.target.dataset.remove){
+        removeHistory(e.target.dataset.remove); e.stopPropagation(); return;
+      }
+      $("#searchInput").value=chip.dataset.q; runSearch(chip.dataset.q);
+    });
+  });
+}
+async function removeHistory(q){
+  await db.collection("users").doc(uid()).update({searchHistory:FieldValue.arrayRemove(q)});
+  renderSearchHistory();
+}
+async function runSearch(q){
+  if(!q) return;
+  await db.collection("users").doc(uid()).update({searchHistory:FieldValue.arrayUnion(q)});
+  const list=$("#searchList");
+  list.innerHTML = `<div class="loader">جاري البحث...</div>`;
+  const isHashtag = q.startsWith("#");
+  const term = isHashtag ? q.slice(1) : q;
+  let usersRes=[], videosRes=[];
+  try{
+    if(isHashtag){
+      const vs = await db.collection("videos").where("hashtags","array-contains",term).limit(21).get();
+      videosRes = vs.docs.map(d=>({id:d.id,...d.data()}));
+    } else {
+      const lower = term.toLowerCase();
+      const us = await db.collection("users").orderBy("displayNameLower")
+        .startAt(lower).endAt(lower+"\uf8ff").limit(10).get();
+      usersRes = us.docs.map(d=>({id:d.id,...d.data()}));
+      const vs = await db.collection("videos").where("hashtags","array-contains",term).limit(21).get();
+      videosRes = vs.docs.map(d=>({id:d.id,...d.data()}));
+    }
+  }catch(e){ console.error(e); }
+  list.innerHTML = `<div class="section-label">نتائج البحث عن "${esc(q)}"</div>`;
+  if(usersRes.length){
+    list.innerHTML += usersRes.map(u=>`
+      <div class="sr-user" data-uid="${u.uid}">
+        <img src="${esc(u.photoURL||'')}" onerror="this.style.background='#1c211c'">
+        <div><div style="font-weight:800;font-size:13.5px;">${esc(u.displayName)}</div>
+        <div style="font-size:11px;color:var(--muted);">${fmtNum(u.followersCount)} متابع</div></div>
+      </div>`).join("");
+  }
+  if(videosRes.length){
+    list.innerHTML += `<div class="section-label">فيديوهات</div><div class="sr-vid-grid">` +
+      videosRes.map(v=>`<div class="thumb" data-vid="${v.id}"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div class="vc">👁 ${fmtNum(v.views)}</div></div>`).join("") + `</div>`;
+    // attach click handlers
+    setTimeout(()=>{ list.querySelectorAll('.sr-vid-grid .thumb[data-vid]').forEach(t=>t.addEventListener('click', ()=>openVideoSheet(t.dataset.vid))); },60);
+  }
+  if(!usersRes.length && !videosRes.length){
+    list.innerHTML += `<div class="empty-state" style="height:auto;padding:30px;"><div class="big">🔍</div>مفيش نتائج</div>`;
+  }
+  list.querySelectorAll(".sr-user").forEach(el=>el.addEventListener("click",()=>openOtherProfile(el.dataset.uid)));
+}
+
+/* ===================== VAR ===================== */
+function renderVarPanel(){
+  const panel=$("#panel-var");
+  panel.innerHTML = `<div style="height:100%;overflow-y:auto;position:relative;">
+    <div class="top-header"><span class="t">VAR - غرفة المراجعة</span></div>
+    <div id="varList"></div>
+    <div style="height:80px"></div>
+    <button class="fab" id="varAddBtn" style="position:sticky;bottom:16px;">+</button>
+  </div>`;
+  $("#varAddBtn").addEventListener("click", openVarCreateSheet);
+  if(varUnsub) varUnsub();
+  varUnsub = db.collection("var_posts").orderBy("createdAt","desc").limit(30).onSnapshot(qs=>{
+    const list=$("#varList");
+    if(qs.empty){ list.innerHTML=`<div class="empty-state"><div class="big">🟨</div>لسه مفيش حالات VAR</div>`; return; }
+    list.innerHTML = qs.docs.map(d=>{
+      const p={id:d.id,...d.data()};
+      const yes=p.yesCount||0, no=p.noCount||0, total=yes+no||1;
+      const yp=Math.round(100*yes/total), np=100-yp;
+      const myVote = (p.voters&&p.voters[uid()]);
+      return `<div class="var-card" data-vid="${p.id}">
+        ${p.imageURL?`<img src="${esc(p.imageURL)}">`:""}
+        <div class="var-body">
+          <div class="var-q">${esc(p.question)}</div>
+          <div class="var-votes">
+            <button class="var-vote yes ${myVote==='yes'?'picked':''}" data-v="yes">أوافق على القرار</button>
+            <button class="var-vote no ${myVote==='no'?'picked':''}" data-v="no">لا أوافق</button>
+          </div>
+          <div class="var-bar"><div class="y" style="width:${yp}%"></div><div class="n" style="width:${np}%"></div></div>
+          <div class="var-pct"><span>موافق ${yp}%</span><span>غير موافق ${np}%</span></div>
+        </div>
+      </div>`;
+    }).join("");
+    list.querySelectorAll(".var-card").forEach(card=>{
+      card.querySelectorAll(".var-vote").forEach(btn=>{
+        btn.addEventListener("click",()=>castVarVote(card.dataset.vid, btn.dataset.v));
+      });
+    });
+  });
+}
+async function castVarVote(postId, vote){
+  const ref = db.collection("var_posts").doc(postId);
+  await db.runTransaction(async t=>{
+    const doc=await t.get(ref); const data=doc.data();
+    const voters = data.voters||{};
+    let yes=data.yesCount||0, no=data.noCount||0;
+    const prev = voters[uid()];
+    if(prev===vote){ return; }
+    if(prev==='yes') yes--; if(prev==='no') no--;
+    voters[uid()]=vote;
+    if(vote==='yes') yes++; else no++;
+    t.update(ref,{voters, yesCount:Math.max(0,yes), noCount:Math.max(0,no)});
+  });
+}
+let varImageFile=null;
+function openVarCreateSheet(){
+  varImageFile=null;
+  openSheet(`
+    <div class="sheet" style="height:75%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">حالة VAR جديدة</div>
+      <div class="sheet-body">
+        <label class="upload-drop" id="varImgDrop">
+          <span class="lbl">أضف صورة الموقف</span>
+          <input type="file" accept="image/*" id="varImgInput" style="display:none">
+        </label>
+        <textarea class="upload-ta" id="varQuestion" placeholder="اكتب الموقف بلغة عربية فصحى، مثال: هل تعتقد أن قرار الحكم بإلغاء الهدف كان صائبًا؟"></textarea>
+      </div>
+      <div class="sheet-input-bar">
+        <button id="varSubmitBtn" style="flex:1;background:var(--gold);color:#3a2a05;border-radius:14px;font-weight:800;">نشر</button>
+      </div>
+    </div>`);
+  $("#varImgDrop").addEventListener("click",()=>$("#varImgInput").click());
+  $("#varImgInput").addEventListener("change",e=>{
+    const f=e.target.files[0]; if(!f) return; varImageFile=f;
+    const url=URL.createObjectURL(f);
+    $("#varImgDrop").innerHTML=`<img src="${url}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`;
+  });
+  $("#varSubmitBtn").addEventListener("click", async ()=>{
+    const q=$("#varQuestion").value.trim();
+    if(!q){toast("اكتب وصف الموقف");return;}
+    $("#varSubmitBtn").textContent="جاري النشر...";
+    let imageURL="";
+    if(varImageFile){
+      const ref = storage.ref(`var_images/${uid()}_${Date.now()}.jpg`);
+      await ref.put(varImageFile); imageURL=await ref.getDownloadURL();
+    }
+    await db.collection("var_posts").add({
+      question:q, imageURL, createdBy:uid(), yesCount:0, noCount:0, voters:{}, createdAt:FieldValue.serverTimestamp()
+    });
+    closeSheet();
+  });
+}
+
+/* ===================== COMMUNITY ===================== */
+function renderCommunityPanel(){
+  const panel=$("#panel-community");
+  panel.innerHTML = `<div style="height:100%;overflow-y:auto;">
+    <div class="post-box">
+      <textarea id="postText" placeholder="اكتب حاجة لجمهور كورنر..."></textarea>
+      <label class="upload-drop" id="postImgDrop" style="height:100px;display:none;">
+        <input type="file" accept="image/*" id="postImgInput" style="display:none">
+      </label>
+      <div class="row">
+        <button class="btn-ghost" id="postImgBtn" style="flex:none;padding:8px 14px;">📷 صورة</button>
+        <button class="btn-primary" id="postSubmitBtn" style="flex:none;width:auto;padding:8px 18px;">نشر</button>
+      </div>
+    </div>
+    <div id="communityFeed"></div>
+  </div>`;
+  let postImgFile=null;
+  $("#postImgBtn").addEventListener("click",()=>$("#postImgInput").click());
+  $("#postImgInput").addEventListener("change",e=>{
+    const f=e.target.files[0]; if(!f) return; postImgFile=f;
+    const drop=$("#postImgDrop"); drop.style.display="flex";
+    drop.innerHTML=`<img src="${URL.createObjectURL(f)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`;
+  });
+  $("#postSubmitBtn").addEventListener("click", async ()=>{
+    const text=$("#postText").value.trim();
+    if(!text && !postImgFile){toast("اكتب حاجة أو ضيف صورة");return;}
+    let imageURL="";
+    if(postImgFile){
+      const ref=storage.ref(`community_images/${uid()}_${Date.now()}.jpg`);
+      await ref.put(postImgFile); imageURL=await ref.getDownloadURL();
+    }
+    await db.collection("posts").add({
+      text, imageURL, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||"",
+      likes:[], commentsCount:0, createdAt:FieldValue.serverTimestamp()
+    });
+    $("#postText").value=""; postImgFile=null; $("#postImgDrop").style.display="none";
+  });
+  if(communityUnsub) communityUnsub();
+  communityUnsub = db.collection("posts").orderBy("createdAt","desc").limit(30).onSnapshot(qs=>{
+    const feed=$("#communityFeed");
+    if(qs.empty){ feed.innerHTML=`<div class="empty-state"><div class="big">📰</div>لسه مفيش منشورات</div>`; return; }
+    feed.innerHTML = qs.docs.map(d=>{
+      const p={id:d.id,...d.data()};
+      const liked=(p.likes||[]).includes(uid());
+      return `<div class="post-card" data-pid="${p.id}">
+        <div class="post-head"><img src="${esc(p.userPhoto||'')}" onerror="this.style.background='#1c211c'">
+          <div><div class="nm">${esc(p.userName)}</div><div class="tm">${timeAgo(p.createdAt)}</div></div>
+        </div>
+        ${p.text?`<div class="post-text">${esc(p.text)}</div>`:""}
+        ${p.imageURL?`<img class="post-img" src="${esc(p.imageURL)}">`:""}
+        <div class="post-actions">
+          <span class="${liked?'liked':''}" data-act="like">❤ ${fmtNum((p.likes||[]).length)}</span>
+          <span data-act="comments">💬 ${fmtNum(p.commentsCount||0)}</span>
+        </div>
+      </div>`;
+    }).join("");
+    feed.querySelectorAll('[data-act="like"]').forEach(el=>{
+      el.addEventListener("click", async ()=>{
+        const pid=el.closest(".post-card").dataset.pid;
+        const ref=db.collection("posts").doc(pid);
+        const snap=await ref.get(); const likes=snap.data().likes||[];
+        if(likes.includes(uid())) await ref.update({likes:FieldValue.arrayRemove(uid())});
+        else await ref.update({likes:FieldValue.arrayUnion(uid())});
+      });
+    });
+    feed.querySelectorAll('[data-act="comments"]').forEach(el=>{
+      el.addEventListener('click', ()=> openPostCommentsSheet(el.closest('.post-card').dataset.pid));
+    });
+  });
+}
+
+/* ===================== PROFILE ===================== */
+let profileTab='videos';
+async function renderProfilePanel(otherUidParam){
+  const panel=$("#panel-profile");
+  const targetUid = otherUidParam || uid();
+  const isMe = targetUid===uid();
+  panel.innerHTML = `<div class="loader">جاري التحميل...</div>`;
+  const snap = await db.collection("users").doc(targetUid).get();
+  if(!snap.exists){ panel.innerHTML=`<div class="empty-state">مستخدم غير موجود</div>`; return; }
+  const u = snap.data();
+  const bg = CARD_BACKGROUNDS.find(b=>b.id===u.cardBg) || CARD_BACKGROUNDS[0];
+  const following = isMe? false : ((userData.followingChannels||[]).includes(targetUid));
+  panel.innerHTML = `
+    <div class="profile-wrap">
+      ${!isMe? `<div class="top-header" style="padding-top:0;border:none;"><span class="back" id="profBack">→</span></div>`:""}
+      <div class="player-card" style="background:${bg.css}">
+        ${u.favTeam?`<img class="pc-crest-bg" id="pcCrestBg" src="${fallbackTeamAvatar(u.favTeam)}">`:""}
+        <div class="pc-top">
+          <div class="pc-avatar"><img src="${esc(u.photoURL||'')}" onerror="this.style.background='#1c211c'"></div>
+          <div class="pc-followers"><b>${fmtNum(u.followersCount)}</b><span>جماهير</span></div>
+        </div>
+        <div class="pc-name">${esc(u.displayName)}</div>
+        <div class="pc-team">${u.favTeam?`<img class="pc-team-logo" id="pcTeamLogo" src="${fallbackTeamAvatar(u.favTeam)}"><span>⭐ ${esc(u.favTeam)}</span>`:'<span>لسه مختارش فريق</span>'}</div>
+      </div>
+      <div class="profile-actions">
+        ${isMe? `<button class="btn-ghost" style="flex:1" id="goSettingsBtn">⚙ الإعدادات</button>`
+              : `<div style="display:flex;gap:8px;width:100%"><button class="btn-next" style="flex:1;background:${following?'var(--bg-elev2)':'var(--pitch)'};color:${following?'#fff':'#08150d'};" id="followProfBtn">${following?'متابَع':'متابعة'}</button><button class="btn-ghost" id="messageProfBtn" style="flex:none">✉️ مراسلة</button></div>`}
+      </div>
+      ${(u.followTeams && u.followTeams.length)? `
+      <div class="followed-teams-label">الفرق اللي بيتابعها</div>
+      <div class="followed-teams-strip" id="followedTeamsStrip">
+        ${u.followTeams.map(t=>`<div class="ft-chip"><img data-team="${esc(t)}" src="${fallbackTeamAvatar(t)}"><span>${esc(t)}</span></div>`).join("")}
+      </div>` : ""}
+      <div class="profile-tabs">
+        <div class="ptab active" data-pt="videos">الفيديوهات</div>
+        ${isMe?`<div class="ptab" data-pt="lists">القوائم</div>`:""}
+      </div>
+      <div id="profileTabBody"></div>
+    </div>`;
+  if(!isMe) $("#profBack").addEventListener("click",()=>renderProfilePanel());
+  if(isMe) $("#goSettingsBtn").addEventListener("click",()=>switchTab("settings"));
+  if(!isMe) {
+    $("#followProfBtn").addEventListener("click", async ()=>{ await toggleFollowChannel(targetUid); renderProfilePanel(targetUid); });
+    $("#messageProfBtn").addEventListener("click", ()=>openChatSheet(targetUid, u.displayName, u.photoURL));
+  }
+  panel.querySelectorAll(".ptab").forEach(t=>t.addEventListener("click",()=>{
+    panel.querySelectorAll(".ptab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active"); profileTab=t.dataset.pt;
+    loadProfileTabBody(targetUid, isMe);
+  }));
+  loadProfileTabBody(targetUid, isMe);
+  // resolve real crests for favorite team (card + watermark) and followed teams strip
+  if(u.favTeam){
+    resolveTeamLogo(u.favTeam).then(url=>{
+      const a=$("#pcTeamLogo"), b=$("#pcCrestBg");
+      if(a) a.src=url; if(b) b.src=url;
+    });
+  }
+  if(u.followTeams && u.followTeams.length){
+    const strip = $("#followedTeamsStrip");
+    if(strip) strip.querySelectorAll('img[data-team]').forEach(img=>{
+      resolveTeamLogo(img.dataset.team).then(url=>{ img.src=url; });
+    });
+  }
+}
+async function loadProfileTabBody(targetUid, isMe){
+  const body=$("#profileTabBody");
+  if(profileTab==='videos' || !isMe){
+    body.innerHTML=`<div class="loader">...</div>`;
+    let qs;
+    try{
+      qs = await db.collection("videos").where("ownerUid","==",targetUid).orderBy("createdAt","desc").get();
+    }catch(e){
+      console.warn('orderBy failed, falling back',e);
+      qs = await db.collection("videos").where("ownerUid","==",targetUid).get();
+    }
+    if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">🎬</div>لسه مفيش فيديوهات</div>`; return; }
+    body.innerHTML = `<div class="my-video-grid">` + qs.docs.map(d=>{
+      const v=d.data();
+      return `<div class="thumb" data-vid="${d.id}" title="عرض الفيديو"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div class="vc">👁 ${fmtNum(v.views)}</div></div>`;
+    }).join("") + `</div>`;
+    // attach click handlers so thumbnails open video
+    body.querySelectorAll('.thumb[data-vid]').forEach(t=>t.addEventListener('click', ()=> openVideoSheet(t.dataset.vid)));
+  } else if(profileTab==='lists'){
+    body.innerHTML=`<div class="loader">...</div>`;
+    const qs = await db.collection("users").doc(targetUid).collection("lists").get();
+    if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">🔖</div>لسه مفيش قوائم محفوظة</div>`; return; }
+    body.innerHTML = qs.docs.map(d=>{
+      const l=d.data();
+      return `<div class="list-tile" data-lid="${d.id}" title="فتح القائمة"><div class="n">🔖</div><div class="lt-name">${esc(l.name)}</div><div style="color:var(--muted);font-weight:400;font-size:12px;margin-left:auto;">(${(l.videoIds||[]).length})</div></div>`;
+    }).join("");
+    // attach click handlers to open list
+    body.querySelectorAll('.list-tile[data-lid]').forEach(el=>el.addEventListener('click', ()=> openListSheet(el.dataset.lid)));
+  }
+}
+
+// open list and show contained videos (with clickable thumbs)
+async function openListSheet(listId){
+  const ref = db.collection('users').doc(uid()).collection('lists').doc(listId);
+  const snap = await ref.get(); if(!snap.exists){ toast('القائمة غير موجودة'); return; }
+  const list = snap.data();
+  const vids = list.videoIds || [];
+  openSheet(`
+    <div class="sheet" style="height:75%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${esc(list.name)}</div>
+      <div class="sheet-body" id="listBody"><div class="loader">جاري التحميل...</div></div>
+    </div>`);
+  const body = document.getElementById('listBody');
+  if(vids.length===0){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">🔖</div>لا توجد فيديوهات محفوظة</div>`; return; }
+  // fetch video docs
+  const batches = [];
+  for(const vid of vids){ batches.push(db.collection('videos').doc(vid).get()); }
+  const docs = await Promise.all(batches);
+  const videos = docs.filter(d=>d && d.exists).map(d=>({id:d.id,...d.data()}));
+  body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">` + videos.map(v=>`<div class="list-thumb" data-vid="${v.id}"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div style="font-size:12px;color:var(--muted);margin-top:6px">${esc(v.ownerName||'')}</div></div>`).join('') + `</div>`;
+  body.querySelectorAll('.list-thumb').forEach(t=>t.addEventListener('click', ()=> openVideoSheet(t.dataset.vid)));
+}
+
+// open a single video in a sheet player
+async function openVideoSheet(videoId){
+  const snap = await db.collection('videos').doc(videoId).get(); if(!snap.exists){ toast('الفيديو غير موجود'); return; }
+  const v = snap.data();
+  openSheet(`
+    <div class="sheet" style="height:78%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${esc(v.ownerName||'مستخدم')}</div>
+      <div class="sheet-body" id="videoSheetBody" style="display:flex;flex-direction:column;">
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg-elev);border-radius:10px;overflow:hidden;padding:6px"><video id="sheetVideoPlayer" src="${esc(v.videoURL)}" controls playsinline style="width:100%;height:100%;object-fit:contain"></video></div>
+        <div style="padding:10px 0"><div style="font-weight:800">${esc(v.description||'')}</div><div style="color:var(--muted);font-size:13px;margin-top:6px">👁 ${fmtNum(v.views)} · 💬 ${fmtNum(v.commentsCount||0)}</div></div>
+      </div>
+      <div class="sheet-input-bar"><button id="sheetSaveBtn">🔖 حفظ</button><button id="sheetCommentsBtn">💬 التعليقات</button><button id="sheetShareBtn">↗️ مشاركة</button></div>
+    </div>`);
+  // attach actions
+  document.getElementById('sheetSaveBtn').addEventListener('click', ()=> openSaveSheet(videoId));
+  document.getElementById('sheetCommentsBtn').addEventListener('click', ()=>{ closeSheet(); setTimeout(()=>openCommentsSheet(videoId),120); });
+  document.getElementById('sheetShareBtn').addEventListener('click', ()=>{ openShareSheet(videoId); });
+  // increment view safely
+  maybeCountView(videoId);
+  const player = document.getElementById('sheetVideoPlayer'); player.play().catch(()=>{});
+}
+
+function openOtherProfile(targetUid){
+  switchTab("profile");
+  renderProfilePanel(targetUid);
+}
+
+/* ===================== SETTINGS ===================== */
+function renderSettingsPanel(){
+  const panel=$("#panel-settings");
+  panel.innerHTML = `
+    <div class="settings-wrap">
+      <div class="top-header" style="padding-top:0;border:none;">
+        <span class="back" id="setBack">→</span><span class="t">الإعدادات</span>
+      </div>
+      <div class="set-section">
+        <div class="set-label">الحساب</div>
+        <div class="set-row"><span>الاسم</span><span>${esc(userData.displayName)}</span></div>
+        <div class="set-row" id="changePhotoRow" style="cursor:pointer;"><span>تغيير الصورة</span><span>📷</span>
+          <input type="file" accept="image/*" id="setPhotoInput" style="display:none"></div>
+      </div>
+      <div class="set-section">
+        <div class="set-label">الإشعارات</div>
+        <div class="set-row"><span>تفعيل الإشعارات</span><div class="toggle ${userData.notifications?'on':''}" id="notifToggle"></div></div>
+      </div>
+      <div class="set-section">
+        <div class="set-label">الحساب والخصوصية</div>
+        <button class="btn-danger" id="logoutBtn">تسجيل الخروج</button>
+        <button class="btn-danger" id="deleteBtn">حذف الحساب نهائيًا</button>
+      </div>
+    </div>`;
+  $("#setBack").addEventListener("click",()=>switchTab("profile"));
+  $("#notifToggle").addEventListener("click", async ()=>{
+    userData.notifications = !userData.notifications;
+    await db.collection("users").doc(uid()).update({notifications:userData.notifications});
+    renderSettingsPanel();
+  });
+  $("#changePhotoRow").addEventListener("click",()=>$("#setPhotoInput").click());
+  $("#setPhotoInput").addEventListener("change", async e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const ref=storage.ref(`profile_photos/${uid()}.jpg`);
+    await ref.put(f); const url=await ref.getDownloadURL();
+    await currentUser.updateProfile({photoURL:url});
+    await db.collection("users").doc(uid()).update({photoURL:url});
+    userData.photoURL=url; toast("تم تحديث الصورة"); renderSettingsPanel();
+  });
+  $("#logoutBtn").addEventListener("click", async ()=>{
+    await auth.signOut(); location.reload();
+  });
+  $("#deleteBtn").addEventListener("click", async ()=>{
+    if(!confirm("هل أنت متأكد من حذف الحساب نهائيًا؟")) return;
+    try{
+      await db.collection("users").doc(uid()).delete();
+      await currentUser.delete();
+      location.reload();
+    }catch(e){ toast("يلزم تسجيل دخول حديث لحذف الحساب. سجل خروج ثم ادخل تاني وجرب."); }
+  });
+}
+</script>
+</body>
+</html>
