@@ -25,10 +25,10 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--white);
+html,body{margin:0;padding:0;height:100%;background:#000;color:var(--white);
   font-family:'Inter',Tahoma,'Segoe UI',Arial,sans-serif;overflow:hidden;scrollbar-width:thin;scrollbar-color:rgba(231,179,62,.7) rgba(20,24,20,.25);}
-#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:920px;margin:0 auto;
-  background:var(--bg);box-shadow:0 0 40px rgba(0,0,0,.6);overflow:auto;overscroll-behavior:contain;} 
+#app{position:fixed;inset:0;display:flex;flex-direction:column;width:100%;margin:0;
+  background:#000;box-shadow:none;overflow:auto;overscroll-behavior:contain;} 
 #screen-splash{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:200;}
 #screen-splash img{max-width:72%;max-height:72%;width:auto;height:auto;object-fit:contain;display:block;}
 ::-webkit-scrollbar{width:8px;height:8px;}
@@ -97,7 +97,8 @@ a{color:inherit;}
 .team-card .chk{position:absolute;top:8px;left:8px;font-size:14px;color:var(--gold);}
 .ob-footer{display:flex;gap:10px;padding-top:12px;padding-bottom:12px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.12));position:sticky;bottom:0;z-index:8;padding:12px 12px;backdrop-filter:blur(6px);}
 .btn-ghost{flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);
-  border-radius:14px;padding:14px;font-size:14px;font-weight:700;}
+  border-radius:14px;padding:14px;font-size:14px;font-weight:700;min-width:0;}
+.btn-ghost.profile-action-btn{flex:none;min-width:110px;padding:10px 12px;font-size:13px;}
 .btn-next{flex:2;background:var(--pitch);color:#08150d;border-radius:14px;padding:14px;font-weight:800;font-size:14px;}
 .bg-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .bg-opt{height:150px;border-radius:18px;border:3px solid transparent;position:relative;overflow:hidden;
@@ -115,7 +116,8 @@ a{color:inherit;}
 .nav-btn{background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;
   gap:3px;font-size:9px;font-weight:700;padding:4px 8px;}
 .nav-btn.active{color:var(--pitch);}
-.nav-btn .ic{font-size:21px;line-height:1;}
+.nav-btn .ic{font-size:21px;line-height:1;display:flex;align-items:center;justify-content:center;}
+.nav-btn .ic svg{width:22px;height:22px;}
 .nav-plus{width:42px;height:32px;background:var(--pitch);border-radius:10px;display:flex;
   align-items:center;justify-content:center;color:#08150d;font-size:20px;font-weight:900;margin-top:-2px;}
 
@@ -131,12 +133,16 @@ a{color:inherit;}
 }
 .vs-top{position:absolute;top:calc(14px + var(--safe-top));left:14px;right:14px;display:flex;
   justify-content:space-between;z-index:5;}
+.vs-top-right{display:flex;gap:8px;}
 .icon-btn{background:rgba(0,0,0,.4);width:34px;height:34px;border-radius:50%;color:#fff;font-size:16px;
-  display:flex;align-items:center;justify-content:center;}
+  display:flex;align-items:center;justify-content:center;position:relative;}
+.icon-btn svg{width:17px;height:17px;}
+.notif-dot{position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:var(--red);border:2px solid var(--bg);}
 .vs-side{position:absolute;left:10px;bottom:110px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:5;}
 .side-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;color:#fff;}
 .side-btn .circ{width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.4);display:flex;
   align-items:center;justify-content:center;font-size:22px;border:2px solid transparent;}
+.side-btn .circ svg{width:23px;height:23px;}
 .side-btn .circ.avatar{padding:0;overflow:hidden;background:var(--bg-elev2);}
 .side-btn .circ.avatar img{width:100%;height:100%;object-fit:cover;}
 .side-btn .cnt{font-size:11px;font-weight:800;}
@@ -147,7 +153,7 @@ a{color:inherit;}
   display:flex;align-items:center;justify-content:center;}
 .vs-bottom{position:absolute;left:14px;right:78px;bottom:calc(16px + var(--safe-bottom));z-index:5;color:#fff;}
 .vs-channel{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.vs-channel .cname{font-weight:800;font-size:14.5px;}
+.vs-channel .cname{font-weight:800;font-size:14.5px;display:inline-flex;align-items:center;gap:4px;}
 .vs-fbtn{background:transparent;border:1.5px solid #fff;color:#fff;font-size:11px;font-weight:800;
   padding:3px 12px;border-radius:7px;}
 .vs-fbtn.following{background:rgba(255,255,255,.25);}
@@ -158,6 +164,7 @@ a{color:inherit;}
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;
   color:var(--muted);text-align:center;padding:40px;gap:10px;}
 .empty-state .big{font-size:38px;}
+.empty-state .big svg{width:44px;height:44px;color:var(--muted);}
 
 /* ---------- SHEETS / MODALS ---------- */
 .sheet-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:60;display:flex;align-items:flex-end;}
@@ -184,6 +191,19 @@ a{color:inherit;}
 .new-list-row button{background:var(--gold);color:#3a2a05;font-weight:800;border-radius:10px;padding:0 14px;}
 .share-row{display:flex;align-items:center;gap:12px;padding:13px 0;font-size:14px;border-bottom:1px solid var(--line);}
 .menu-item{padding:14px 4px;border-bottom:1px solid var(--line);font-size:14px;display:flex;justify-content:space-between;}
+
+/* ---------- NOTIFICATIONS ---------- */
+.notif-row{display:flex;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line);align-items:flex-start;cursor:pointer;transition:background .2s;}
+.notif-row:hover{background:rgba(255,255,255,.04);}
+.notif-row.unread{background:rgba(34,163,90,.06);}
+.notif-row img{width:38px;height:38px;border-radius:12px;object-fit:cover;background:var(--bg-elev2);flex-shrink:0;}
+.notif-icon{width:38px;height:38px;border-radius:12px;background:var(--bg-elev2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold);}
+.notif-icon svg{width:18px;height:18px;}
+.notif-text{font-size:13px;line-height:1.5;}
+.notif-text b{font-weight:800;}
+.notif-preview{font-size:12px;color:var(--muted);margin-top:4px;}
+.notif-time{font-size:11px;color:var(--muted);margin-top:3px;}
+.notif-list-body{display:flex;flex-direction:column;gap:8px;}
 
 /* ---------- SEARCH ---------- */
 .search-bar-wrap{display:flex;gap:8px;padding:calc(12px + var(--safe-top)) 14px 10px;position:sticky;top:0;
@@ -240,7 +260,7 @@ a{color:inherit;}
 .post-card{margin:0 14px 14px;background:var(--bg-elev);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.45);}
 .post-head{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
 .post-head img{width:36px;height:36px;border-radius:10px;object-fit:cover;background:var(--bg-elev2);}
-.post-head .nm{font-weight:800;font-size:13.5px;}
+.post-head .nm{font-weight:800;font-size:13.5px;display:inline-flex;align-items:center;gap:4px;}
 .post-head .tm{font-size:11px;color:var(--muted);}
 .post-text{font-size:14px;line-height:1.6;margin-bottom:8px;}
 .post-img{width:100%;border-radius:10px;margin-bottom:8px;max-height:320px;object-fit:cover;}
@@ -259,7 +279,9 @@ a{color:inherit;}
 .pc-followers{text-align:center;}
 .pc-followers b{font-size:26px;display:block;font-family:Arial Black,sans-serif;}
 .pc-followers span{font-size:10px;color:rgba(244,246,243,.75);}
-.pc-name{font-size:19px;font-weight:900;margin-top:14px;position:relative;z-index:2;}
+.pc-name{font-size:19px;font-weight:900;margin-top:14px;position:relative;z-index:2;display:flex;align-items:center;gap:6px;}
+.verified-badge{display:inline-flex;align-items:center;justify-content:center;color:var(--pitch);flex-shrink:0;}
+.verified-badge svg{width:16px;height:16px;}
 .pc-team{font-size:12.5px;color:var(--gold);font-weight:700;margin-top:2px;position:relative;z-index:2;display:flex;align-items:center;gap:7px;}
 .pc-team-logo{width:22px;height:22px;border-radius:6px;object-fit:contain;background:rgba(255,255,255,.08);flex-shrink:0;}
 .pc-crest-bg{position:absolute;top:-18px;left:-18px;width:150px;height:150px;object-fit:contain;opacity:.12;z-index:1;pointer-events:none;filter:saturate(0) brightness(1.6);}
@@ -272,6 +294,10 @@ a{color:inherit;}
 .pstat{flex:1;background:var(--bg-elev);border-radius:12px;padding:10px;text-align:center;}
 .pstat b{display:block;font-size:16px;}
 .pstat span{font-size:10.5px;color:var(--muted);}
+.badges-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;}
+.badge-chip{flex-shrink:0;display:flex;align-items:center;gap:6px;background:var(--bg-elev);border:1px solid rgba(231,179,62,.35);
+  border-radius:20px;padding:7px 12px;font-size:11.5px;font-weight:800;color:var(--gold);white-space:nowrap;}
+.badge-chip svg{width:14px;height:14px;}
 .profile-actions{display:flex;gap:10px;margin-bottom:16px;}
 .profile-tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:8px;}
 .ptab{flex:1;text-align:center;padding:10px;font-size:13px;font-weight:700;color:var(--muted);border-bottom:2px solid transparent;}
@@ -301,11 +327,14 @@ a{color:inherit;}
 @keyframes toastin{from{opacity:0;transform:translate(-50%,10px);}to{opacity:1;transform:translate(-50%,0);}}
 .top-header{display:flex;align-items:center;gap:10px;padding:calc(14px + var(--safe-top)) 16px 12px;
   border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:4;}
-.top-header .back{font-size:20px;color:var(--muted);}
-.top-header .t{font-weight:800;font-size:16px;}
+.top-header .back{font-size:20px;color:var(--muted);display:flex;align-items:center;}
+.top-header .back svg{width:20px;height:20px;}
+.top-header .t{font-weight:800;font-size:16px;flex:1;}
 .loader{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);}
 .ob-signout{text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px;}
 .ob-signout span{color:var(--gold);text-decoration:underline;cursor:pointer;}
+.footer-brand{text-align:center;font-size:10.5px;color:var(--muted);letter-spacing:1px;margin-top:6px;}
+.footer-brand b{color:var(--gold);}
 </style>
 </head>
 <body>
@@ -330,6 +359,7 @@ a{color:inherit;}
     </button>
     <button class="btn-ghost" id="btnGuest" style="margin-top:8px">تجربة سريعة (ضيف)</button>
     <div class="auth-hint">بالدخول أنت توافق على استخدام اسمك وصورتك داخل التطبيق فقط.</div>
+    <div class="footer-brand">CORNER by <b>BORKAN</b></div>
   </div>
 
   <!-- ONBOARD -->
@@ -375,21 +405,62 @@ a{color:inherit;}
       <div class="tab-panel hidden" id="panel-community"></div>
       <div class="tab-panel hidden" id="panel-profile"></div>
       <div class="tab-panel hidden" id="panel-settings"></div>
+      <div class="tab-panel hidden" id="panel-notifications"></div>
+      <div class="tab-panel hidden" id="panel-chat"></div>
       <div id="sheetHost"></div>
       <div id="toastHost"></div>
     </div>
     <div class="bottom-nav">
-      <button class="nav-btn active" data-tab="home"><span class="ic">🏠</span>الرئيسية</button>
-      <button class="nav-btn" data-tab="search"><span class="ic">🔍</span>بحث</button>
+      <button class="nav-btn active" data-tab="home"><span class="ic"></span>الرئيسية</button>
+      <button class="nav-btn" data-tab="search"><span class="ic"></span>بحث</button>
       <button class="nav-btn" data-tab="upload"><span class="nav-plus">+</span></button>
-      <button class="nav-btn" data-tab="var"><span class="ic">🟨</span>VAR</button>
-      <button class="nav-btn" data-tab="community"><span class="ic">📰</span>المجتمع</button>
-      <button class="nav-btn" data-tab="profile"><span class="ic">👤</span>حسابي</button>
+      <button class="nav-btn" data-tab="var"><span class="ic"></span>VAR</button>
+      <button class="nav-btn" data-tab="community"><span class="ic"></span>المجتمع</button>
+      <button class="nav-btn" data-tab="notifications"><span class="ic"></span>الإشعارات</button>
+      <button class="nav-btn" data-tab="chat"><span class="ic"></span>الدردشة</button>
+      <button class="nav-btn" data-tab="profile"><span class="ic"></span>حسابي</button>
     </div>
   </div>
 </div>
 
 <script>
+/* ===================== ICONS (SVG icon system) ===================== */
+const ICONS = {
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  var:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="10" height="18" rx="1.5" transform="rotate(12 9 12)"/><path d="M17 8v8M20 10v4"/></svg>',
+  community:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4V5Z"/><path d="M8 9h8M8 12h5"/></svg>',
+  profile:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+  notifications:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+  chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v10H9l-5 4V6Z"/></svg>',
+  mute:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 8a5 5 0 0 1 0 8M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  muteOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="m16 9 5 6M21 9l-5 6"/></svg>',
+  menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>',
+  goal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m12 6 4 3-1.5 4.5h-5L8 9l4-3Z"/></svg>',
+  red:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="2" width="12" height="20" rx="1.5"/></svg>',
+  comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4V5Z"/></svg>',
+  save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg>',
+  message:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v10H9l-5 4V6Z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.7 7.6-4.4M8.2 13.3l7.6 4.4"/></svg>',
+  camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4V8Z"/><circle cx="12" cy="13.5" r="3.5"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>',
+  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>',
+  verified:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 14.5 4.3 17.8 4l1 3.2L22 9l-1.5 3 1.5 3-3.2 1.7-1 3.2-3.3-.3L12 22l-2.5-2.4-3.3.3-1-3.2L2 15l1.5-3L2 9l3.2-1.8 1-3.2 3.3.3L12 2Z"/><path d="m8.5 12.2 2.3 2.3 4.5-4.7" stroke="#08150d" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  trophy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5a3 3 0 0 0 3 5M16 5h3a3 3 0 0 1-3 5"/><path d="M12 13v3M9 20h6M10 16.5h4v3.5h-4z"/></svg>',
+  video:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2"/><path d="m15.5 10 6-3.5v11l-6-3.5"/></svg>',
+  fire:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-1.5.5-2.5 1-3.3.4 1 1.3 1.3 1.8.8-.3-1.7 0-3.5 1.2-5A6.5 6.5 0 0 0 12 2Z"/></svg>',
+  bookmark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5S15 16.5 16 20"/><circle cx="17" cy="8" r="2.5"/><path d="M16 14.8c2.3.5 4 2.2 4.7 5.2"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-9.3-8.8C1.3 8 2.6 4.8 5.8 4c2-.5 3.9.3 5 2 .6-.9 1.7-1.7 3-2 3.2-.8 5.2 1.7 3.2 5.2C15.3 15.6 12 20 12 20Z"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 17 20 6"/></svg>',
+  google:'<svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.6 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2-1.9 3.2-4.7 3.2-8Z"/><path fill="#34A853" d="M12 23c3 0 5.4-1 7.2-2.7l-3.5-2.7c-1 .7-2.2 1.1-3.7 1.1-2.8 0-5.2-1.9-6-4.5H2.4v2.8A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M6 14.2a6.6 6.6 0 0 1 0-4.4V7H2.4a11 11 0 0 0 0 10l3.6-2.8Z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.3 1.7l3.1-3.1A11 11 0 0 0 2.4 7L6 9.8c.8-2.6 3.2-4.4 6-4.4Z"/></svg>'
+};
+function icon(name, cls){ return ICONS[name] ? ICONS[name] : ''; }
+function iconBtn(name){ return icon(name); }
+
 /* ===================== FIREBASE INIT ===================== */
 const firebaseConfig = {
   apiKey: "AIzaSyC4sWGVzpPvHRatN_rZOdJjlITtKPyxHPM",
@@ -445,6 +516,9 @@ let currentCommentsVideoId=null, commentsUnsub=null, postCommentsUnsub=null;
 let varUnsub=null;
 let communityUnsub=null;
 let sessionViewedIds = new Set();
+let notifUnsub=null, notifUnreadCount=0, notifItems=[];
+let currentChatTarget=null, currentChatUnsub=null;
+const processingPostLikes = new Set();
 
 /* ===================== HELPERS ===================== */
 function $(sel){return document.querySelector(sel);}
@@ -471,6 +545,15 @@ function toast(msg){
   setTimeout(()=>el.remove(),2200);
 }
 function uid(){return currentUser ? currentUser.uid : null;}
+function verifiedBadge(isVerified){
+  return isVerified ? `<span class="verified-badge" title="حساب موثّق">${icon('verified')}</span>` : '';
+}
+function sanitizeText(s, maxLen){
+  if(typeof s !== 'string') return '';
+  let t = s.trim();
+  if(maxLen && t.length>maxLen) t = t.slice(0,maxLen);
+  return t;
+}
 
 /* ===================== AUTH FLOW ===================== */
 let pickedPhotoFile=null;
@@ -483,7 +566,7 @@ $("#photoInput").addEventListener("change",e=>{
 });
 
 $("#btnSignIn").addEventListener("click", async ()=>{
-  const name=$("#nameInput").value.trim();
+  const name=sanitizeText($("#nameInput").value, 30);
   if(!name){toast("اكتب اسمك الأول");return;}
   $("#btnSignIn").textContent="جاري الدخول...";
   try{
@@ -531,7 +614,7 @@ async function finishProfileSetup(user, name, file, existingPhotoURL){
       uid:user.uid, displayName:name, displayNameLower:name.toLowerCase(),
       photoURL, followersCount:0, followingCount:0, favTeam:null, followTeams:[],
       cardBg:"night", onboarded:false, notifications:true, blockedUsers:[], searchHistory:[],
-      createdAt:FieldValue.serverTimestamp()
+      verified:false, videosCount:0, createdAt:FieldValue.serverTimestamp()
     });
   }
   currentUser = user;
@@ -816,7 +899,15 @@ function enterApp(){
   $("#screen-auth").classList.add("hidden");
   $("#screen-onboard").classList.add("hidden");
   $("#screen-shell").classList.remove("hidden");
+  paintNavIcons();
   switchTab("home");
+  startNotificationsListener();
+}
+function paintNavIcons(){
+  $all(".nav-btn .ic").forEach(el=>{
+    const tab = el.closest(".nav-btn").dataset.tab;
+    if(ICONS[tab]) el.innerHTML = ICONS[tab];
+  });
 }
 $all(".nav-btn").forEach(btn=>{
   btn.addEventListener("click",()=>{
@@ -827,8 +918,9 @@ $all(".nav-btn").forEach(btn=>{
 });
 function switchTab(tab){
   activeTab=tab;
+  if(tab!=="chat" && currentChatUnsub){ currentChatUnsub(); currentChatUnsub=null; }
   $all(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
-  ["home","search","var","community","profile","settings"].forEach(t=>{
+  ["home","search","var","community","profile","settings","notifications","chat"].forEach(t=>{
     $("#panel-"+t).classList.toggle("hidden", t!==tab);
   });
   if(tab==="home") renderHomeFeed();
@@ -837,6 +929,148 @@ function switchTab(tab){
   if(tab==="community") renderCommunityPanel();
   if(tab==="profile") renderProfilePanel();
   if(tab==="settings") renderSettingsPanel();
+  if(tab==="notifications") renderNotificationsPanel();
+  if(tab==="chat") renderChatPanel();
+}
+
+/* ===================== NOTIFICATIONS ===================== */
+const NOTIF_META = {
+  follow:{icon:'users', text:v=>`بدأ <b>${esc(v.fromName)}</b> بمتابعتك`},
+  goal:{icon:'goal', text:v=>`تفاعل <b>${esc(v.fromName)}</b> بـ"هدف" على فيديوهاتك`},
+  red:{icon:'red', text:v=>`تفاعل <b>${esc(v.fromName)}</b> بـ"بطاقة حمراء" على فيديوهاتك`},
+  comment:{icon:'comment', text:v=>`علّق <b>${esc(v.fromName)}</b> على فيديوهاتك`},
+  reply:{icon:'comment', text:v=>`رد <b>${esc(v.fromName)}</b> على تعليقك`},
+  postLike:{icon:'heart', text:v=>`أعجب <b>${esc(v.fromName)}</b> بمنشورك`},
+  postComment:{icon:'comment', text:v=>`علّق <b>${esc(v.fromName)}</b> على منشورك`},
+  message:{icon:'message', text:v=>`جاءك رسالة من <b>${esc(v.fromName)}</b>`},
+  system:{icon:'bell', text:v=>esc(v.text||'')}
+};
+async function createNotification(toUid, type, extra){
+  try{
+    if(!toUid || toUid===uid()) return; // don't notify yourself
+    await db.collection("notifications").add({
+      toUid, type,
+      fromUid: uid(), fromName: (userData&&userData.displayName)||"مستخدم", fromPhoto:(userData&&userData.photoURL)||"",
+      read:false, createdAt:FieldValue.serverTimestamp(),
+      ...extra
+    });
+  }catch(e){ console.warn("createNotification failed", e); }
+}
+function startNotificationsListener(){
+  if(notifUnsub || !uid()) return;
+  notifUnsub = db.collection("notifications").where("toUid","==",uid()).orderBy("createdAt","desc").limit(40)
+    .onSnapshot(qs=>{
+      notifItems = qs.docs.map(d=>({id:d.id,...d.data()}));
+      notifUnreadCount = notifItems.filter(n=>!n.read).length;
+      updateNotifBadges();
+      const sheetBody = document.getElementById('notifSheetBody');
+      const panelBody = document.getElementById('notifPanelBody');
+      if(sheetBody) renderNotifList(sheetBody);
+      if(panelBody) renderNotifList(panelBody);
+    }, err=>console.warn("notif listener failed", err));
+}
+function updateNotifBadges(){
+  $all(".notif-dot").forEach(d=> d.classList.toggle("hidden", notifUnreadCount===0));
+}
+function openNotificationsSheet(){
+  if(!uid()){ toast("سجل دخولك الأول"); return; }
+  switchTab("notifications");
+}
+function renderNotificationsPanel(){
+  const panel = $("#panel-notifications");
+  panel.innerHTML = `
+    <div class="profile-wrap" style="padding-top:calc(14px + var(--safe-top));padding-bottom:24px;">
+      <div class="top-header" style="border:none;">
+        <span class="back" id="notifBack">${icon('back')}</span>
+        <span class="t">الإشعارات</span>
+      </div>
+      <div id="notifPanelBody"></div>
+    </div>`;
+  document.getElementById('notifBack').addEventListener('click', ()=> switchTab('profile'));
+  renderNotifList(document.getElementById('notifPanelBody'));
+  const unread = notifItems.filter(n=>!n.read);
+  if(unread.length){
+    const batch = db.batch();
+    unread.forEach(n=> batch.update(db.collection('notifications').doc(n.id), {read:true}));
+    batch.commit().catch(()=>{});
+  }
+}
+function renderChatPanel(){
+  const panel = $("#panel-chat");
+  if(!currentChatTarget){
+    const recent = [...new Map(notifItems.filter(n=>n.type==='message').map(n=>[n.fromUid,{uid:n.fromUid,name:n.fromName,photo:n.fromPhoto}])).values()];
+    panel.innerHTML = `
+      <div class="profile-wrap" style="padding-top:calc(14px + var(--safe-top));padding-bottom:24px;">
+        <div class="top-header" style="border:none;">
+          <span class="back" id="chatBack">${icon('back')}</span>
+          <span class="t">المحادثات</span>
+        </div>
+        <div class="notif-list-body">
+          ${recent.length ? recent.map(u=>`<div class="notif-row" data-uid="${u.uid}"><img src="${esc(u.photo||'')}" onerror="this.style.background='#1c211c'"><div><div class="notif-text">${esc(u.name)}</div><div class="notif-preview">اضغط للدردشة</div></div></div>`).join('') : `<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('message')}</div>لا توجد محادثات حتى الآن</div>`}
+        </div>
+      </div>`;
+    document.getElementById('chatBack').addEventListener('click', ()=> switchTab('profile'));
+    panel.querySelectorAll('.notif-row[data-uid]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const uid = el.dataset.uid;
+        const user = notifItems.find(n=>n.fromUid===uid);
+        if(user) openChatSheet(uid, user.fromName, user.fromPhoto||'');
+      });
+    });
+    return;
+  }
+  panel.innerHTML = `
+    <div class="profile-wrap" style="padding-top:calc(14px + var(--safe-top));padding-bottom:0;">
+      <div class="top-header" style="border:none;">
+        <span class="back" id="chatBack">${icon('back')}</span>
+        <span class="t">${esc(currentChatTarget.name)}</span>
+      </div>
+      <div id="chatPanelBody" style="display:flex;flex-direction:column;gap:10px;padding:0 0 14px;"></div>
+      <div class="sheet-input-bar"><input id="chatInput" placeholder="اكتب رسالة..."><button id="chatSendBtn">إرسال</button></div>
+    </div>`;
+  document.getElementById('chatBack').addEventListener('click', ()=>{ currentChatTarget=null; if(currentChatUnsub){ currentChatUnsub(); currentChatUnsub=null; } renderChatPanel(); });
+  const listEl = document.getElementById('chatPanelBody');
+  const sendBtn = document.getElementById('chatSendBtn');
+  const input = document.getElementById('chatInput');
+  if(currentChatUnsub) currentChatUnsub();
+  const cid = chatIdFor(uid(), currentChatTarget.uid);
+  const chatRef = db.collection('chats').doc(cid).collection('messages').orderBy('createdAt','asc');
+  currentChatUnsub = chatRef.onSnapshot(qs=>{
+    listEl.innerHTML = qs.docs.map(d=>{
+      const m = d.data(); const me = m.from===uid();
+      return `<div style="display:flex;${me?'justify-content:flex-end;':'justify-content:flex-start;'};padding:6px 0"><div style="max-width:72%;background:${me?'var(--pitch)':'var(--bg-elev2)'};color:${me?'#08150d':'#fff'};padding:10px;border-radius:12px">${esc(m.text)}<div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:${me?'right':'left'}">${timeAgo(m.createdAt)}</div></div></div>`;
+    }).join('');
+    listEl.scrollTop = listEl.scrollHeight;
+  });
+  sendBtn.addEventListener('click', async ()=>{
+    const t = sanitizeText(input.value, 1000); if(!t) return; input.value='';
+    const msgRef = db.collection('chats').doc(cid).collection('messages');
+    await msgRef.add({text:t, from:uid(), to:currentChatTarget.uid, createdAt:FieldValue.serverTimestamp()});
+    createNotification(currentChatTarget.uid, 'message', {text:t});
+  });
+}
+
+function renderNotifList(body){
+  if(!body) return;
+  if(!notifItems.length){
+    body.innerHTML = `<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('bell')}</div>لسه مفيش إشعارات</div>`;
+    return;
+  }
+  body.innerHTML = notifItems.map(n=>{
+    const meta = NOTIF_META[n.type] || NOTIF_META.system;
+    return `<div class="notif-row ${n.read?'':'unread'}" data-nid="${n.id}">
+      ${n.fromPhoto? `<img src="${esc(n.fromPhoto)}" onerror="this.style.background='#1c211c'">` : `<div class="notif-icon">${icon(meta.icon)}</div>`}
+      <div><div class="notif-text">${meta.text(n)}</div>${n.type==='message'&&n.text?`<div class="notif-preview">${esc(n.text)}</div>`:''}<div class="notif-time">${timeAgo(n.createdAt)}</div></div>
+    </div>`;
+  }).join("");
+  body.querySelectorAll('.notif-row').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const notif = notifItems.find(n=>n.id===el.dataset.nid);
+      if(notif && notif.type==='message' && notif.fromUid){
+        openChatSheet(notif.fromUid, notif.fromName, notif.fromPhoto||'');
+      }
+    });
+  });
 }
 
 /* ===================== HOME FEED ===================== */
@@ -913,7 +1147,7 @@ function drawFeed(){
   const scrollEl=$("#feedScroll");
   if(!scrollEl) return;
   if(feedVideos.length===0){
-    scrollEl.innerHTML = `<div class="empty-state"><div class="big">⚽</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
+    scrollEl.innerHTML = `<div class="empty-state"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
     return;
   }
 
@@ -936,9 +1170,139 @@ function drawFeed(){
   setupFeedObserver();
 }
 
+let feedObserver = null;
+function setupFeedObserver(){
+  if(feedObserver) feedObserver.disconnect();
+  feedObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      const vidEl = en.target.querySelector("video");
+      if(!vidEl) return;
+      if(en.isIntersecting && en.intersectionRatio>0.6){
+        vidEl.play().catch(()=>{});
+        const vId = en.target.dataset.id;
+        activeVideoIndex = feedVideos.findIndex(v=>v.id===vId);
+        maybeCountView(vId);
+      } else {
+        vidEl.pause();
+      }
+    });
+  },{threshold:[0,0.6]});
+  document.querySelectorAll(".video-slide").forEach(s=>feedObserver.observe(s));
+}
+
+function updateSlideFromData(slide, v){
+  // avoid resetting video playback; update counters and text
+  const vid = slide.querySelector('video');
+  if(vid && vid.src !== v.videoURL){ try{ const cur = vid.currentTime; vid.src = v.videoURL; vid.currentTime = cur; }catch(e){} }
+  const cname = slide.querySelector('.cname'); if(cname) cname.innerHTML = esc(v.ownerName||'مستخدم') + verifiedBadge(v.ownerVerified);
+  const avatarImg = slide.querySelector('.circ.avatar img'); if(avatarImg) avatarImg.src = v.ownerPhoto||avatarImg.src;
+  const goalBtn = slide.querySelector('[data-act="goal"] .cnt'); if(goalBtn) goalBtn.textContent = fmtNum(v.goalsCount);
+  const redBtn = slide.querySelector('[data-act="red"] .cnt'); if(redBtn) redBtn.textContent = fmtNum(v.redCount);
+  const commBtn = slide.querySelector('[data-act="comments"] .cnt'); if(commBtn) commBtn.textContent = fmtNum(v.commentsCount);
+  const desc = slide.querySelector('.vs-desc'); if(desc) desc.innerHTML = renderHashtags(v.description||'');
+  // reaction active classes
+  const myReaction = (v.reactions && v.reactions[uid()]) || null;
+  const goalSide = slide.querySelector('[data-act="goal" ]'); if(goalSide) goalSide.classList.toggle('active-goal', myReaction==='goal');
+  const redSide = slide.querySelector('[data-act="red" ]'); if(redSide) redSide.classList.toggle('active-red', myReaction==='red');
+}
+
+function maybeCountView(videoId){
+  if(!videoId || sessionViewedIds.has(videoId)) return;
+  sessionViewedIds.add(videoId);
+  setTimeout(()=>{
+    // count only if still viewed (best-effort real, precise, single-count view)
+    db.collection("videos").doc(videoId).update({views:FieldValue.increment(1)}).catch(()=>{});
+  },3000);
+}
+function videoSlideHTML(v,i){
+  const myReaction = (v.reactions && v.reactions[uid()]) || null;
+  const following = (userData && userData.followingChannels && userData.followingChannels.includes(v.ownerUid));
+  return `
+    <div class="video-slide" data-id="${v.id}" data-owner="${v.ownerUid}">
+    <video src="${esc(v.videoURL)}" playsinline autoplay loop preload="metadata"></video>
+    <div class="vs-top">
+      <div class="vs-top-right">
+        <div class="icon-btn notif-btn"><span class="notif-dot ${notifUnreadCount?'':'hidden'}"></span>${icon('bell')}</div>
+      </div>
+      <div class="vs-top-right">
+        <div class="icon-btn mute-btn">${icon('mute')}</div>
+        <div class="icon-btn menu-btn">${icon('menu')}</div>
+      </div>
+    </div>
+    <div class="vs-side">
+      <button class="side-btn" data-act="profile-open" data-owner="${v.ownerUid}">
+        <div class="circ avatar">${v.ownerPhoto?`<img src="${esc(v.ownerPhoto)}">`:icon('profile')}</div>
+      </button>
+      <button class="side-btn ${myReaction==='goal'?'active-goal':''}" data-act="goal">
+        <div class="circ">${icon('goal')}</div><div class="cnt">${fmtNum(v.goalsCount)}</div>
+      </button>
+      <button class="side-btn ${myReaction==='red'?'active-red':''}" data-act="red">
+        <div class="circ">${icon('red')}</div><div class="cnt">${fmtNum(v.redCount)}</div>
+      </button>
+      <button class="side-btn" data-act="comments">
+        <div class="circ">${icon('comment')}</div><div class="cnt">${fmtNum(v.commentsCount)}</div>
+      </button>
+      <button class="side-btn" data-act="save">
+        <div class="circ">${icon('save')}</div><div class="cnt">حفظ</div>
+      </button>
+      <button class="side-btn" data-act="message">
+        <div class="circ">${icon('message')}</div><div class="cnt">مراسلة</div>
+      </button>
+      <button class="side-btn" data-act="share">
+        <div class="circ">${icon('share')}</div><div class="cnt">مشاركة</div>
+      </button>
+    </div>
+    <div class="vs-bottom">
+      <div class="vs-channel">
+        ${v.ownerFavTeam?`<img class="vs-team-logo" data-team="${esc(v.ownerFavTeam)}" src="" style="display:none">`:""}
+        <span class="cname">${esc(v.ownerName||"مستخدم")}${verifiedBadge(v.ownerVerified)}</span>
+        <button class="vs-fbtn ${following?'following':''}" data-act="follow">${following?'متابَع':'متابعة'}</button>
+      </div>
+      <div class="vs-desc">${renderHashtags(v.description||"")}</div>
+    </div>
+  </div>`;
+}
+function bindVideoSlide(slide, v){
+  const vidEl = slide.querySelector("video");
+  const muteBtn = slide.querySelector(".mute-btn");
+  vidEl.muted = false;
+  muteBtn.innerHTML = vidEl.muted ? icon('muteOff') : icon('mute');
+  muteBtn.addEventListener("click",e=>{
+    e.stopPropagation(); vidEl.muted=!vidEl.muted; e.currentTarget.innerHTML = vidEl.muted?icon('muteOff'):icon('mute');
+  });
+  slide.querySelector(".notif-btn").addEventListener("click", e=>{ e.stopPropagation(); openNotificationsSheet(); });
+  slide.addEventListener("click",e=>{
+    if(e.target.closest(".vs-top,.vs-side,.vs-bottom")) return;
+    if(vidEl.paused) vidEl.play(); else vidEl.pause();
+  });
+  slide.addEventListener("dblclick",e=>{
+    doReaction(v.id,"goal");
+    spawnGoalPop(slide, e.clientX - slide.getBoundingClientRect().left, e.clientY - slide.getBoundingClientRect().top);
+  });
+  slide.querySelector('[data-act="goal"]').addEventListener("click",()=>doReaction(v.id,"goal"));
+  slide.querySelector('[data-act="red"]').addEventListener("click",()=>doReaction(v.id,"red"));
+  slide.querySelector('[data-act="comments"]').addEventListener("click",()=>openCommentsSheet(v.id));
+  slide.querySelector('[data-act="save"]').addEventListener("click",()=>openSaveSheet(v.id));
+  slide.querySelector('[data-act="share"]').addEventListener("click",()=>openShareSheet(v.id));
+  slide.querySelector('[data-act="follow"]').addEventListener("click",()=>toggleFollowChannel(v.ownerUid));
+  slide.querySelector('[data-act="message"]').addEventListener("click",()=>openChatSheet(v.ownerUid, v.ownerName, v.ownerPhoto));
+  slide.querySelector('.menu-btn').addEventListener("click",()=>openVideoMenuSheet(v));
+  slide.querySelectorAll('[data-act="profile-open"]').forEach(b=>b.addEventListener("click",()=>openOtherProfile(v.ownerUid)));
+  slide.querySelectorAll(".tag").forEach(t=>t.addEventListener("click",e=>{
+    e.stopPropagation();
+    switchTab("search");
+    setTimeout(()=>{ $("#searchInput").value="#"+t.dataset.hashtag; runSearch("#"+t.dataset.hashtag); },50);
+  }));
+}
+function spawnGoalPop(slide,x,y){
+  const el=document.createElement("div"); el.className="goal-pop"; el.textContent="⚽";
+  el.style.left=(x-35)+"px"; el.style.top=(y-35)+"px";
+  slide.appendChild(el); setTimeout(()=>el.remove(),900);
+}
+/* Single, canonical reaction handler: optimistic UI update + background transaction + notification. */
 async function doReaction(videoId, type){
   const u=uid(); if(!u){toast("سجل دخولك الأول");return;}
-  
+
   // 1. تحديث لحظي سريع للشاشة (بدون ما الفيديو يعيد أو يقطع)
   const slide = document.querySelector(`.video-slide[data-id="${videoId}"]`);
   if(slide) {
@@ -979,11 +1343,13 @@ async function doReaction(videoId, type){
 
   // 2. تحديث قاعدة البيانات في الخلفية
   const ref = db.collection("videos").doc(videoId);
+  let ownerUidForNotif = null, becameActive=false;
   try {
     await db.runTransaction(async t=>{
       const doc = await t.get(ref);
       if(!doc.exists) return;
       const data = doc.data();
+      ownerUidForNotif = data.ownerUid;
       const reactions = data.reactions || {};
       const current = reactions[u];
       let goalsCount = data.goalsCount||0, redCount = data.redCount||0;
@@ -994,247 +1360,15 @@ async function doReaction(videoId, type){
         if(current==='goal') goalsCount--;
         if(current==='red') redCount--;
         reactions[u]=type;
+        becameActive = true;
         if(type==='goal') goalsCount++; else redCount++;
       }
       t.update(ref,{reactions, goalsCount:Math.max(0,goalsCount), redCount:Math.max(0,redCount)});
     });
+    if(becameActive && ownerUidForNotif) createNotification(ownerUidForNotif, type, {videoId});
   } catch(e) {
     console.error("Reaction failed:", e);
   }
-}
-
-let feedObserver = null;
-function setupFeedObserver(){
-  if(feedObserver) feedObserver.disconnect();
-  feedObserver = new IntersectionObserver((entries)=>{
-    entries.forEach(en=>{
-      const vidEl = en.target.querySelector("video");
-      if(!vidEl) return;
-      if(en.isIntersecting && en.intersectionRatio>0.6){
-        vidEl.play().catch(()=>{});
-        const vId = en.target.dataset.id;
-        activeVideoIndex = feedVideos.findIndex(v=>v.id===vId);
-        maybeCountView(vId);
-      } else {
-        vidEl.pause();
-      }
-    });
-  },{threshold:[0,0.6]});
-  document.querySelectorAll(".video-slide").forEach(s=>feedObserver.observe(s));
-}
-
-function applyVideoChanges(qs){
-  const scrollEl = $("#feedScroll"); if(!scrollEl) return;
-  const changes = qs.docChanges ? qs.docChanges() : [];
-  // fallback to full redraw when many changes or first time
-  if(changes.length===0 || changes.length>10 || feedVideos.length===0){
-    feedVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
-    drawFeed(); return;
-  }
-  try{
-    // apply incremental
-    changes.forEach(ch=>{
-      const d = ch.doc; const v = {id:d.id,...d.data()};
-      if(isBlocked(v.ownerUid)){
-        // never (re)show a blocked owner's video — treat as a removal instead
-        const pos = feedVideos.findIndex(x=>x.id===v.id);
-        if(pos>-1) feedVideos.splice(pos,1);
-        const slide = scrollEl.querySelector(`.video-slide[data-id="${v.id}"]`);
-        if(slide) slide.remove();
-        return;
-      }
-      if(ch.type==='added'){
-        // insert into feedVideos at newIndex (guarded)
-        let idx = (ch.newIndex!=null && ch.newIndex>=0)?ch.newIndex:0;
-        idx = Math.min(idx, feedVideos.length);
-        feedVideos.splice(idx,0,v);
-        // create DOM and insert at position
-        const html = videoSlideHTML(v, idx);
-        const tmp = document.createElement('div'); tmp.innerHTML = html;
-        const node = tmp.firstElementChild;
-        const children = scrollEl.querySelectorAll('.video-slide');
-        if(children[idx]) scrollEl.insertBefore(node, children[idx]); else scrollEl.appendChild(node);
-        bindVideoSlide(node, v);
-      } else if(ch.type==='modified'){
-        let idx = (ch.newIndex!=null && ch.newIndex>=0)?ch.newIndex:feedVideos.findIndex(x=>x.id===v.id);
-        let oldIdx = (ch.oldIndex!=null && ch.oldIndex>=0)?ch.oldIndex:feedVideos.findIndex(x=>x.id===v.id);
-        if(oldIdx===-1 && idx===-1){
-          // unknown positions — fallback
-          throw new Error('invalid index in modified');
-        }
-        // clamp
-        idx = Math.min(Math.max(0, idx), Math.max(0, feedVideos.length-1));
-        if(oldIdx>-1) feedVideos.splice(oldIdx,1);
-        // ensure not inserting duplicates
-        const exists = feedVideos.find(x=>x.id===v.id);
-        if(!exists) feedVideos.splice(idx,0,v); else {
-          // replace
-          const p = feedVideos.findIndex(x=>x.id===v.id);
-          if(p>-1) feedVideos[p]=v;
-        }
-        // update DOM for this id
-        const slide = scrollEl.querySelector(`.video-slide[data-id="${v.id}"]`);
-        if(slide){ updateSlideFromData(slide, v); }
-        // if index changed, move node
-        const children = scrollEl.querySelectorAll('.video-slide');
-        if(slide && children[idx] && children[idx]!==slide){
-          scrollEl.insertBefore(slide, children[idx]);
-        }
-      } else if(ch.type==='removed'){
-        const pos = feedVideos.findIndex(x=>x.id===v.id);
-        if(pos>-1) feedVideos.splice(pos,1);
-        const slide = scrollEl.querySelector(`.video-slide[data-id="${v.id}"]`);
-        if(slide) slide.remove();
-      }
-    });
-    // best-effort: keep feedVideos ordered by createdAt desc when possible
-    try{
-      feedVideos.sort((a,b)=>{
-        const ta = (a.createdAt && a.createdAt.seconds)?a.createdAt.seconds:0;
-        const tb = (b.createdAt && b.createdAt.seconds)?b.createdAt.seconds:0;
-        return tb - ta;
-      });
-      // ensure DOM order matches feedVideos array — cheap approach: if mismatch detected, fallback to full redraw
-      const elems = Array.from(scrollEl.querySelectorAll('.video-slide'));
-      let mismatch=false;
-      for(let i=0;i<Math.min(elems.length, feedVideos.length); i++){
-        if(elems[i].dataset.id !== feedVideos[i].id){ mismatch=true; break; }
-      }
-      if(mismatch){ drawFeed(); return; }
-    }catch(e){ /* ignore */ }
-    // re-attach observer to include new slides
-    setupFeedObserver();
-  }catch(e){
-    console.error('applyVideoChanges failed', e);
-    feedVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
-    drawFeed();
-  }
-}
-
-function updateSlideFromData(slide, v){
-  // avoid resetting video playback; update counters and text
-  const vid = slide.querySelector('video');
-  if(vid && vid.src !== v.videoURL){ try{ const cur = vid.currentTime; vid.src = v.videoURL; vid.currentTime = cur; }catch(e){} }
-  const cname = slide.querySelector('.cname'); if(cname) cname.textContent = v.ownerName||'مستخدم';
-  const avatarImg = slide.querySelector('.circ.avatar img'); if(avatarImg) avatarImg.src = v.ownerPhoto||avatarImg.src;
-  const goalBtn = slide.querySelector('[data-act="goal"] .cnt'); if(goalBtn) goalBtn.textContent = fmtNum(v.goalsCount);
-  const redBtn = slide.querySelector('[data-act="red"] .cnt'); if(redBtn) redBtn.textContent = fmtNum(v.redCount);
-  const commBtn = slide.querySelector('[data-act="comments"] .cnt'); if(commBtn) commBtn.textContent = fmtNum(v.commentsCount);
-  const desc = slide.querySelector('.vs-desc'); if(desc) desc.innerHTML = renderHashtags(v.description||'');
-  // reaction active classes
-  const myReaction = (v.reactions && v.reactions[uid()]) || null;
-  const goalSide = slide.querySelector('[data-act="goal" ]'); if(goalSide) goalSide.classList.toggle('active-goal', myReaction==='goal');
-  const redSide = slide.querySelector('[data-act="red" ]'); if(redSide) redSide.classList.toggle('active-red', myReaction==='red');
-}
-
-function maybeCountView(videoId){
-  if(!videoId || sessionViewedIds.has(videoId)) return;
-  sessionViewedIds.add(videoId);
-  setTimeout(()=>{
-    // count only if still viewed (best-effort real, precise, single-count view)
-    db.collection("videos").doc(videoId).update({views:FieldValue.increment(1)}).catch(()=>{});
-  },3000);
-}
-function videoSlideHTML(v,i){
-  const myReaction = (v.reactions && v.reactions[uid()]) || null;
-  const following = (userData && userData.followingChannels && userData.followingChannels.includes(v.ownerUid));
-  return `
-    <div class="video-slide" data-id="${v.id}" data-owner="${v.ownerUid}">
-    <video src="${esc(v.videoURL)}" playsinline autoplay loop preload="metadata"></video>
-    <div class="vs-top">
-      <div class="icon-btn mute-btn">🔊</div>
-      <div class="icon-btn menu-btn">⋮</div>
-    </div>
-    <div class="vs-side">
-      <button class="side-btn" data-act="profile-open" data-owner="${v.ownerUid}">
-        <div class="circ avatar">${v.ownerPhoto?`<img src="${esc(v.ownerPhoto)}">`:'👤'}</div>
-      </button>
-      <button class="side-btn ${myReaction==='goal'?'active-goal':''}" data-act="goal">
-        <div class="circ">⚽</div><div class="cnt">${fmtNum(v.goalsCount)}</div>
-      </button>
-      <button class="side-btn ${myReaction==='red'?'active-red':''}" data-act="red">
-        <div class="circ">🟥</div><div class="cnt">${fmtNum(v.redCount)}</div>
-      </button>
-      <button class="side-btn" data-act="comments">
-        <div class="circ">💬</div><div class="cnt">${fmtNum(v.commentsCount)}</div>
-      </button>
-      <button class="side-btn" data-act="save">
-        <div class="circ">🔖</div><div class="cnt">حفظ</div>
-      </button>
-      <button class="side-btn" data-act="message">
-        <div class="circ">✉️</div><div class="cnt">مراسلة</div>
-      </button>
-      <button class="side-btn" data-act="share">
-        <div class="circ">↗️</div><div class="cnt">مشاركة</div>
-      </button>
-    </div>
-    <div class="vs-bottom">
-      <div class="vs-channel">
-        ${v.ownerFavTeam?`<img class="vs-team-logo" data-team="${esc(v.ownerFavTeam)}" src="" style="display:none">`:""}
-        <span class="cname">${esc(v.ownerName||"مستخدم")}</span>
-        <button class="vs-fbtn ${following?'following':''}" data-act="follow">${following?'متابَع':'متابعة'}</button>
-      </div>
-      <div class="vs-desc">${renderHashtags(v.description||"")}</div>
-    </div>
-  </div>`;
-}
-function bindVideoSlide(slide, v){
-  const vidEl = slide.querySelector("video");
-  const muteBtn = slide.querySelector(".mute-btn");
-  vidEl.muted = false;
-  muteBtn.textContent = vidEl.muted ? "🔇" : "🔊";
-  muteBtn.addEventListener("click",e=>{
-    e.stopPropagation(); vidEl.muted=!vidEl.muted; e.currentTarget.textContent = vidEl.muted?"🔇":"🔊";
-  });
-  slide.addEventListener("click",e=>{
-    if(e.target.closest(".vs-top,.vs-side,.vs-bottom")) return;
-    if(vidEl.paused) vidEl.play(); else vidEl.pause();
-  });
-  slide.addEventListener("dblclick",e=>{
-    doReaction(v.id,"goal");
-    spawnGoalPop(slide, e.clientX - slide.getBoundingClientRect().left, e.clientY - slide.getBoundingClientRect().top);
-  });
-  slide.querySelector('[data-act="goal"]').addEventListener("click",()=>doReaction(v.id,"goal"));
-  slide.querySelector('[data-act="red"]').addEventListener("click",()=>doReaction(v.id,"red"));
-  slide.querySelector('[data-act="comments"]').addEventListener("click",()=>openCommentsSheet(v.id));
-  slide.querySelector('[data-act="save"]').addEventListener("click",()=>openSaveSheet(v.id));
-  slide.querySelector('[data-act="share"]').addEventListener("click",()=>openShareSheet(v.id));
-  slide.querySelector('[data-act="follow"]').addEventListener("click",()=>toggleFollowChannel(v.ownerUid));
-  slide.querySelector('[data-act="message"]').addEventListener("click",()=>openChatSheet(v.ownerUid, v.ownerName, v.ownerPhoto));
-  slide.querySelector('.menu-btn').addEventListener("click",()=>openVideoMenuSheet(v));
-  slide.querySelectorAll('[data-act="profile-open"]').forEach(b=>b.addEventListener("click",()=>openOtherProfile(v.ownerUid)));
-  slide.querySelectorAll(".tag").forEach(t=>t.addEventListener("click",e=>{
-    e.stopPropagation();
-    switchTab("search");
-    setTimeout(()=>{ $("#searchInput").value="#"+t.dataset.hashtag; runSearch("#"+t.dataset.hashtag); },50);
-  }));
-}
-function spawnGoalPop(slide,x,y){
-  const el=document.createElement("div"); el.className="goal-pop"; el.textContent="⚽";
-  el.style.left=(x-35)+"px"; el.style.top=(y-35)+"px";
-  slide.appendChild(el); setTimeout(()=>el.remove(),900);
-}
-async function doReaction(videoId, type){
-  const u=uid(); if(!u){toast("سجل دخولك الأول");return;}
-  const ref = db.collection("videos").doc(videoId);
-  await db.runTransaction(async t=>{
-    const doc = await t.get(ref);
-    const data = doc.data();
-    const reactions = data.reactions || {};
-    const prev = reactions[type==='goal'?'goal':'red']; // unused
-    const current = reactions[u];
-    let goalsCount = data.goalsCount||0, redCount = data.redCount||0;
-    if(current === type){
-      delete reactions[u];
-      if(type==='goal') goalsCount--; else redCount--;
-    } else {
-      if(current==='goal') goalsCount--;
-      if(current==='red') redCount--;
-      reactions[u]=type;
-      if(type==='goal') goalsCount++; else redCount++;
-    }
-    t.update(ref,{reactions, goalsCount:Math.max(0,goalsCount), redCount:Math.max(0,redCount)});
-  });
 }
 async function toggleFollowChannel(targetUid){
   const u=uid(); if(!u||u===targetUid) return;
@@ -1252,6 +1386,7 @@ async function toggleFollowChannel(targetUid){
       t.update(theirRef,{followersCount:FieldValue.increment(1)});
     }
   });
+  if(!isF) createNotification(targetUid, 'follow', {});
   const fresh = await myRef.get(); userData = fresh.data();
   updateFollowButtons();
   if(activeTab==='profile') renderProfilePanel();
@@ -1306,7 +1441,7 @@ function openCommentsSheet(videoId){
   commentsUnsub = db.collection("videos").doc(videoId).collection("comments").orderBy("createdAt","desc")
     .onSnapshot(qs=>{
       const body=$("#commentsBody"); if(!body) return;
-      if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">💬</div>لسه مفيش تعليقات</div>`; return; }
+      if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('comment')}</div>لسه مفيش تعليقات</div>`; return; }
       body.innerHTML = qs.docs.map(d=>{
         const c=d.data();
         const liked = (c.likes||[]).includes(uid());
@@ -1344,7 +1479,7 @@ function openCommentsSheet(videoId){
           row.querySelector('div').appendChild(ri);
           const input = ri.querySelector('input'); const send = ri.querySelector('button');
           send.addEventListener('click', async ()=>{
-            const text = input.value.trim(); if(!text) return; input.value='';
+            const text = sanitizeText(input.value, 500); if(!text) return; input.value='';
             await db.collection('videos').doc(videoId).collection('comments').doc(cid).collection('replies').add({
               text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp()
             });
@@ -1363,7 +1498,7 @@ function openCommentsSheet(videoId){
     });
 }
 async function submitComment(){
-  const input=$("#commentInput"); const text=input.value.trim();
+  const input=$("#commentInput"); const text=sanitizeText(input.value, 500);
   if(!text) return;
   input.value="";
   const videoId=currentCommentsVideoId;
@@ -1372,6 +1507,8 @@ async function submitComment(){
     createdAt:FieldValue.serverTimestamp()
   });
   await db.collection("videos").doc(videoId).update({commentsCount:FieldValue.increment(1)});
+  const vSnap = await db.collection("videos").doc(videoId).get();
+  if(vSnap.exists) createNotification(vSnap.data().ownerUid, 'comment', {videoId});
 }
 async function toggleCommentLike(videoId,cid){
   const ref = db.collection("videos").doc(videoId).collection("comments").doc(cid);
@@ -1395,16 +1532,18 @@ function openPostCommentsSheet(postId){
       </div>
     </div>`);
   $("#postCommentSendBtn").addEventListener("click", async ()=>{
-    const text = $("#postCommentInput").value.trim(); if(!text) return; $("#postCommentInput").value="";
+    const text = sanitizeText($("#postCommentInput").value, 500); if(!text) return; $("#postCommentInput").value="";
     await db.collection("posts").doc(postId).collection("comments").add({
       text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||"", likes:[], repliesCount:0, createdAt:FieldValue.serverTimestamp()
     });
     await db.collection("posts").doc(postId).update({commentsCount:FieldValue.increment(1)});
+    const pSnap = await db.collection("posts").doc(postId).get();
+    if(pSnap.exists) createNotification(pSnap.data().userId, 'postComment', {postId});
   });
   postCommentsUnsub = db.collection("posts").doc(postId).collection("comments").orderBy("createdAt","desc")
     .onSnapshot(qs=>{
       const body=$("#postCommentsBody"); if(!body) return;
-      if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">💬</div>لسه مفيش تعليقات</div>`; return; }
+      if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('comment')}</div>لسه مفيش تعليقات</div>`; return; }
       body.innerHTML = qs.docs.map(d=>{
         const c=d.data(); const liked = (c.likes||[]).includes(uid()); const repliesCount = c.repliesCount||0;
         return `<div class="comment-row" data-cid="${d.id}"><img src="${esc(c.userPhoto||'')}" onerror="this.style.background='#1c211c'"><div><div class="comment-name">${esc(c.userName)}</div><div class="comment-text">${esc(c.text)}</div><div class="comment-actions"><span data-act="like" style="${liked?'color:var(--pitch);font-weight:800;':''}">❤ ${fmtNum((c.likes||[]).length)}</span><span data-act="replyBtn" style="margin-left:10px;cursor:pointer">رد</span><span data-act="showReplies" style="margin-left:8px;cursor:pointer">💬 ${fmtNum(repliesCount)}</span><span>${timeAgo(c.createdAt)}</span></div><div class="replies" data-cid="${d.id}" style="margin-top:8px;"></div></div></div>`;
@@ -1429,7 +1568,7 @@ function openPostCommentsSheet(postId){
           row.querySelector('div').appendChild(ri);
           const input = ri.querySelector('input'); const send = ri.querySelector('button');
           send.addEventListener('click', async ()=>{
-            const text = input.value.trim(); if(!text) return; input.value='';
+            const text = sanitizeText(input.value, 500); if(!text) return; input.value='';
             await db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').add({
               text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp()
             });
@@ -1458,36 +1597,8 @@ function chatIdFor(a,b){ return [a,b].sort().join('_'); }
 
 function openChatSheet(targetUid, targetName, targetPhoto){
   if(!uid()){ toast('سجل دخول عشان تتواصل'); return; }
-  const cid = chatIdFor(uid(), targetUid);
-  openSheet(`
-    <div class="sheet" style="height:70%">
-      <div class="sheet-handle"></div>
-      <div class="sheet-title">محادثة مع ${esc(targetName||'مستخدم')}</div>
-      <div class="sheet-body" id="chatBody" style="display:flex;flex-direction:column;">
-        <div id="chatList" style="flex:1;overflow:auto;padding-bottom:8px;"></div>
-      </div>
-      <div class="sheet-input-bar"><input id="chatInput" placeholder="اكتب رسالة..."><button id="chatSendBtn">إرسال</button></div>
-    </div>`);
-  const listEl = document.getElementById('chatList');
-  const sendBtn = document.getElementById('chatSendBtn');
-  const input = document.getElementById('chatInput');
-  // unsubscribe previous if exists
-  if(chatsUnsubs[cid]){ chatsUnsubs[cid](); delete chatsUnsubs[cid]; }
-  const chatRef = db.collection('chats').doc(cid).collection('messages').orderBy('createdAt','asc');
-  const unsub = chatRef.onSnapshot(qs=>{
-    listEl.innerHTML = qs.docs.map(d=>{
-      const m = d.data();
-      const me = m.from===uid();
-      return `<div style="display:flex;${me?'justify-content:flex-end;':'justify-content:flex-start;'};padding:6px 0"><div style="max-width:72%;background:${me?'var(--pitch)':'var(--bg-elev2)'};color:${me?'#08150d':'#fff'};padding:10px;border-radius:12px">${esc(m.text)}<div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:${me?'right':'left'}">${timeAgo(m.createdAt)}</div></div></div>`;
-    }).join('');
-    listEl.scrollTop = listEl.scrollHeight;
-  });
-  chatsUnsubs[cid]=unsub;
-  sendBtn.addEventListener('click', async ()=>{
-    const t = input.value.trim(); if(!t) return; input.value='';
-    const msgRef = db.collection('chats').doc(cid).collection('messages');
-    await msgRef.add({text:t, from:uid(), to:targetUid, createdAt:FieldValue.serverTimestamp()});
-  });
+  currentChatTarget = {uid: targetUid, name: targetName||'مستخدم', photo: targetPhoto||''};
+  switchTab('chat');
 }
 
 function toggleShowVideoReplies(videoId, cid, container){
@@ -1529,7 +1640,7 @@ function toggleShowVideoReplies(videoId, cid, container){
           row.appendChild(ri);
           const input = ri.querySelector('input'); const send = ri.querySelector('button');
           send.addEventListener('click', async ()=>{
-            const text = input.value.trim(); if(!text) return; input.value='';
+            const text = sanitizeText(input.value, 500); if(!text) return; input.value='';
             const ref = db.collection('videos').doc(videoId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies');
             const created = await ref.add({ text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp() });
             // append to DOM
@@ -1593,7 +1704,7 @@ function toggleShowPostReplies(postId, cid, container){
           row.appendChild(ri);
           const input = ri.querySelector('input'); const send = ri.querySelector('button');
           send.addEventListener('click', async ()=>{
-            const text = input.value.trim(); if(!text) return; input.value='';
+            const text = sanitizeText(input.value, 500); if(!text) return; input.value='';
             const ref = db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies');
             const created = await ref.add({ text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp() });
             // append to DOM
@@ -1641,7 +1752,7 @@ function openSaveSheet(videoId){
         </div>
       </div>`);
     $("#createListBtn").addEventListener("click", async ()=>{
-      const name=$("#newListName").value.trim(); if(!name){ toast('اكتب اسم القائمة'); return; }
+      const name=sanitizeText($("#newListName").value, 40); if(!name){ toast('اكتب اسم القائمة'); return; }
       await db.collection("users").doc(uid()).collection("lists").add({name, videoIds:[], createdAt:FieldValue.serverTimestamp()});
       toast('تم إنشاء القائمة');
       openSaveSheet(videoId);
@@ -1729,6 +1840,8 @@ function openUploadSheet(){
   $("#uploadDrop").addEventListener("click",()=>$("#uploadFileInput").click());
   $("#uploadFileInput").addEventListener("change",e=>{
     const f=e.target.files[0]; if(!f) return;
+    if(!f.type || !f.type.startsWith('video/')){ toast('اختر ملف فيديو صالح'); return; }
+    if(f.size > 300*1024*1024){ toast('حجم الفيديو كبير جدًا (الحد الأقصى 300 ميجا)'); return; }
     uploadFile=f;
     const url=URL.createObjectURL(f);
     $("#uploadDrop").innerHTML = `<video src="${url}" muted></video><span class="lbl">${esc(f.name)}</span>`;
@@ -1737,7 +1850,7 @@ function openUploadSheet(){
 }
 async function submitUpload(){
   if(!uploadFile){toast("اختر فيديو الأول");return;}
-  const desc = $("#uploadDesc").value.trim();
+  const desc = sanitizeText($("#uploadDesc").value, 800);
   const hashtags = (desc.match(/#([\u0600-\u06FFa-zA-Z0-9_]+)/g)||[]).map(h=>h.slice(1));
   const btn=$("#uploadSubmitBtn"); btn.textContent="جاري الرفع...";
   $("#uploadProgWrap").classList.remove("hidden");
@@ -1753,10 +1866,12 @@ async function submitUpload(){
     const videoURL = await ref.getDownloadURL();
     await db.collection("videos").add({
       videoURL, description:desc, hashtags, ownerUid:uid(), ownerName:userData.displayName,
-      ownerPhoto:userData.photoURL||"", ownerFavTeam:userData.favTeam||null,
+      ownerPhoto:userData.photoURL||"", ownerFavTeam:userData.favTeam||null, ownerVerified:!!userData.verified,
       goalsCount:0, redCount:0, commentsCount:0, views:0,
       reactions:{}, createdAt:FieldValue.serverTimestamp()
     });
+    try{ await db.collection("users").doc(uid()).update({videosCount:FieldValue.increment(1)});
+      userData.videosCount = (userData.videosCount||0)+1; }catch(e){}
     toast("تم رفع الفيديو");
     closeSheet();
     switchTab("home");
@@ -1772,8 +1887,8 @@ function renderSearchPanel(){
       <button id="searchBtn">بحث</button>
     </div>
     <div class="search-list" id="searchList"></div>`;
-  $("#searchBtn").addEventListener("click", ()=>runSearch($("#searchInput").value.trim()));
-  $("#searchInput").addEventListener("keydown", e=>{ if(e.key==="Enter") runSearch($("#searchInput").value.trim()); });
+  $("#searchBtn").addEventListener("click", ()=>runSearch(sanitizeText($("#searchInput").value, 60)));
+  $("#searchInput").addEventListener("keydown", e=>{ if(e.key==="Enter") runSearch(sanitizeText($("#searchInput").value, 60)); });
   renderSearchHistory();
 }
 async function renderSearchHistory(){
@@ -1822,18 +1937,18 @@ async function runSearch(q){
     list.innerHTML += usersRes.map(u=>`
       <div class="sr-user" data-uid="${u.uid}">
         <img src="${esc(u.photoURL||'')}" onerror="this.style.background='#1c211c'">
-        <div><div style="font-weight:800;font-size:13.5px;">${esc(u.displayName)}</div>
+        <div><div style="font-weight:800;font-size:13.5px;">${esc(u.displayName)}${verifiedBadge(u.verified)}</div>
         <div style="font-size:11px;color:var(--muted);">${fmtNum(u.followersCount)} متابع</div></div>
       </div>`).join("");
   }
   if(videosRes.length){
     list.innerHTML += `<div class="section-label">فيديوهات</div><div class="sr-vid-grid">` +
-      videosRes.map(v=>`<div class="thumb" data-vid="${v.id}"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div class="vc">👁 ${fmtNum(v.views)}</div></div>`).join("") + `</div>`;
+      videosRes.map(v=>`<div class="thumb" data-vid="${v.id}"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div class="vc">${icon('eye')} ${fmtNum(v.views)}</div></div>`).join("") + `</div>`;
     // attach click handlers
     setTimeout(()=>{ list.querySelectorAll('.sr-vid-grid .thumb[data-vid]').forEach(t=>t.addEventListener('click', ()=>openVideoSheet(t.dataset.vid))); },60);
   }
   if(!usersRes.length && !videosRes.length){
-    list.innerHTML += `<div class="empty-state" style="height:auto;padding:30px;"><div class="big">🔍</div>مفيش نتائج</div>`;
+    list.innerHTML += `<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('search')}</div>مفيش نتائج</div>`;
   }
   list.querySelectorAll(".sr-user").forEach(el=>el.addEventListener("click",()=>openOtherProfile(el.dataset.uid)));
 }
@@ -1851,7 +1966,7 @@ function renderVarPanel(){
   if(varUnsub) varUnsub();
   varUnsub = db.collection("var_posts").orderBy("createdAt","desc").limit(30).onSnapshot(qs=>{
     const list=$("#varList");
-    if(qs.empty){ list.innerHTML=`<div class="empty-state"><div class="big">🟨</div>لسه مفيش حالات VAR</div>`; return; }
+    if(qs.empty){ list.innerHTML=`<div class="empty-state"><div class="big">${icon('var')}</div>لسه مفيش حالات VAR</div>`; return; }
     list.innerHTML = qs.docs.map(d=>{
       const p={id:d.id,...d.data()};
       const yes=p.yesCount||0, no=p.noCount||0, total=yes+no||1;
@@ -1916,7 +2031,7 @@ function openVarCreateSheet(){
     $("#varImgDrop").innerHTML=`<img src="${url}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`;
   });
   $("#varSubmitBtn").addEventListener("click", async ()=>{
-    const q=$("#varQuestion").value.trim();
+    const q=sanitizeText($("#varQuestion").value, 400);
     if(!q){toast("اكتب وصف الموقف");return;}
     $("#varSubmitBtn").textContent="جاري النشر...";
     let imageURL="";
@@ -1941,7 +2056,7 @@ function renderCommunityPanel(){
         <input type="file" accept="image/*" id="postImgInput" style="display:none">
       </label>
       <div class="row">
-        <button class="btn-ghost" id="postImgBtn" style="flex:none;padding:8px 14px;">📷 صورة</button>
+        <button class="btn-ghost" id="postImgBtn" style="flex:none;padding:8px 14px;">${icon('camera')} صورة</button>
         <button class="btn-primary" id="postSubmitBtn" style="flex:none;width:auto;padding:8px 18px;">نشر</button>
       </div>
     </div>
@@ -1955,7 +2070,7 @@ function renderCommunityPanel(){
     drop.innerHTML=`<img src="${URL.createObjectURL(f)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`;
   });
   $("#postSubmitBtn").addEventListener("click", async ()=>{
-    const text=$("#postText").value.trim();
+    const text=sanitizeText($("#postText").value, 800);
     if(!text && !postImgFile){toast("اكتب حاجة أو ضيف صورة");return;}
     let imageURL="";
     if(postImgFile){
@@ -1963,7 +2078,7 @@ function renderCommunityPanel(){
       await ref.put(postImgFile); imageURL=await ref.getDownloadURL();
     }
     await db.collection("posts").add({
-      text, imageURL, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||"",
+      text, imageURL, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||"", userVerified:!!userData.verified,
       likes:[], commentsCount:0, createdAt:FieldValue.serverTimestamp()
     });
     $("#postText").value=""; postImgFile=null; $("#postImgDrop").style.display="none";
@@ -1971,35 +2086,61 @@ function renderCommunityPanel(){
   if(communityUnsub) communityUnsub();
   communityUnsub = db.collection("posts").orderBy("createdAt","desc").limit(30).onSnapshot(qs=>{
     const feed=$("#communityFeed");
-    if(qs.empty){ feed.innerHTML=`<div class="empty-state"><div class="big">📰</div>لسه مفيش منشورات</div>`; return; }
+    if(qs.empty){ feed.innerHTML=`<div class="empty-state"><div class="big">${icon('community')}</div>لسه مفيش منشورات</div>`; return; }
     feed.innerHTML = qs.docs.map(d=>{
       const p={id:d.id,...d.data()};
       const liked=(p.likes||[]).includes(uid());
       return `<div class="post-card" data-pid="${p.id}">
         <div class="post-head"><img src="${esc(p.userPhoto||'')}" onerror="this.style.background='#1c211c'">
-          <div><div class="nm">${esc(p.userName)}</div><div class="tm">${timeAgo(p.createdAt)}</div></div>
+          <div><div class="nm">${esc(p.userName)}${verifiedBadge(p.userVerified)}</div><div class="tm">${timeAgo(p.createdAt)}</div></div>
         </div>
         ${p.text?`<div class="post-text">${esc(p.text)}</div>`:""}
         ${p.imageURL?`<img class="post-img" src="${esc(p.imageURL)}">`:""}
         <div class="post-actions">
-          <span class="${liked?'liked':''}" data-act="like">❤ ${fmtNum((p.likes||[]).length)}</span>
-          <span data-act="comments">💬 ${fmtNum(p.commentsCount||0)}</span>
+          <span class="${liked?'liked':''}" data-act="like">${icon('heart')} ${fmtNum((p.likes||[]).length)}</span>
+          <span data-act="comments">${icon('comment')} ${fmtNum(p.commentsCount||0)}</span>
         </div>
       </div>`;
     }).join("");
     feed.querySelectorAll('[data-act="like"]').forEach(el=>{
       el.addEventListener("click", async ()=>{
         const pid=el.closest(".post-card").dataset.pid;
-        const ref=db.collection("posts").doc(pid);
-        const snap=await ref.get(); const likes=snap.data().likes||[];
-        if(likes.includes(uid())) await ref.update({likes:FieldValue.arrayRemove(uid())});
-        else await ref.update({likes:FieldValue.arrayUnion(uid())});
+        if(processingPostLikes.has(pid)) return;
+        processingPostLikes.add(pid);
+        try{
+          const ref=db.collection("posts").doc(pid);
+          const snap=await ref.get(); const likes=snap.data().likes||[];
+          const wasLiked = likes.includes(uid());
+          const newLikes = wasLiked ? likes.filter(u=>u!==uid()) : [...likes, uid()];
+          el.classList.toggle('liked', !wasLiked);
+          el.textContent = `${icon('heart')} ${fmtNum(newLikes.length)}`;
+          if(wasLiked) await ref.update({likes:FieldValue.arrayRemove(uid())});
+          else { await ref.update({likes:FieldValue.arrayUnion(uid())}); createNotification(snap.data().userId, 'postLike', {postId:pid}); }
+        }catch(e){
+          console.warn('post like failed', e);
+        }
+        processingPostLikes.delete(pid);
       });
     });
     feed.querySelectorAll('[data-act="comments"]').forEach(el=>{
       el.addEventListener('click', ()=> openPostCommentsSheet(el.closest('.post-card').dataset.pid));
     });
   });
+}
+
+/* ===================== BADGES / ACHIEVEMENTS ===================== */
+function computeAchievements(u){
+  const badges = [];
+  const followers = u.followersCount||0;
+  const videos = u.videosCount||0;
+  if(followers>=1000) badges.push({icon:'trophy', label:'نجم كورنر'});
+  else if(followers>=100) badges.push({icon:'fire', label:'شعبية صاعدة'});
+  if(videos>=50) badges.push({icon:'video', label:'صانع محتوى محترف'});
+  else if(videos>=10) badges.push({icon:'video', label:'منتج نشيط'});
+  if(u.verified) badges.push({icon:'verified', label:'حساب موثّق'});
+  if(u.favTeam) badges.push({icon:'star', label:'جماهيري '+u.favTeam});
+  if(badges.length===0) badges.push({icon:'users', label:'عضو في كورنر'});
+  return badges;
 }
 
 /* ===================== PROFILE ===================== */
@@ -2014,21 +2155,29 @@ async function renderProfilePanel(otherUidParam){
   const u = snap.data();
   const bg = CARD_BACKGROUNDS.find(b=>b.id===u.cardBg) || CARD_BACKGROUNDS[0];
   const following = isMe? false : ((userData.followingChannels||[]).includes(targetUid));
+  const badges = computeAchievements(u);
   panel.innerHTML = `
     <div class="profile-wrap">
-      ${!isMe? `<div class="top-header" style="padding-top:0;border:none;"><span class="back" id="profBack">→</span></div>`:""}
+      ${!isMe? `<div class="top-header" style="padding-top:0;border:none;"><span class="back" id="profBack">${icon('back')}</span></div>`:""}
       <div class="player-card" style="background:${bg.css}">
         ${u.favTeam?`<img class="pc-crest-bg" id="pcCrestBg" src="${fallbackTeamAvatar(u.favTeam)}">`:""}
         <div class="pc-top">
           <div class="pc-avatar"><img src="${esc(u.photoURL||'')}" onerror="this.style.background='#1c211c'"></div>
           <div class="pc-followers"><b>${fmtNum(u.followersCount)}</b><span>جماهير</span></div>
         </div>
-        <div class="pc-name">${esc(u.displayName)}</div>
+        <div class="pc-name">${esc(u.displayName)}${verifiedBadge(u.verified)}</div>
         <div class="pc-team">${u.favTeam?`<img class="pc-team-logo" id="pcTeamLogo" src="${fallbackTeamAvatar(u.favTeam)}"><span>⭐ ${esc(u.favTeam)}</span>`:'<span>لسه مختارش فريق</span>'}</div>
       </div>
+      <div class="badges-row">${badges.map(b=>`<div class="badge-chip">${icon(b.icon)}<span>${esc(b.label)}</span></div>`).join("")}</div>
+      <div class="profile-stats">
+        <div class="pstat"><b>${fmtNum(u.followersCount)}</b><span>جماهير</span></div>
+        <div class="pstat"><b>${fmtNum(u.followingCount)}</b><span>يتابع</span></div>
+        <div class="pstat"><b>${fmtNum(u.videosCount||0)}</b><span>فيديوهات</span></div>
+      </div>
       <div class="profile-actions">
-        ${isMe? `<button class="btn-ghost" style="flex:1" id="goSettingsBtn">⚙ الإعدادات</button>`
-              : `<div style="display:flex;gap:8px;width:100%"><button class="btn-next" style="flex:1;background:${following?'var(--bg-elev2)':'var(--pitch)'};color:${following?'#fff':'#08150d'};" id="followProfBtn">${following?'متابَع':'متابعة'}</button><button class="btn-ghost" id="messageProfBtn" style="flex:none">✉️ مراسلة</button></div>`}
+        ${isMe? `<button class="btn-ghost profile-action-btn" id="goSettingsBtn">${icon('settings')} الإعدادات</button>
+                 <button class="btn-ghost profile-action-btn" id="goNotifBtn" style="position:relative">${icon('bell')}<span class="notif-dot ${notifUnreadCount?'':'hidden'}"></span></button>`
+              : `<div style="display:flex;gap:8px;width:100%"><button class="btn-next" style="flex:1;background:${following?'var(--bg-elev2)':'var(--pitch)'};color:${following?'#fff':'#08150d'};" id="followProfBtn">${following?'متابَع':'متابعة'}</button><button class="btn-ghost" id="messageProfBtn" style="flex:none">${icon('message')} مراسلة</button></div>`}
       </div>
       ${(u.followTeams && u.followTeams.length)? `
       <div class="followed-teams-label">الفرق اللي بيتابعها</div>
@@ -2042,7 +2191,10 @@ async function renderProfilePanel(otherUidParam){
       <div id="profileTabBody"></div>
     </div>`;
   if(!isMe) $("#profBack").addEventListener("click",()=>renderProfilePanel());
-  if(isMe) $("#goSettingsBtn").addEventListener("click",()=>switchTab("settings"));
+  if(isMe){
+    $("#goSettingsBtn").addEventListener("click",()=>switchTab("settings"));
+    $("#goNotifBtn").addEventListener("click",()=>openNotificationsSheet());
+  }
   if(!isMe) {
     $("#followProfBtn").addEventListener("click", async ()=>{ await toggleFollowChannel(targetUid); renderProfilePanel(targetUid); });
     $("#messageProfBtn").addEventListener("click", ()=>openChatSheet(targetUid, u.displayName, u.photoURL));
@@ -2078,20 +2230,20 @@ async function loadProfileTabBody(targetUid, isMe){
       console.warn('orderBy failed, falling back',e);
       qs = await db.collection("videos").where("ownerUid","==",targetUid).get();
     }
-    if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">🎬</div>لسه مفيش فيديوهات</div>`; return; }
+    if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات</div>`; return; }
     body.innerHTML = `<div class="my-video-grid">` + qs.docs.map(d=>{
       const v=d.data();
-      return `<div class="thumb" data-vid="${d.id}" title="عرض الفيديو"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div class="vc">👁 ${fmtNum(v.views)}</div></div>`;
+      return `<div class="thumb" data-vid="${d.id}" title="عرض الفيديو"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div class="vc">${icon('eye')} ${fmtNum(v.views)}</div></div>`;
     }).join("") + `</div>`;
     // attach click handlers so thumbnails open video
     body.querySelectorAll('.thumb[data-vid]').forEach(t=>t.addEventListener('click', ()=> openVideoSheet(t.dataset.vid)));
   } else if(profileTab==='lists'){
     body.innerHTML=`<div class="loader">...</div>`;
     const qs = await db.collection("users").doc(targetUid).collection("lists").get();
-    if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">🔖</div>لسه مفيش قوائم محفوظة</div>`; return; }
+    if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('bookmark')}</div>لسه مفيش قوائم محفوظة</div>`; return; }
     body.innerHTML = qs.docs.map(d=>{
       const l=d.data();
-      return `<div class="list-tile" data-lid="${d.id}" title="فتح القائمة"><div class="n">🔖</div><div class="lt-name">${esc(l.name)}</div><div style="color:var(--muted);font-weight:400;font-size:12px;margin-left:auto;">(${(l.videoIds||[]).length})</div></div>`;
+      return `<div class="list-tile" data-lid="${d.id}" title="فتح القائمة"><div class="n">${icon('bookmark')}</div><div class="lt-name">${esc(l.name)}</div><div style="color:var(--muted);font-weight:400;font-size:12px;margin-left:auto;">(${(l.videoIds||[]).length})</div></div>`;
     }).join("");
     // attach click handlers to open list
     body.querySelectorAll('.list-tile[data-lid]').forEach(el=>el.addEventListener('click', ()=> openListSheet(el.dataset.lid)));
@@ -2111,7 +2263,7 @@ async function openListSheet(listId){
       <div class="sheet-body" id="listBody"><div class="loader">جاري التحميل...</div></div>
     </div>`);
   const body = document.getElementById('listBody');
-  if(vids.length===0){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">🔖</div>لا توجد فيديوهات محفوظة</div>`; return; }
+  if(vids.length===0){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('bookmark')}</div>لا توجد فيديوهات محفوظة</div>`; return; }
   // fetch video docs
   const batches = [];
   for(const vid of vids){ batches.push(db.collection('videos').doc(vid).get()); }
@@ -2131,9 +2283,9 @@ async function openVideoSheet(videoId){
       <div class="sheet-title">${esc(v.ownerName||'مستخدم')}</div>
       <div class="sheet-body" id="videoSheetBody" style="display:flex;flex-direction:column;">
         <div style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg-elev);border-radius:10px;overflow:hidden;padding:6px"><video id="sheetVideoPlayer" src="${esc(v.videoURL)}" controls playsinline style="width:100%;height:100%;object-fit:contain"></video></div>
-        <div style="padding:10px 0"><div style="font-weight:800">${esc(v.description||'')}</div><div style="color:var(--muted);font-size:13px;margin-top:6px">👁 ${fmtNum(v.views)} · 💬 ${fmtNum(v.commentsCount||0)}</div></div>
+        <div style="padding:10px 0"><div style="font-weight:800">${esc(v.description||'')}</div><div style="color:var(--muted);font-size:13px;margin-top:6px">${icon('eye')} ${fmtNum(v.views)} · ${icon('comment')} ${fmtNum(v.commentsCount||0)}</div></div>
       </div>
-      <div class="sheet-input-bar"><button id="sheetSaveBtn">🔖 حفظ</button><button id="sheetCommentsBtn">💬 التعليقات</button><button id="sheetShareBtn">↗️ مشاركة</button></div>
+      <div class="sheet-input-bar"><button id="sheetSaveBtn">${icon('save')} حفظ</button><button id="sheetCommentsBtn">${icon('comment')} التعليقات</button><button id="sheetShareBtn">${icon('share')} مشاركة</button></div>
     </div>`);
   // attach actions
   document.getElementById('sheetSaveBtn').addEventListener('click', ()=> openSaveSheet(videoId));
@@ -2155,12 +2307,12 @@ function renderSettingsPanel(){
   panel.innerHTML = `
     <div class="settings-wrap">
       <div class="top-header" style="padding-top:0;border:none;">
-        <span class="back" id="setBack">→</span><span class="t">الإعدادات</span>
+        <span class="back" id="setBack">${icon('back')}</span><span class="t">الإعدادات</span>
       </div>
       <div class="set-section">
         <div class="set-label">الحساب</div>
-        <div class="set-row"><span>الاسم</span><span>${esc(userData.displayName)}</span></div>
-        <div class="set-row" id="changePhotoRow" style="cursor:pointer;"><span>تغيير الصورة</span><span>📷</span>
+        <div class="set-row"><span>الاسم</span><span>${esc(userData.displayName)}${verifiedBadge(userData.verified)}</span></div>
+        <div class="set-row" id="changePhotoRow" style="cursor:pointer;"><span>تغيير الصورة</span><span>${icon('camera')}</span>
           <input type="file" accept="image/*" id="setPhotoInput" style="display:none"></div>
       </div>
       <div class="set-section">
@@ -2172,6 +2324,7 @@ function renderSettingsPanel(){
         <button class="btn-danger" id="logoutBtn">تسجيل الخروج</button>
         <button class="btn-danger" id="deleteBtn">حذف الحساب نهائيًا</button>
       </div>
+      <div class="footer-brand">CORNER by <b>BORKAN</b></div>
     </div>`;
   $("#setBack").addEventListener("click",()=>switchTab("profile"));
   $("#notifToggle").addEventListener("click", async ()=>{
