@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -128,7 +130,7 @@ a{color:inherit;}
 .video-slide video{
   width: 100%;
   height: 100%;
-  object-fit: contain; /* تم التغيير ليظهر الفيديو كاملاً دون قص */
+  object-fit: contain;
   background: #000;
 }
 .vs-top{position:absolute;top:calc(14px + var(--safe-top));left:14px;right:14px;display:flex;
@@ -165,6 +167,36 @@ a{color:inherit;}
   color:var(--muted);text-align:center;padding:40px;gap:10px;}
 .empty-state .big{font-size:38px;}
 .empty-state .big svg{width:44px;height:44px;color:var(--muted);}
+
+/* ---------- MATCH CENTER / MATCH CARDS ---------- */
+.match-card{background:var(--bg-elev);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;margin-bottom:14px;position:relative;overflow:hidden;}
+.match-card.is-live{border-color:rgba(214,69,90,.6);box-shadow:0 0 16px rgba(214,69,90,.15);}
+.match-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12px;color:var(--muted);}
+.match-league{font-weight:800;color:var(--white);display:flex;align-items:center;gap:6px;}
+.match-status{font-size:11px;padding:3px 8px;border-radius:10px;background:var(--bg-elev2);font-weight:700;}
+.match-status.live{background:rgba(214,69,90,.2);color:var(--red);border:1px solid rgba(214,69,90,.4);animation:pulse 1.8s infinite;}
+@keyframes pulse{0%{opacity:1;}50%{opacity:0.5;}100%{opacity:1;}}
+.match-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;text-align:center;gap:8px;padding:14px 0;border-top:1px solid rgba(244,246,243,.08);border-bottom:1px solid rgba(244,246,243,.08);margin-bottom:12px;}
+.team-box{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.team-box img{width:40px;height:40px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.03);padding:2px;}
+.team-name{font-weight:800;font-size:13.5px;}
+.match-score{font-size:22px;font-weight:900;letter-spacing:1px;color:var(--gold);}
+.match-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.match-actions button{flex:1 1 calc(50% - 8px);background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--white);border-radius:14px;padding:10px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
+.match-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:var(--muted);}
+.match-meta .match-btn{background:transparent;border:none;color:var(--gold);font-weight:800;cursor:pointer;padding:0;}
+
+/* Match Center Filter Bar & Standings Table */
+.match-subnav{display:flex;gap:6px;overflow-x:auto;padding:12px 14px;background:var(--bg);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10;}
+.match-subbtn{flex-shrink:0;padding:8px 14px;border-radius:12px;background:var(--bg-elev);color:var(--muted);font-size:12px;font-weight:800;border:1px solid var(--line);}
+.match-subbtn.active{background:var(--pitch);color:#08150d;border-color:var(--pitch);}
+.api-key-banner{background:rgba(231,179,62,.1);border:1px dashed var(--gold);color:var(--gold);padding:10px 14px;border-radius:12px;font-size:11.5px;margin-bottom:12px;line-height:1.5;text-align:center;}
+
+.standings-table{width:100%;border-collapse:collapse;font-size:12px;text-align:center;}
+.standings-table th{background:var(--bg-elev2);color:var(--muted);padding:10px 6px;font-weight:800;}
+.standings-table td{padding:10px 6px;border-bottom:1px solid var(--line);}
+.standings-table .t-name{text-align:right;display:flex;align-items:center;gap:8px;font-weight:800;}
+.standings-table img{width:20px;height:20px;object-fit:contain;}
 
 /* ---------- SHEETS / MODALS ---------- */
 .sheet-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:60;display:flex;align-items:flex-end;}
@@ -362,7 +394,7 @@ a{color:inherit;}
     <div class="footer-brand">CORNER by <b>BORKAN</b></div>
   </div>
 
-  <!-- ONBOARD -->
+  <!-- ONBOARDING -->
   <div id="screen-onboard" class="hidden">
     <div id="ob-step-team">
       <div class="ob-signout">مش انت؟ <span id="obSignOutLink">تسجيل خروج</span></div>
@@ -401,6 +433,7 @@ a{color:inherit;}
     <div class="main-view" id="mainView">
       <div class="tab-panel" id="panel-home"></div>
       <div class="tab-panel hidden" id="panel-search"></div>
+      <div class="tab-panel hidden" id="panel-matches"></div>
       <div class="tab-panel hidden" id="panel-var"></div>
       <div class="tab-panel hidden" id="panel-community"></div>
       <div class="tab-panel hidden" id="panel-profile"></div>
@@ -413,6 +446,7 @@ a{color:inherit;}
     <div class="bottom-nav">
       <button class="nav-btn active" data-tab="home"><span class="ic"></span>الرئيسية</button>
       <button class="nav-btn" data-tab="search"><span class="ic"></span>بحث</button>
+      <button class="nav-btn" data-tab="matches"><span class="ic"></span>الماتشات</button>
       <button class="nav-btn" data-tab="upload"><span class="nav-plus">+</span></button>
       <button class="nav-btn" data-tab="var"><span class="ic"></span>VAR</button>
       <button class="nav-btn" data-tab="community"><span class="ic"></span>المجتمع</button>
@@ -424,6 +458,21 @@ a{color:inherit;}
 </div>
 
 <script>
+/* ===================== CONFIG & FOOTBALL-DATA API ===================== */
+// Paste your Football-Data.org API Key here:
+const FOOTBALL_DATA_API_KEY = "6e6dd669a96d463aac236438787c5ca3";
+
+async function fetchFootballData(endpoint) {
+  try {
+    const res = await fetch(`https://corner-football-proxy.viperabdo625.workers.dev/?endpoint=${encodeURIComponent(endpoint)}`);
+    if(!res.ok) throw new Error(`API response HTTP ${res.status}`);
+    return await res.json();
+  } catch(err) {
+    console.warn("Football-Data API error:", err);
+    return null;
+  }
+}
+
 /* ===================== ICONS (SVG icon system) ===================== */
 const ICONS = {
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>',
@@ -449,6 +498,7 @@ const ICONS = {
   settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>',
   verified:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 14.5 4.3 17.8 4l1 3.2L22 9l-1.5 3 1.5 3-3.2 1.7-1 3.2-3.3-.3L12 22l-2.5-2.4-3.3.3-1-3.2L2 15l1.5-3L2 9l3.2-1.8 1-3.2 3.3.3L12 2Z"/><path d="m8.5 12.2 2.3 2.3 4.5-4.7" stroke="#08150d" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   trophy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5a3 3 0 0 0 3 5M16 5h3a3 3 0 0 1-3 5"/><path d="M12 13v3M9 20h6M10 16.5h4v3.5h-4z"/></svg>',
+  matches:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v6H4z"/><path d="M6 15h12v4H6z"/><circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/></svg>',
   video:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2"/><path d="m15.5 10 6-3.5v11l-6-3.5"/></svg>',
   fire:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-1.5.5-2.5 1-3.3.4 1 1.3 1.3 1.8.8-.3-1.7 0-3.5 1.2-5A6.5 6.5 0 0 0 12 2Z"/></svg>',
   bookmark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg>',
@@ -494,7 +544,28 @@ const CARD_BACKGROUNDS = [
   {id:"derby", label:"الديربي", css:"linear-gradient(160deg,#3a1620,#150609 75%)"}
 ];
 
-// Optional manual mapping: Arabic team name -> Wikipedia page title (English or localized)
+const MATCHES = [
+  {id:'m1', league:'الدوري الإنجليزي', home:'ليفربول', away:'مانشستر سيتي', scoreHome:2, scoreAway:1, status:'انتهت', time:'90+3', homeCrest:'', awayCrest:'', scorers:[{team:'ليفربول', player:'محمد صلاح'},{team:'مانشستر سيتي', player:'إيرلينج هالاند'}], reactions:{like:34,love:18,wow:6,angry:1}},
+  {id:'m2', league:'الدوري الإسباني', home:'ريال مدريد', away:'برشلونة', scoreHome:1, scoreAway:1, status:'نهاية', time:'92', homeCrest:'', awayCrest:'', scorers:[{team:'برشلونة', player:'رونالد أراخو'},{team:'ريال مدريد', player:'فينيسيوس جونيور'}], reactions:{like:28,love:21,wow:9,angry:2}},
+  {id:'m3', league:'الدوري الإيطالي', home:'يوفنتوس', away:'ميلان', scoreHome:0, scoreAway:2, status:'انتهت', time:'90+1', homeCrest:'', awayCrest:'', scorers:[{team:'ميلان', player:'أنتي ريبيتش'},{team:'ميلان', player:'رابيو'}], reactions:{like:19,love:14,wow:4,angry:0}}
+];
+
+const MATCH_REACT_EMOJIS = [
+  {key:'like', icon:'❤', label:'اعجبني'},
+  {key:'love', icon:'😍', label:'حُب'},
+  {key:'wow', icon:'😮', label:'واو'},
+  {key:'angry', icon:'😡', label:'غضب'}
+];
+
+const COMPETITION_CODES = [
+  { code: 'PL', name: 'الدوري الإنجليزي' },
+  { code: 'PD', name: 'الدوري الإسباني' },
+  { code: 'SA', name: 'الدوري الإيطالي' },
+  { code: 'BL1', name: 'الدوري الألماني' },
+  { code: 'FL1', name: 'الدوري الفرنسي' },
+  { code: 'CL', name: 'دوري أبطال أوروبا' }
+];
+
 const TEAM_WIKI_MAP = {
   // ENGLISH LEAGUE
   'أرسنال':'Arsenal_F.C.','أستون فيلا':'Aston_Villa_F.C.','بورنموث':'Bournemouth','برينتفورد':'Brentford_F.C.','برايتون':'Brighton_%26_Hove_Albion_F.C.','تشيلسي':'Chelsea_F.C.','كوفنتري سيتي':'Coventry_City_F.C.','كريستال بالاس':'Crystal_Palace_F.C.','إيفرتون':'Everton_F.C.','فولهام':'Fulham_F.C.','هال سيتي':'Hull_City_A.F.C.','إبسويتش تاون':'Ipswich_Town_F.C.','ليدز يونايتد':'Leeds_United_F.C.','ليفربول':'Liverpool_F.C.','مانشستر سيتي':'Manchester_City_F.C.','مانشستر يونايتد':'Manchester_United_F.C.','نيوكاسل يونايتد':'Newcastle_United_F.C.','نوتنغهام فورست':'Nottingham_Forest_F.C.','سندرلاند':'Sunderland_A.F.C.','توتنهام هوتسبير':'Tottenham_Hotspur_F.C.',
@@ -518,6 +589,10 @@ let communityUnsub=null;
 let sessionViewedIds = new Set();
 let notifUnsub=null, notifUnreadCount=0, notifItems=[];
 let currentChatTarget=null, currentChatUnsub=null;
+let currentMatchChat=null, matchChatUnsub=null;
+let activeMatchFilter = 'today';
+let activeStandingsLeague = 'PL';
+
 const processingPostLikes = new Set();
 
 /* ===================== HELPERS ===================== */
@@ -621,19 +696,16 @@ async function finishProfileSetup(user, name, file, existingPhotoURL){
   const fresh = await userRef.get();
   userData = fresh.data();
 
-  // If there was an onboarding action pending (user selected team before signing in), apply it now
   try{
     const pending = localStorage.getItem('pendingOnboard');
     if(pending){
       const p = JSON.parse(pending);
-      // merge and update user doc
       await userRef.update({
         favTeam: p.favTeam || userData.favTeam,
         followTeams: p.followTeams || userData.followTeams || [],
         cardBg: p.cardBg || userData.cardBg || 'night',
         onboarded: true
       });
-      // refresh userData
       const refreshed = await userRef.get(); userData = refreshed.data();
       localStorage.removeItem('pendingOnboard');
       enterApp();
@@ -645,7 +717,6 @@ async function finishProfileSetup(user, name, file, existingPhotoURL){
 }
 
 auth.onAuthStateChanged(async user=>{
-  // Handles auto sign-in on page reload (session persists via Firebase Auth).
   if(user && !currentUser){
     currentUser = user;
     const snap = await db.collection("users").doc(user.uid).get();
@@ -683,13 +754,6 @@ function renderObStep1(){
   buildLeagueTabs($("#obLeagueTabs"), renderObTeamGrid1);
   renderObTeamGrid1();
 }
-// generate a deterministic color from a string
-function colorFor(s){
-  let h=0; for(let i=0;i<s.length;i++) h = (h<<5)-h + s.charCodeAt(i);
-  h = Math.abs(h);
-  const hue = h % 360; const sat = 45 + (h % 30); const light = 25 + (h % 20);
-  return `linear-gradient(135deg,hsl(${hue} ${sat}% ${light}% / 0.95), hsl(${(hue+30)%360} ${Math.max(30,sat-10)}% ${Math.max(18,light-8)}% / 0.95))`;
-}
 
 function renderObTeamGrid1(){
   buildLeagueTabs($("#obLeagueTabs"), renderObTeamGrid1);
@@ -703,37 +767,17 @@ function renderObTeamGrid1(){
     </div>`;
   }).join("");
   grid.querySelectorAll(".team-card").forEach(c=>c.addEventListener("click",()=>{obFavTeam=c.dataset.t; renderObTeamGrid1();}));
-  // toggle confirm button visibility
   const conf = document.getElementById('obConfirm1'); if(conf){
     if(obFavTeam){ conf.removeAttribute('disabled'); conf.disabled = false; conf.classList.remove('disabled'); }
     else { conf.setAttribute('disabled',''); conf.disabled = true; conf.classList.add('disabled'); }
   }
-  // try to populate real logos in background (defensive call)
   try{
     if(typeof populateTeamLogos === 'function') populateTeamLogos(grid);
-    else if(window && typeof window.populateTeamLogos === 'function') window.populateTeamLogos(grid);
-    else console.warn('populateTeamLogos not available yet');
   }catch(e){ console.warn('populateTeamLogos invocation failed', e); }
 }
 
-function slugifyTeam(name){
-  try{
-    const normalized = name.normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
-    // keep ascii letters/numbers and Arabic block plus spaces and dashes
-    const cleaned = normalized.toLowerCase().replace(/[^0-9a-zA-Z\u0600-\u06FF\s\-]/g,'');
-    return cleaned.trim().replace(/\s+/g,'-');
-  }catch(e){
-    return name.replace(/\s+/g,'-').replace(/[^0-9a-zA-Z\-]/g,'').toLowerCase();
-  }
-}
-
-// Real crest resolver: uses TEAM_WIKI_MAP (Arabic team name -> Wikipedia page title) as the
-// primary, reliable source of real club badges (Wikipedia's REST summary API returns the
-// article's lead image, which for club pages is almost always the crest). Falls back to a
-// clean initials badge only if no real crest could be found. Results are cached so the same
-// team is only fetched once no matter how many grids/cards reference it.
-const TEAM_LOGO_CACHE = {}; // team name -> resolved image URL
-const TEAM_LOGO_PENDING = {}; // team name -> in-flight promise
+const TEAM_LOGO_CACHE = {};
+const TEAM_LOGO_PENDING = {};
 
 function fallbackTeamAvatar(team){
   return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(team) +
@@ -745,11 +789,10 @@ async function fetchWikiThumbnail(pageTitle){
     const resp = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+pageTitle, {headers:{'Accept':'application/json'}});
     if(resp.ok){
       const jd = await resp.json();
-      // prefer the higher-res "originalimage" when present, otherwise the thumbnail
       if(jd && jd.originalimage && jd.originalimage.source) return jd.originalimage.source;
       if(jd && jd.thumbnail && jd.thumbnail.source) return jd.thumbnail.source;
     }
-  }catch(e){ /* ignore, try next source */ }
+  }catch(e){}
   return null;
 }
 
@@ -763,13 +806,11 @@ async function resolveTeamLogo(team){
   if(TEAM_LOGO_CACHE[team]) return TEAM_LOGO_CACHE[team];
   if(TEAM_LOGO_PENDING[team]) return TEAM_LOGO_PENDING[team];
   const p = (async ()=>{
-    // 1) known Wikipedia page title for this team (most reliable — real crest)
     const page = TEAM_WIKI_MAP[team];
     if(page){
       const url = await fetchWikiThumbnail(page);
       if(url) { TEAM_LOGO_CACHE[team]=url; return url; }
     }
-    // 2) try searching Arabic Wikipedia directly by team name as a best-effort fallback
     try{
       const ar = await fetch('https://ar.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(team));
       if(ar.ok){
@@ -778,7 +819,6 @@ async function resolveTeamLogo(team){
         if(src){ TEAM_LOGO_CACHE[team]=src; return src; }
       }
     }catch(e){}
-    // 3) clean initials badge as last resort
     const fb = fallbackTeamAvatar(team);
     TEAM_LOGO_CACHE[team]=fb;
     return fb;
@@ -797,7 +837,7 @@ async function populateTeamLogos(grid){
     try{
       const url = await resolveTeamLogo(team);
       if(url) img.src = url;
-    }catch(e){ /* keep placeholder */ }
+    }catch(e){}
   }));
 }
 
@@ -809,17 +849,12 @@ $("#obNext1").addEventListener("click",()=>{
   renderObTeamGrid2();
 });
 
-// "موافق" (confirm) button: acts exactly like "التالي" (next) — just validates the
-// selection and advances to the follow-teams step. Sign-in only happens later,
-// at the final "دخول التطبيق" step (obFinish), which already handles guests correctly.
 $("#obConfirm1").addEventListener("click", (e)=>{
   e.preventDefault();
   if(!obFavTeam){ toast("اختر فريقك المفضل الأول"); return; }
   $("#obNext1").click();
 });
 
-// Lets the user go back to the sign-in screen if a previous guest/test session
-// was auto-restored by Firebase (this is what skips the auth screen on reload).
 const _obSignOutLink = document.getElementById('obSignOutLink');
 if(_obSignOutLink){
   _obSignOutLink.addEventListener('click', async ()=>{
@@ -843,12 +878,9 @@ function renderObTeamGrid2(){
     if(obFollowSet.has(t)) obFollowSet.delete(t); else obFollowSet.add(t);
     renderObTeamGrid2();
   }));
-  // try to populate real logos in background (defensive call)
   try{
     if(typeof populateTeamLogos === 'function') populateTeamLogos(grid);
-    else if(window && typeof window.populateTeamLogos === 'function') window.populateTeamLogos(grid);
-    else console.warn('populateTeamLogos not available yet');
-  }catch(e){ console.warn('populateTeamLogos invocation failed', e); }
+  }catch(e){}
 }
 $("#obBack2").addEventListener("click",()=>{
   $("#ob-step-follow").style.display="none";
@@ -871,11 +903,9 @@ $("#obBack3").addEventListener("click",()=>{
   $("#ob-step-follow").style.display="flex";
 });
 $("#obFinish").addEventListener("click", async ()=>{
-  // If not signed in yet, save onboarding choices locally then prompt sign-in
   if(!uid()){
     localStorage.setItem('pendingOnboard', JSON.stringify({ favTeam:obFavTeam, followTeams:Array.from(obFollowSet), cardBg:obBg }));
     toast('حفظت إعداداتك مؤقتًا، سجّل دخول وسيتم تطبيقها');
-    // show auth screen so user can sign up
     $('#screen-onboard').classList.add('hidden');
     $('#screen-auth').classList.remove('hidden');
     return;
@@ -918,13 +948,17 @@ $all(".nav-btn").forEach(btn=>{
 });
 function switchTab(tab){
   activeTab=tab;
-  if(tab!=="chat" && currentChatUnsub){ currentChatUnsub(); currentChatUnsub=null; }
+  if(tab!=="chat"){
+    if(currentChatUnsub){ currentChatUnsub(); currentChatUnsub=null; }
+    if(matchChatUnsub){ matchChatUnsub(); matchChatUnsub=null; currentMatchChat=null; }
+  }
   $all(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
-  ["home","search","var","community","profile","settings","notifications","chat"].forEach(t=>{
+  ["home","search","matches","var","community","profile","settings","notifications","chat"].forEach(t=>{
     $("#panel-"+t).classList.toggle("hidden", t!==tab);
   });
   if(tab==="home") renderHomeFeed();
   if(tab==="search") renderSearchPanel();
+  if(tab==="matches") renderMatchesPanel();
   if(tab==="var") renderVarPanel();
   if(tab==="community") renderCommunityPanel();
   if(tab==="profile") renderProfilePanel();
@@ -947,7 +981,7 @@ const NOTIF_META = {
 };
 async function createNotification(toUid, type, extra){
   try{
-    if(!toUid || toUid===uid()) return; // don't notify yourself
+    if(!toUid || toUid===uid()) return;
     await db.collection("notifications").add({
       toUid, type,
       fromUid: uid(), fromName: (userData&&userData.displayName)||"مستخدم", fromPhoto:(userData&&userData.photoURL)||"",
@@ -997,6 +1031,36 @@ function renderNotificationsPanel(){
 }
 function renderChatPanel(){
   const panel = $("#panel-chat");
+  if(currentMatchChat){
+    panel.innerHTML = `
+      <div class="profile-wrap" style="padding-top:calc(14px + var(--safe-top));padding-bottom:0;">
+        <div class="top-header" style="border:none;">
+          <span class="back" id="chatBack">${icon('back')}</span>
+          <span class="t">شات الماتش</span>
+        </div>
+        <div style="padding:0 14px 12px;color:var(--muted);font-size:13px;">${esc(currentMatchChat.title)}</div>
+        <div id="chatPanelBody" style="display:flex;flex-direction:column;gap:10px;padding:0 14px 14px;"></div>
+        <div class="sheet-input-bar"><input id="chatInput" placeholder="اكتب رسالة..."><button id="chatSendBtn">إرسال</button></div>
+      </div>`;
+    document.getElementById('chatBack').addEventListener('click', ()=>{ currentMatchChat=null; if(matchChatUnsub){ matchChatUnsub(); matchChatUnsub=null; } renderChatPanel(); });
+    const listEl = document.getElementById('chatPanelBody');
+    const sendBtn = document.getElementById('chatSendBtn');
+    const input = document.getElementById('chatInput');
+    if(matchChatUnsub) matchChatUnsub();
+    const chatRef = db.collection('match_chats').doc(currentMatchChat.matchId).collection('messages').orderBy('createdAt','asc');
+    matchChatUnsub = chatRef.onSnapshot(qs=>{
+      listEl.innerHTML = qs.docs.map(d=>{
+        const m = d.data(); const me = m.from===uid();
+        return `<div style="display:flex;${me?'justify-content:flex-end;':'justify-content:flex-start;'};padding:6px 0"><div style="max-width:72%;background:${me?'var(--pitch)':'var(--bg-elev2)'};color:${me?'#08150d':'#fff'};padding:10px;border-radius:12px">${esc(m.text)}<div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:${me?'right':'left'}">${timeAgo(m.createdAt)}</div></div></div>`;
+      }).join('');
+      listEl.scrollTop = listEl.scrollHeight;
+    },()=>{});
+    sendBtn.addEventListener('click', async ()=>{
+      const t = sanitizeText(input.value, 1000); if(!t) return; input.value='';
+      await db.collection('match_chats').doc(currentMatchChat.matchId).collection('messages').add({text:t, from:uid(), createdAt:FieldValue.serverTimestamp()});
+    });
+    return;
+  }
   if(!currentChatTarget){
     const recent = [...new Map(notifItems.filter(n=>n.type==='message').map(n=>[n.fromUid,{uid:n.fromUid,name:n.fromName,photo:n.fromPhoto}])).values()];
     panel.innerHTML = `
@@ -1141,7 +1205,6 @@ function renderHomeFeed(){
       drawFeed();
     }, err=>{ console.error(err); panel.innerHTML=`<div class="empty-state"><div class="big">⚠️</div>تعذر تحميل الفيديوهات</div>`; });
 }
-/* ===================== FEED DRAW & REACTION FIX ===================== */
 
 function drawFeed(){
   const scrollEl=$("#feedScroll");
@@ -1151,7 +1214,6 @@ function drawFeed(){
     return;
   }
 
-  // إذا كانت الفيديوهات معروضة بالفعل في الشاشة، نقوم بتحديث الأرقام والحالات فقط بدون مسح الـ HTML أو إعادة تشغيل الفيديو
   const existingSlides = scrollEl.querySelectorAll(".video-slide");
   if(existingSlides.length > 0) {
     feedVideos.forEach((v) => {
@@ -1163,7 +1225,6 @@ function drawFeed(){
     return;
   }
 
-  // الرسم لأول مرة فقط عند فتح التطبيق
   scrollEl.innerHTML = feedVideos.map((v,i)=>videoSlideHTML(v,i)).join("");
   scrollEl.querySelectorAll(".video-slide").forEach((slide,i)=>bindVideoSlide(slide, feedVideos[i]));
 
@@ -1191,7 +1252,6 @@ function setupFeedObserver(){
 }
 
 function updateSlideFromData(slide, v){
-  // avoid resetting video playback; update counters and text
   const vid = slide.querySelector('video');
   if(vid && vid.src !== v.videoURL){ try{ const cur = vid.currentTime; vid.src = v.videoURL; vid.currentTime = cur; }catch(e){} }
   const cname = slide.querySelector('.cname'); if(cname) cname.innerHTML = esc(v.ownerName||'مستخدم') + verifiedBadge(v.ownerVerified);
@@ -1200,7 +1260,7 @@ function updateSlideFromData(slide, v){
   const redBtn = slide.querySelector('[data-act="red"] .cnt'); if(redBtn) redBtn.textContent = fmtNum(v.redCount);
   const commBtn = slide.querySelector('[data-act="comments"] .cnt'); if(commBtn) commBtn.textContent = fmtNum(v.commentsCount);
   const desc = slide.querySelector('.vs-desc'); if(desc) desc.innerHTML = renderHashtags(v.description||'');
-  // reaction active classes
+  
   const myReaction = (v.reactions && v.reactions[uid()]) || null;
   const goalSide = slide.querySelector('[data-act="goal" ]'); if(goalSide) goalSide.classList.toggle('active-goal', myReaction==='goal');
   const redSide = slide.querySelector('[data-act="red" ]'); if(redSide) redSide.classList.toggle('active-red', myReaction==='red');
@@ -1210,7 +1270,6 @@ function maybeCountView(videoId){
   if(!videoId || sessionViewedIds.has(videoId)) return;
   sessionViewedIds.add(videoId);
   setTimeout(()=>{
-    // count only if still viewed (best-effort real, precise, single-count view)
     db.collection("videos").doc(videoId).update({views:FieldValue.increment(1)}).catch(()=>{});
   },3000);
 }
@@ -1299,11 +1358,10 @@ function spawnGoalPop(slide,x,y){
   el.style.left=(x-35)+"px"; el.style.top=(y-35)+"px";
   slide.appendChild(el); setTimeout(()=>el.remove(),900);
 }
-/* Single, canonical reaction handler: optimistic UI update + background transaction + notification. */
+
 async function doReaction(videoId, type){
   const u=uid(); if(!u){toast("سجل دخولك الأول");return;}
 
-  // 1. تحديث لحظي سريع للشاشة (بدون ما الفيديو يعيد أو يقطع)
   const slide = document.querySelector(`.video-slide[data-id="${videoId}"]`);
   if(slide) {
     const goalBtn = slide.querySelector('[data-act="goal"]');
@@ -1341,7 +1399,6 @@ async function doReaction(videoId, type){
     }
   }
 
-  // 2. تحديث قاعدة البيانات في الخلفية
   const ref = db.collection("videos").doc(videoId);
   let ownerUidForNotif = null, becameActive=false;
   try {
@@ -1393,7 +1450,6 @@ async function toggleFollowChannel(targetUid){
 }
 
 function updateFollowButtons(){
-  // Update follow buttons on visible video slides without full redraw
   const slides = document.querySelectorAll('.video-slide');
   slides.forEach(s=>{
     const owner = s.dataset.owner;
@@ -1416,11 +1472,10 @@ function closeSheet(){
   $("#sheetHost").innerHTML="";
   if(commentsUnsub){ commentsUnsub(); commentsUnsub=null; }
   if(postCommentsUnsub){ postCommentsUnsub(); postCommentsUnsub=null; }
-  // unsubscribe open reply listeners
   Object.keys(videoRepliesUnsubs||{}).forEach(k=>{ try{ videoRepliesUnsubs[k](); }catch(e){}; delete videoRepliesUnsubs[k]; });
   Object.keys(postRepliesUnsubs||{}).forEach(k=>{ try{ postRepliesUnsubs[k](); }catch(e){}; delete postRepliesUnsubs[k]; });
-  // unsubscribe chats
   Object.keys(chatsUnsubs||{}).forEach(k=>{ try{ chatsUnsubs[k](); }catch(e){}; delete chatsUnsubs[k]; });
+  if(matchChatUnsub){ matchChatUnsub(); matchChatUnsub=null; currentMatchChat=null; }
 }
 
 function openCommentsSheet(videoId){
@@ -1467,13 +1522,11 @@ function openCommentsSheet(videoId){
           toggleCommentLike(videoId,cid);
         });
       });
-      // reply / show replies handlers
       body.querySelectorAll('[data-act="replyBtn"]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
           const row = btn.closest('.comment-row');
           const cid = row.dataset.cid;
-          // insert inline reply input
-          if(row.querySelector('.reply-input')) return; // already open
+          if(row.querySelector('.reply-input')) return;
           const ri = document.createElement('div'); ri.className='reply-input'; ri.style.marginTop='8px';
           ri.innerHTML = `<input placeholder="اكتب رد..." style="width:70%;padding:8px;border-radius:10px;background:var(--bg-elev2);border:1px solid var(--line);color:#fff;margin-left:6px"> <button style="padding:8px 10px;background:var(--pitch);color:#08150d;border-radius:10px">رد</button>`;
           row.querySelector('div').appendChild(ri);
@@ -1518,7 +1571,6 @@ async function toggleCommentLike(videoId,cid){
   else await ref.update({likes:FieldValue.arrayUnion(uid())});
 }
 
-// --- Post comments sheet (for community posts) ---
 function openPostCommentsSheet(postId){
   if(postCommentsUnsub){ postCommentsUnsub(); postCommentsUnsub=null; }
   openSheet(`
@@ -1558,7 +1610,6 @@ function openPostCommentsSheet(postId){
           });
         });
       });
-      // reply / show replies handlers
       body.querySelectorAll('[data-act="replyBtn"]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
           const row = btn.closest('.comment-row'); const cid = row.dataset.cid;
@@ -1587,10 +1638,8 @@ function openPostCommentsSheet(postId){
     });
 }
 
-// replies management
 const videoRepliesUnsubs = {};
 const postRepliesUnsubs = {};
-// chats management
 const chatsUnsubs = {};
 
 function chatIdFor(a,b){ return [a,b].sort().join('_'); }
@@ -1604,7 +1653,6 @@ function openChatSheet(targetUid, targetName, targetPhoto){
 function toggleShowVideoReplies(videoId, cid, container){
   if(!container) return;
   if(container.dataset.open==='1'){
-    // close
     if(videoRepliesUnsubs[cid]){ videoRepliesUnsubs[cid](); delete videoRepliesUnsubs[cid]; }
     container.innerHTML = '';
     container.dataset.open='0';
@@ -1629,7 +1677,6 @@ function toggleShowVideoReplies(videoId, cid, container){
           });
         });
       });
-      // attach reply-to-reply handlers and load any existing subreplies once
       container.querySelectorAll('[data-act="replyToReply"]').forEach((btn, idx)=>{
         btn.addEventListener('click', ()=>{
           const row = btn.closest('.reply-row'); if(!row) return;
@@ -1642,8 +1689,7 @@ function toggleShowVideoReplies(videoId, cid, container){
           send.addEventListener('click', async ()=>{
             const text = sanitizeText(input.value, 500); if(!text) return; input.value='';
             const ref = db.collection('videos').doc(videoId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies');
-            const created = await ref.add({ text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp() });
-            // append to DOM
+            await ref.add({ text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp() });
             const sub = row.querySelector('.subreplies');
             const el = document.createElement('div'); el.innerHTML = `<div style="display:flex;gap:8px;padding:6px 0"><img src="${esc(userData.photoURL||'')}" style="width:26px;height:26px;border-radius:6px;object-fit:cover"><div style="font-size:13px;"><b style=\"font-weight:800;\">${esc(userData.displayName)}</b><div style=\"margin-top:4px;\">${esc(text)}</div></div></div>`;
             sub.insertBefore(el, sub.firstChild);
@@ -1651,7 +1697,6 @@ function toggleShowVideoReplies(videoId, cid, container){
           });
         });
       });
-      // load existing subreplies for each reply (one-time fetch)
       container.querySelectorAll('.reply-row').forEach((rEl, i)=>{
         const rid = rEl.dataset.rid; const subWrap = rEl.querySelector('.subreplies');
         db.collection('videos').doc(videoId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies').orderBy('createdAt','desc').get().then(sqs=>{
@@ -1693,7 +1738,6 @@ function toggleShowPostReplies(postId, cid, container){
           });
         });
       });
-      // attach reply-to-reply handlers and load any existing subreplies once
       container.querySelectorAll('[data-act="replyToReply"]').forEach((btn, idx)=>{
         btn.addEventListener('click', ()=>{
           const row = btn.closest('.reply-row'); if(!row) return;
@@ -1706,8 +1750,7 @@ function toggleShowPostReplies(postId, cid, container){
           send.addEventListener('click', async ()=>{
             const text = sanitizeText(input.value, 500); if(!text) return; input.value='';
             const ref = db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies');
-            const created = await ref.add({ text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp() });
-            // append to DOM
+            await ref.add({ text, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||'', likes:[], createdAt:FieldValue.serverTimestamp() });
             const sub = row.querySelector('.subreplies');
             const el = document.createElement('div'); el.innerHTML = `<div style="display:flex;gap:8px;padding:6px 0"><img src="${esc(userData.photoURL||'')}" style="width:26px;height:26px;border-radius:6px;object-fit:cover"><div style="font-size:13px;"><b style=\"font-weight:800;\">${esc(userData.displayName)}</b><div style=\"margin-top:4px;\">${esc(text)}</div></div></div>`;
             sub.insertBefore(el, sub.firstChild);
@@ -1715,7 +1758,6 @@ function toggleShowPostReplies(postId, cid, container){
           });
         });
       });
-      // load existing subreplies for each reply (one-time fetch)
       container.querySelectorAll('.reply-row').forEach((rEl, i)=>{
         const rid = rEl.dataset.rid; const subWrap = rEl.querySelector('.subreplies');
         db.collection('posts').doc(postId).collection('comments').doc(cid).collection('replies').doc(rid).collection('replies').orderBy('createdAt','desc').get().then(sqs=>{
@@ -1797,7 +1839,6 @@ function openShareSheet(videoId){
     closeSheet();
   });
 }
-
 
 function openVideoMenuSheet(v){
   openSheet(`
@@ -1891,6 +1932,258 @@ function renderSearchPanel(){
   $("#searchInput").addEventListener("keydown", e=>{ if(e.key==="Enter") runSearch(sanitizeText($("#searchInput").value, 60)); });
   renderSearchHistory();
 }
+
+/* ===================== MATCH CENTER ===================== */
+function renderMatchesPanel(){
+  const panel=$("#panel-matches");
+  panel.innerHTML = `
+    <div class="top-header"><span class="t">مركز المباريات</span></div>
+    <div class="match-subnav">
+      <button class="match-subbtn ${activeMatchFilter==='today'?'active':''}" data-mfilter="today">اليوم</button>
+      <button class="match-subbtn ${activeMatchFilter==='live'?'active':''}" data-mfilter="live">مباشر 🔴</button>
+      <button class="match-subbtn ${activeMatchFilter==='upcoming'?'active':''}" data-mfilter="upcoming">المقبلة</button>
+      <button class="match-subbtn ${activeMatchFilter==='standings'?'active':''}" data-mfilter="standings">جدول الترتيب</button>
+    </div>
+    <div id="matchesContainer" style="padding:14px 14px 90px;"></div>`;
+
+  panel.querySelectorAll('.match-subbtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      activeMatchFilter = btn.dataset.mfilter;
+      renderMatchesPanel();
+    });
+  });
+
+  const container = $("#matchesContainer");
+  if(activeMatchFilter === 'standings') {
+    renderStandingsView(container);
+  } else {
+    loadMatchCenterMatches(container, activeMatchFilter);
+  }
+}
+
+async function loadMatchCenterMatches(container, filter) {
+  container.innerHTML = `<div class="loader">جاري تحميل المباريات من Football-Data...</div>`;
+
+  let apiEndpoint = '';
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  if(filter === 'today'){
+    apiEndpoint = `matches?dateFrom=${todayStr}&dateTo=${todayStr}`;
+  } else if(filter === 'live'){
+    apiEndpoint = `matches?status=IN_PLAY,PAUSED`;
+  } else if(filter === 'upcoming'){
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    const nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7);
+    apiEndpoint = `matches?dateFrom=${tomorrow.toISOString().split('T')[0]}&dateTo=${nextWeek.toISOString().split('T')[0]}`;
+  }
+
+  const apiData = await fetchFootballData(apiEndpoint);
+
+  let html = '';
+  if(!FOOTBALL_DATA_API_KEY || FOOTBALL_DATA_API_KEY === "6e6dd669a96d463aac236438787c5ca3"){
+  }
+
+  if(apiData && apiData.matches && apiData.matches.length > 0) {
+    html += apiData.matches.map(m => formatApiMatchCard(m)).join('');
+    container.innerHTML = html;
+    bindMatchCardEvents(container);
+  } else if(apiData && apiData.matches && apiData.matches.length === 0) {
+    html += `<div class="empty-state"><div class="big">${icon('matches')}</div>لا توجد مباريات متاحة لهذا الفلتر حالياً</div>`;
+    container.innerHTML = html;
+  } else {
+    // Fallback to static matches array
+    const filteredMatches = MATCHES;
+    html += filteredMatches.map(m => formatMockMatchCard(m)).join('');
+    container.innerHTML = html;
+    bindMatchCardEvents(container);
+  }
+}
+
+function formatApiMatchCard(m) {
+  const isLive = m.status === 'IN_PLAY' || m.status === 'PAUSED';
+  const statusLabel = isLive ? 'مباشر 🔴' : (m.status === 'FINISHED' ? 'انتهت' : new Date(m.utcDate).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}));
+  const homeScore = m.score && m.score.fullTime && m.score.fullTime.home !== null ? m.score.fullTime.home : '-';
+  const awayScore = m.score && m.score.fullTime && m.score.fullTime.away !== null ? m.score.fullTime.away : '-';
+  const competitionName = (m.competition && m.competition.name) ? m.competition.name : 'مباراة دولية';
+  const matchId = 'api_' + m.id;
+
+  return `
+    <div class="match-card ${isLive?'is-live':''}" data-match="${esc(matchId)}">
+      <div class="match-header">
+        <span class="match-league">${esc(competitionName)}</span>
+        <span class="match-status ${isLive?'live':''}">${statusLabel}</span>
+      </div>
+      <div class="match-teams">
+        <div class="team-box">
+          <img src="${esc(m.homeTeam.crest || fallbackTeamAvatar(m.homeTeam.name))}" onerror="this.src='${fallbackTeamAvatar(m.homeTeam.name)}'">
+          <div class="team-name">${esc(m.homeTeam.shortName || m.homeTeam.name)}</div>
+        </div>
+        <div class="match-score">${homeScore} : ${awayScore}</div>
+        <div class="team-box">
+          <img src="${esc(m.awayTeam.crest || fallbackTeamAvatar(m.awayTeam.name))}" onerror="this.src='${fallbackTeamAvatar(m.awayTeam.name)}'">
+          <div class="team-name">${esc(m.awayTeam.shortName || m.awayTeam.name)}</div>
+        </div>
+      </div>
+      <div class="match-actions">
+        ${MATCH_REACT_EMOJIS.map(react=>`<button class="match-react-btn" data-match="${esc(matchId)}" data-react="${react.key}">${react.icon} ${react.label}</button>`).join('')}
+      </div>
+      <div class="match-meta">
+        <button class="match-btn" data-act="details" data-mid="${m.id}">تفاصيل المباراة</button>
+        <button class="match-btn" data-act="chat" data-match="${esc(matchId)}" data-title="${esc((m.homeTeam.shortName||m.homeTeam.name) + ' - ' + (m.awayTeam.shortName||m.awayTeam.name))}">شات الماتش</button>
+      </div>
+    </div>`;
+}
+
+function formatMockMatchCard(m) {
+  const totalReacts = Object.values(m.reactions || {}).reduce((sum,v)=>sum+v, 0);
+  return `
+    <div class="match-card" data-match="${esc(m.id)}">
+      <div class="match-header">
+        <span class="match-league">${esc(m.league)}</span>
+        <span class="match-status">${esc(m.status)} · ${esc(m.time)}</span>
+      </div>
+      <div class="match-teams">
+        <div class="team-box">
+          <img src="${m.homeCrest || fallbackTeamAvatar(m.home)}" onerror="this.src='${fallbackTeamAvatar(m.home)}'">
+          <div class="team-name">${esc(m.home)}</div>
+        </div>
+        <div class="match-score">${m.scoreHome} : ${m.scoreAway}</div>
+        <div class="team-box">
+          <img src="${m.awayCrest || fallbackTeamAvatar(m.away)}" onerror="this.src='${fallbackTeamAvatar(m.away)}'">
+          <div class="team-name">${esc(m.away)}</div>
+        </div>
+      </div>
+      <div class="match-actions">
+        ${MATCH_REACT_EMOJIS.map(react=>`<button class="match-react-btn" data-match="${esc(m.id)}" data-react="${react.key}">${react.icon} ${react.label} ${fmtNum((m.reactions&&m.reactions[react.key])||0)}</button>`).join('')}
+      </div>
+      <div class="match-meta">
+        <span>التفاعلات ${fmtNum(totalReacts)}</span>
+        <button class="match-btn" data-act="scorers" data-match="${esc(m.id)}">مين سجل</button>
+        <button class="match-btn" data-act="chat" data-match="${esc(m.id)}" data-title="${esc(m.home + ' - ' + m.away)}">شات الماتش</button>
+      </div>
+    </div>`;
+}
+
+function bindMatchCardEvents(container) {
+  container.querySelectorAll('.match-react-btn').forEach(btn=>btn.addEventListener('click', ()=>{
+    const matchId = btn.dataset.match; const react = btn.dataset.react;
+    toggleMatchReaction(matchId, react);
+  }));
+  container.querySelectorAll('.match-btn[data-act="scorers"]').forEach(btn=>btn.addEventListener('click', ()=>openScorersSheet(btn.dataset.match)));
+  container.querySelectorAll('.match-btn[data-act="details"]').forEach(btn=>btn.addEventListener('click', ()=>openApiMatchDetails(btn.dataset.mid)));
+  container.querySelectorAll('.match-btn[data-act="chat"]').forEach(btn=>btn.addEventListener('click', ()=>{
+    const mId = btn.dataset.match;
+    const title = btn.dataset.title || 'شات المباراة';
+    openMatchChat(mId, title);
+  }));
+}
+
+async function renderStandingsView(container) {
+  let selectHtml = `<div style="margin-bottom:14px;display:flex;gap:8px;overflow-x:auto;">`;
+  COMPETITION_CODES.forEach(c => {
+    selectHtml += `<button class="league-tab ${activeStandingsLeague===c.code?'active':''}" data-ccode="${c.code}">${c.name}</button>`;
+  });
+  selectHtml += `</div><div id="standingsContent"><div class="loader">جاري تحميل جدول الترتيب...</div></div>`;
+  container.innerHTML = selectHtml;
+
+  container.querySelectorAll('.league-tab').forEach(b => {
+    b.addEventListener('click', () => {
+      activeStandingsLeague = b.dataset.ccode;
+      renderStandingsView(container);
+    });
+  });
+
+  const content = $("#standingsContent");
+  const data = await fetchFootballData(`competitions/${activeStandingsLeague}/standings`);
+
+
+
+  if(data && data.standings && data.standings[0]) {
+    const tableData = data.standings[0].table;
+    let tHtml = `
+      <table class="standings-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th style="text-align:right">الفريق</th>
+            <th>لعب</th>
+            <th>له</th>
+            <th>عليه</th>
+            <th>نقاط</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    tableData.forEach(row => {
+      tHtml += `
+        <tr>
+          <td><b>${row.position}</b></td>
+          <td class="t-name"><img src="${esc(row.team.crest)}" onerror="this.style.display='none'"> ${esc(row.team.shortName || row.team.name)}</td>
+          <td>${row.playedGames}</td>
+          <td>${row.goalsFor}</td>
+          <td>${row.goalsAgainst}</td>
+          <td style="color:var(--gold);font-weight:900">${row.points}</td>
+        </tr>`;
+    });
+    tHtml += `</tbody></table>`;
+    content.innerHTML = tHtml;
+  } else {
+    content.innerHTML = `<div class="empty-state">تعذر تحميل جدول الترتيب الآن</div>`;
+  }
+}
+
+async function openApiMatchDetails(matchId) {
+  openSheet(`
+    <div class="sheet" style="height:60%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">تفاصيل المباراة</div>
+      <div class="sheet-body" id="matchDetailsBody"><div class="loader">جاري التحميل...</div></div>
+    </div>`);
+  const body = $("#matchDetailsBody");
+  const data = await fetchFootballData(`matches/${matchId}`);
+  if(data) {
+    const venue = data.venue || 'غير محدد';
+    const referee = (data.referees && data.referees[0]) ? data.referees[0].name : 'غير محدد';
+    body.innerHTML = `
+      <div style="padding:10px;line-height:1.8;font-size:13.5px">
+        <div><b>الملعب:</b> ${esc(venue)}</div>
+        <div><b>الحكم:</b> ${esc(referee)}</div>
+        <div><b>المنافسة:</b> ${esc(data.competition ? data.competition.name : '')}</div>
+        <div><b>المرحلة:</b> ${esc(data.stage || '')}</div>
+        <div style="margin-top:12px;font-weight:800;color:var(--gold)">النتيجة التفصيلية:</div>
+        <div>الشوط الأول: ${data.score.halfTime.home ?? 0} - ${data.score.halfTime.away ?? 0}</div>
+        <div>الوقت الأصلي: ${data.score.fullTime.home ?? 0} - ${data.score.fullTime.away ?? 0}</div>
+      </div>`;
+  } else {
+    body.innerHTML = `<div class="empty-state">تعذر جلب تفاصيل المباراة</div>`;
+  }
+}
+
+function toggleMatchReaction(matchId, react){
+  const match = MATCHES.find(m=>m.id===matchId);
+  if(match){
+    match.reactions[react] = (match.reactions[react]||0) + 1;
+  }
+  toast("تم تسجيل تفاعلك!");
+  renderMatchesPanel();
+}
+function openScorersSheet(matchId){
+  const match = MATCHES.find(m=>m.id===matchId);
+  if(!match) return;
+  openSheet(`
+    <div class="sheet" style="height:48%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">من سجل في المباراة</div>
+      <div class="sheet-body" style="padding:16px;">
+        ${match.scorers.map(s=>`<div class="list-row"><span>${esc(s.player)}</span><span>${esc(s.team)}</span></div>`).join('')}
+      </div>
+    </div>`);
+}
+function openMatchChat(matchId, title){
+  if(!uid()){ toast('سجل دخول عشان تدخل شات الماتش'); return; }
+  currentMatchChat = {matchId, title};
+  currentChatTarget = null;
+  switchTab('chat');
+}
 async function renderSearchHistory(){
   const list=$("#searchList");
   const snap = await db.collection("users").doc(uid()).get();
@@ -1944,7 +2237,6 @@ async function runSearch(q){
   if(videosRes.length){
     list.innerHTML += `<div class="section-label">فيديوهات</div><div class="sr-vid-grid">` +
       videosRes.map(v=>`<div class="thumb" data-vid="${v.id}"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div class="vc">${icon('eye')} ${fmtNum(v.views)}</div></div>`).join("") + `</div>`;
-    // attach click handlers
     setTimeout(()=>{ list.querySelectorAll('.sr-vid-grid .thumb[data-vid]').forEach(t=>t.addEventListener('click', ()=>openVideoSheet(t.dataset.vid))); },60);
   }
   if(!usersRes.length && !videosRes.length){
@@ -2205,7 +2497,7 @@ async function renderProfilePanel(otherUidParam){
     loadProfileTabBody(targetUid, isMe);
   }));
   loadProfileTabBody(targetUid, isMe);
-  // resolve real crests for favorite team (card + watermark) and followed teams strip
+
   if(u.favTeam){
     resolveTeamLogo(u.favTeam).then(url=>{
       const a=$("#pcTeamLogo"), b=$("#pcCrestBg");
@@ -2235,7 +2527,6 @@ async function loadProfileTabBody(targetUid, isMe){
       const v=d.data();
       return `<div class="thumb" data-vid="${d.id}" title="عرض الفيديو"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div class="vc">${icon('eye')} ${fmtNum(v.views)}</div></div>`;
     }).join("") + `</div>`;
-    // attach click handlers so thumbnails open video
     body.querySelectorAll('.thumb[data-vid]').forEach(t=>t.addEventListener('click', ()=> openVideoSheet(t.dataset.vid)));
   } else if(profileTab==='lists'){
     body.innerHTML=`<div class="loader">...</div>`;
@@ -2245,12 +2536,10 @@ async function loadProfileTabBody(targetUid, isMe){
       const l=d.data();
       return `<div class="list-tile" data-lid="${d.id}" title="فتح القائمة"><div class="n">${icon('bookmark')}</div><div class="lt-name">${esc(l.name)}</div><div style="color:var(--muted);font-weight:400;font-size:12px;margin-left:auto;">(${(l.videoIds||[]).length})</div></div>`;
     }).join("");
-    // attach click handlers to open list
     body.querySelectorAll('.list-tile[data-lid]').forEach(el=>el.addEventListener('click', ()=> openListSheet(el.dataset.lid)));
   }
 }
 
-// open list and show contained videos (with clickable thumbs)
 async function openListSheet(listId){
   const ref = db.collection('users').doc(uid()).collection('lists').doc(listId);
   const snap = await ref.get(); if(!snap.exists){ toast('القائمة غير موجودة'); return; }
@@ -2264,7 +2553,6 @@ async function openListSheet(listId){
     </div>`);
   const body = document.getElementById('listBody');
   if(vids.length===0){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('bookmark')}</div>لا توجد فيديوهات محفوظة</div>`; return; }
-  // fetch video docs
   const batches = [];
   for(const vid of vids){ batches.push(db.collection('videos').doc(vid).get()); }
   const docs = await Promise.all(batches);
@@ -2273,7 +2561,6 @@ async function openListSheet(listId){
   body.querySelectorAll('.list-thumb').forEach(t=>t.addEventListener('click', ()=> openVideoSheet(t.dataset.vid)));
 }
 
-// open a single video in a sheet player
 async function openVideoSheet(videoId){
   const snap = await db.collection('videos').doc(videoId).get(); if(!snap.exists){ toast('الفيديو غير موجود'); return; }
   const v = snap.data();
@@ -2287,11 +2574,9 @@ async function openVideoSheet(videoId){
       </div>
       <div class="sheet-input-bar"><button id="sheetSaveBtn">${icon('save')} حفظ</button><button id="sheetCommentsBtn">${icon('comment')} التعليقات</button><button id="sheetShareBtn">${icon('share')} مشاركة</button></div>
     </div>`);
-  // attach actions
   document.getElementById('sheetSaveBtn').addEventListener('click', ()=> openSaveSheet(videoId));
   document.getElementById('sheetCommentsBtn').addEventListener('click', ()=>{ closeSheet(); setTimeout(()=>openCommentsSheet(videoId),120); });
   document.getElementById('sheetShareBtn').addEventListener('click', ()=>{ openShareSheet(videoId); });
-  // increment view safely
   maybeCountView(videoId);
   const player = document.getElementById('sheetVideoPlayer'); player.play().catch(()=>{});
 }
