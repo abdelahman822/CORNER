@@ -1861,20 +1861,15 @@ function openChatSheet(targetUid, targetName, targetPhoto){
   activeChatTab = 'direct';
   switchTab('chat');
 }
-/* ===================== DIRECT CHAT WITH FUT GIFTS ===================== */
 function openDirectConversationWindow(targetUser){
+  
   const mainWin = $("#chatMainWindow");
   if(!mainWin) return;
 
   mainWin.innerHTML = `
-    <div style="padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; background:var(--bg-elev);">
-      <div style="display:flex; align-items:center; gap:10px;">
-        <img src="${esc(targetUser.photo||'')}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" onerror="this.style.background='#1c211c'">
-        <div style="font-weight:900; font-size:14px;">${esc(targetUser.name)}</div>
-      </div>
-      <button id="directGiftBtn" style="background:rgba(231,179,62,.15); border:1px solid var(--gold); color:var(--gold); border-radius:12px; padding:6px 12px; font-size:12px; font-weight:800; cursor:pointer;">
-        🎁 إهداء كارت / XP
-      </button>
+    <div style="padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; background:var(--bg-elev);">
+      <img src="${esc(targetUser.photo||'')}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" onerror="this.style.background='#1c211c'">
+      <div style="font-weight:900; font-size:14px;">${esc(targetUser.name)}</div>
     </div>
 
     <div id="directChatMessages" style="flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px;">
@@ -1886,8 +1881,6 @@ function openDirectConversationWindow(targetUser){
       <button id="directSendBtn" style="background:var(--pitch); color:#08150d; font-weight:900;">إرسال</button>
     </div>`;
 
-  $("#directGiftBtn").addEventListener('click', () => openGiftCardOrXpSheet(targetUser));
-
   const listEl = $("#directChatMessages");
   const cid = chatIdFor(uid(), targetUser.uid);
 
@@ -1897,44 +1890,6 @@ function openDirectConversationWindow(targetUser){
       listEl.innerHTML = qs.docs.map(d => {
         const m = d.data();
         const me = m.from === uid();
-
-        // 1) رسالة هدية كارت FUT
-        if (m.type === 'gift_card' && m.player) {
-          return `
-            <div style="display:flex; ${me ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
-              <div style="max-width:220px; background:linear-gradient(135deg,#3a2a05,#1d1402); border:1.5px solid var(--gold); padding:12px; border-radius:16px; text-align:center; box-shadow:0 4px 15px rgba(231,179,62,.25);">
-                <div style="font-size:11px; color:var(--gold); font-weight:900; margin-bottom:6px;">🎁 هدية كارت FUT</div>
-                <div class="fut-card" style="margin:0 auto 8px;">
-                  <div class="card-top"><span class="rating">${m.player.rating}</span></div>
-                  <img class="player-img" src="${esc(m.player.photo)}">
-                  <div class="card-bottom">${esc(m.player.name)}</div>
-                </div>
-                ${!me ? `
-                  <button class="claim-gift-btn" data-cid="${cid}" data-msgid="${d.id}" ${m.claimed?'disabled':''} style="width:100%; background:${m.claimed?'var(--bg-elev2)':'var(--pitch)'}; color:${m.claimed?'var(--muted)':'#08150d'}; font-weight:900; border-radius:10px; padding:6px; font-size:11px;">
-                    ${m.claimed ? 'تم الاستلام ✅' : '📥 استلام الكارت'}
-                  </button>
-                ` : `<div style="font-size:10px; color:var(--gold);">أرسلت كارت ${esc(m.player.name)} هدية</div>`}
-              </div>
-            </div>`;
-        }
-
-        // 2) رسالة هدية نقاط XP
-        if (m.type === 'gift_xp' && m.amount) {
-          return `
-            <div style="display:flex; ${me ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
-              <div style="max-width:220px; background:linear-gradient(135deg,#125c33,#08150d); border:1.5px solid var(--pitch); padding:12px; border-radius:16px; text-align:center;">
-                <div style="font-size:22px; margin-bottom:4px;">💰</div>
-                <div style="font-weight:900; font-size:13px; color:var(--white);">هدية ${m.amount} XP!</div>
-                ${!me ? `
-                  <button class="claim-gift-btn" data-cid="${cid}" data-msgid="${d.id}" ${m.claimed?'disabled':''} style="width:100%; margin-top:8px; background:${m.claimed?'var(--bg-elev2)':'var(--gold)'}; color:${m.claimed?'var(--muted)':'#3a2a05'}; font-weight:900; border-radius:10px; padding:6px; font-size:11px;">
-                    ${m.claimed ? 'تم الاستلام ✅' : `📥 استلام ${m.amount} XP`}
-                  </button>
-                ` : `<div style="font-size:10px; color:var(--pitch); margin-top:4px;">أرسلت ${m.amount} XP هدية</div>`}
-              </div>
-            </div>`;
-        }
-
-        // الرسائل النصية العادية
         return `
           <div style="display:flex; ${me ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
             <div style="max-width:72%; background:${me ? 'var(--pitch)' : 'var(--bg-elev2)'}; color:${me ? '#08150d' : '#fff'}; padding:10px 14px; border-radius:14px;">
@@ -1943,17 +1898,7 @@ function openDirectConversationWindow(targetUser){
             </div>
           </div>`;
       }).join('');
-
       listEl.scrollTop = listEl.scrollHeight;
-
-      // أزرار استلام الهدايا
-      listEl.querySelectorAll('.claim-gift-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const chatId = btn.dataset.cid;
-          const msgId = btn.dataset.msgid;
-          claimChatGift(chatId, msgId);
-        });
-      });
     });
 
   $("#directSendBtn").addEventListener('click', async () => {
@@ -1969,158 +1914,6 @@ function openDirectConversationWindow(targetUser){
 
     createNotification(targetUser.uid, 'message', { text: t });
   });
-}
-let giftTab = 'card';
-
-function openGiftCardOrXpSheet(targetUser){
-  const unlocked = Array.isArray(userData && userData.unlockedPlayers) ? userData.unlockedPlayers : [];
-  const ownedPlayers = STAR_PLAYERS.filter(p => unlocked.includes(p.id));
-  const myXp = userData ? (userData.xp || 0) : 0;
-
-  openSheet(`
-    <div class="sheet" style="height:75%">
-      <div class="sheet-handle"></div>
-      <div class="sheet-title">🎁 إهداء هدية لـ ${esc(targetUser.name)}</div>
-      
-      <div class="profile-tabs" style="padding:0 14px; margin-bottom:10px;">
-        <div class="ptab ${giftTab==='card'?'active':''}" id="tabGiftCard">كروت FUT الممتلكة</div>
-        <div class="ptab ${giftTab==='xp'?'active':''}" id="tabGiftXp">نقاط XP</div>
-      </div>
-
-      <div class="sheet-body" id="giftBody"></div>
-    </div>`);
-
-  $("#tabGiftCard").addEventListener('click', ()=>{ giftTab='card'; openGiftCardOrXpSheet(targetUser); });
-  $("#tabGiftXp").addEventListener('click', ()=>{ giftTab='xp'; openGiftCardOrXpSheet(targetUser); });
-
-  const body = $("#giftBody");
-
-  if(giftTab === 'card'){
-    if(ownedPlayers.length === 0){
-      body.innerHTML = `<div class="empty-state">لا تملك كروت FUT جاهزة للإهداء! اشترِ كروت من السوق أولاً 🛒</div>`;
-      return;
-    }
-
-    body.innerHTML = `
-      <div style="font-size:11.5px; color:var(--muted); text-align:center; margin-bottom:10px;">اختر كارت لإرساله هدية (سيتم تحويل ملكيته لصديقك):</div>
-      <div class="player-picker-grid">
-        ${ownedPlayers.map(p => `
-          <div class="fut-card" data-pid="${p.id}" style="margin:0 auto;">
-            <div class="card-top"><span class="rating">${p.rating}</span></div>
-            <img class="player-img" src="${esc(p.photo)}">
-            <div class="card-bottom">🎁 إهداء ${esc(p.name)}</div>
-          </div>
-        `).join('')}
-      </div>`;
-
-    body.querySelectorAll('.fut-card').forEach(card => {
-      card.addEventListener('click', async () => {
-        const pId = card.dataset.pid;
-        const playerObj = STAR_PLAYERS.find(x => x.id === pId);
-        if(!playerObj) return;
-
-        const cid = chatIdFor(uid(), targetUser.uid);
-
-        // خصم الكارت من قائمة المقتنيات للمُرسِل
-        await db.collection("users").doc(uid()).update({
-          unlockedPlayers: FieldValue.arrayRemove(pId)
-        });
-        userData.unlockedPlayers = (userData.unlockedPlayers||[]).filter(x => x !== pId);
-
-        // إرسال رسالة الكارت في الشات
-        await db.collection('chats').doc(cid).collection('messages').add({
-          type: 'gift_card',
-          player: playerObj,
-          from: uid(),
-          to: targetUser.uid,
-          claimed: false,
-          createdAt: FieldValue.serverTimestamp()
-        });
-
-        toast(`تم إرسال كارت ${playerObj.name} هدية 🎁`);
-        closeSheet();
-      });
-    });
-
-  } else {
-    body.innerHTML = `
-      <div style="padding:10px; text-align:center;">
-        <div style="font-size:12.5px; color:var(--gold); font-weight:800; margin-bottom:12px;">💰 رصيدك المتاح: ${fmtNum(myXp)} XP</div>
-        <input class="auth-input" id="giftXpAmount" type="number" min="10" max="${myXp}" placeholder="اكتب عدد النقاط (مثال: 50)" style="max-width:100%; margin-bottom:14px;">
-        <button id="sendXpGiftBtn" style="width:100%; background:var(--pitch); color:#08150d; font-weight:900; padding:12px; border-radius:12px;">
-          إرسال النقاط هدية 🎁
-        </button>
-      </div>`;
-
-    $("#sendXpGiftBtn").addEventListener('click', async () => {
-      const amount = parseInt($("#giftXpAmount").value) || 0;
-      if(amount < 10){ toast("الحد الأدنى للإهداء 10 XP"); return; }
-      if(amount > myXp){ toast("رصيدك غير كافٍ لهذا المبلغ!"); return; }
-
-      const cid = chatIdFor(uid(), targetUser.uid);
-
-      // خصم النقاط من الراسل
-      await db.collection("users").doc(uid()).update({
-        xp: FieldValue.increment(-amount)
-      });
-      userData.xp = (userData.xp || 0) - amount;
-
-      // إرسال رسالة نقاط XP
-      await db.collection('chats').doc(cid).collection('messages').add({
-        type: 'gift_xp',
-        amount: amount,
-        from: uid(),
-        to: targetUser.uid,
-        claimed: false,
-        createdAt: FieldValue.serverTimestamp()
-      });
-
-      toast(`تم إرسال ${amount} XP هدية 🎁`);
-      closeSheet();
-      if(activeTab === 'profile') renderProfilePanel();
-    });
-  }
-}
-/* ===================== CLAIM GIFT TRANSACTION ===================== */
-async function claimChatGift(chatId, msgId) {
-  if(!uid()) return;
-  const ref = db.collection('chats').doc(chatId).collection('messages').doc(msgId);
-
-  try {
-    await db.runTransaction(async t => {
-      const doc = await t.get(ref);
-      if(!doc.exists) return;
-      const m = doc.data();
-
-      if(m.claimed) throw new Error("تم استلام هذه الهدية مسبقاً!");
-      if(m.to !== uid()) throw new Error("هذه الهدية ليست موجهة لك!");
-
-      const receiverRef = db.collection('users').doc(uid());
-
-      if(m.type === 'gift_card' && m.player) {
-        // إضافة الكارت لمقتنيات المستلِم
-        t.update(receiverRef, {
-          unlockedPlayers: FieldValue.arrayUnion(m.player.id)
-        });
-      } else if(m.type === 'gift_xp' && m.amount) {
-        // إضافة نقاط الـ XP لرصيد المستلِم
-        t.update(receiverRef, {
-          xp: FieldValue.increment(m.amount)
-        });
-      }
-
-      t.update(ref, { claimed: true });
-    });
-
-    // تحديث البيانات المحلية
-    const fresh = await db.collection('users').doc(uid()).get();
-    userData = fresh.data();
-
-    toast("🎉 مبروك! تم استلام الهدية وإضافتها لحسابك والمقتنيات!");
-    if(currentChatTarget) openDirectConversationWindow(currentChatTarget);
-  } catch(e) {
-    toast(e.message || "حدث خطأ أثناء استلام الهدية");
-  }
 }
 
  roomImgFile = null;
