@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -171,8 +169,10 @@ a{color:inherit;}
 /* ---------- MATCH CENTER / MATCH CARDS ---------- */
 .match-card{background:var(--bg-elev);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;margin-bottom:14px;position:relative;overflow:hidden;}
 .match-card.is-live{border-color:rgba(214,69,90,.6);box-shadow:0 0 16px rgba(214,69,90,.15);}
+.match-card.is-followed{border-color:rgba(231,179,62,.55);}
 .match-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12px;color:var(--muted);}
 .match-league{font-weight:800;color:var(--white);display:flex;align-items:center;gap:6px;}
+.followed-star{color:var(--gold);font-size:12px;}
 .match-status{font-size:11px;padding:3px 8px;border-radius:10px;background:var(--bg-elev2);font-weight:700;}
 .match-status.live{background:rgba(214,69,90,.2);color:var(--red);border:1px solid rgba(214,69,90,.4);animation:pulse 1.8s infinite;}
 @keyframes pulse{0%{opacity:1;}50%{opacity:0.5;}100%{opacity:1;}}
@@ -183,6 +183,7 @@ a{color:inherit;}
 .match-score{font-size:22px;font-weight:900;letter-spacing:1px;color:var(--gold);}
 .match-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
 .match-actions button{flex:1 1 calc(50% - 8px);background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--white);border-radius:14px;padding:10px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
+.match-react-btn.active-react{background:var(--pitch);color:#08150d;border-color:var(--pitch);font-weight:800;}
 .match-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:var(--muted);}
 .match-meta .match-btn{background:transparent;border:none;color:var(--gold);font-weight:800;cursor:pointer;padding:0;}
 
@@ -306,8 +307,26 @@ a{color:inherit;}
 .player-card::before{content:"";position:absolute;top:-40%;right:-30%;width:220px;height:220px;
   background:radial-gradient(circle,rgba(231,179,62,.35),transparent 65%);}
 .pc-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:2;}
-.pc-avatar{width:66px;height:66px;border-radius:16px;overflow:hidden;border:2px solid var(--gold);background:var(--bg-elev2);}
-.pc-avatar img{width:100%;height:100%;object-fit:cover;}
+.pc-avatar {
+  width: 95px;
+  height: 95px;
+  border-radius: 0;
+  overflow: visible;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.7));
+  transform: scale(1.15);
+}
 .pc-followers{text-align:center;}
 .pc-followers b{font-size:26px;display:block;font-family:Arial Black,sans-serif;}
 .pc-followers span{font-size:10px;color:rgba(244,246,243,.75);}
@@ -367,13 +386,418 @@ a{color:inherit;}
 .ob-signout span{color:var(--gold);text-decoration:underline;cursor:pointer;}
 .footer-brand{text-align:center;font-size:10.5px;color:var(--muted);letter-spacing:1px;margin-top:6px;}
 .footer-brand b{color:var(--gold);}
+/* ---------- MATCH PREDICTIONS ---------- */
+.match-predictions-wrap {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+.pred-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: var(--gold);
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.pred-buttons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.pred-btn {
+  flex: 1;
+  background: var(--bg-elev2);
+  border: 1px solid var(--line);
+  color: var(--white);
+  border-radius: 10px;
+  padding: 7px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pred-btn.active {
+  background: var(--pitch);
+  color: #08150d;
+  border-color: var(--pitch);
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(34,163,90,.3);
+}
+.pred-bar {
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  background: var(--bg-elev2);
+  margin-bottom: 5px;
+}
+.pred-seg {
+  height: 100%;
+  transition: width .3s ease;
+}
+.pred-seg.home { background: var(--pitch); }
+.pred-seg.draw { background: var(--gold); }
+.pred-seg.away { background: #3b82f6; } /* أزرق للضيف */
+
+.pred-pcts {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.pred-pcts span.active-pct {
+  color: var(--white);
+  font-weight: 900;
+}
+/* ---------- FUT GOLD CARD & PITCH STYLE ---------- */
+.dream-pitch {
+  background: radial-gradient(circle at center, #185a33 0%, #082414 85%);
+  border: 2px solid #e7b33e;
+  border-radius: 24px;
+  padding: 20px 8px;
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(0,0,0,.7);
+}
+.pitch-lines {
+  position: absolute;
+  inset: 12px;
+  border: 1.5px solid rgba(255,255,255,.18);
+  border-radius: 16px;
+  pointer-events: none;
+}
+.pitch-center-line {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  right: 12px;
+  height: 1.5px;
+  background: rgba(255,255,255,.18);
+}
+.pitch-center-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 75px;
+  height: 75px;
+  border: 1.5px solid rgba(255,255,255,.18);
+  border-radius: 50%;
+}
+.pitch-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+.pitch-row:last-child { margin-bottom: 0; }
+
+/* FUT Gold Card Container */
+.fut-card {
+  width: 66px;
+  height: 98px;
+  background: linear-gradient(135deg, #f7d060 0%, #c3881a 50%, #8a5700 100%);
+  border-radius: 10px 10px 18px 18px;
+  border: 1.5px solid #fff5cc;
+  box-shadow: 0 6px 14px rgba(0,0,0,.6);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+}
+.fut-card:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 10px 20px rgba(231,179,62,.4); }
+
+/* FUT Card Internal Elements */
+.fut-card .card-top {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  z-index: 3;
+}
+.fut-card .rating { font-size: 11px; font-weight: 900; color: #3a2a05; }
+.fut-card .pos { font-size: 8px; font-weight: 800; color: #523b08; }
+
+.fut-card .player-img {
+  width: 100%;
+  height: 68px;
+  object-fit: contain;
+  margin-top: 4px;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,.5));
+}
+.fut-card .card-bottom {
+  background: linear-gradient(180deg, #3a2a05, #1d1402);
+  color: #f7d060;
+  text-align: center;
+  font-size: 8.5px;
+  font-weight: 900;
+  padding: 3px 2px;
+  border-top: 1px solid #f7d060;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 3;
+}
+
+/* Empty Fut Card Placeholder */
+.fut-card.empty {
+  background: rgba(20,24,20,.6);
+  border: 1.5px dashed rgba(231,179,62,.5);
+  align-items: center;
+  justify-content: center;
+}
+.fut-card.empty .add-icon { font-size: 20px; color: var(--gold); }
+.fut-card.empty .empty-pos { font-size: 9px; font-weight: 800; color: var(--muted); margin-top: 2px; }
+
+/* Modal Grid Picker */
+.player-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 10px 4px;
+}
+/* ---------- COMMUNITY POLLS ---------- */
+.poll-inputs-wrap {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--bg-elev2);
+  border-radius: 12px;
+  border: 1px dashed var(--line);
+}
+.poll-input {
+  width: 100%;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #fff;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.poll-input:last-child { margin-bottom: 0; }
+
+/* Display Polls in Post Card */
+.post-poll-wrap {
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.poll-option-btn {
+  position: relative;
+  background: var(--bg-elev2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.poll-option-btn.voted {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.poll-fill-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: rgba(231,179,62,.18);
+  pointer-events: none;
+  transition: width .3s ease;
+}
+.poll-option-btn.voted .poll-fill-bar {
+  background: rgba(34,163,90,.25);
+}
+.poll-pct-text {
+  font-size: 12px;
+  font-weight: 900;
+  z-index: 2;
+}
+.poll-option-label {
+  z-index: 2;
+}
+/* ---------- MATCH DATE STRIP ---------- */
+.match-date-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 10px;
+  margin-bottom: 8px;
+  scrollbar-width: none;
+}
+.match-date-strip::-webkit-scrollbar { display: none; }
+
+.date-chip {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--bg-elev2);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: all .15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.date-chip.active {
+  background: var(--pitch);
+  color: #08150d;
+  border-color: var(--pitch);
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(34,163,90,.3);
+}
+/* ---------- WHATSAPP MESSENGER LAYOUT ---------- */
+.whatsapp-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  height: calc(100vh - 110px);
+  background: var(--bg);
+  overflow: hidden;
+}
+@media (min-width: 700px) {
+  .whatsapp-layout {
+    grid-template-columns: 320px 1fr; /* اليمين للقائمة واليسار للشات */
+  }
+}
+
+.chat-sidebar {
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev);
+  overflow-y: auto;
+}
+.chat-main-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg);
+  position: relative;
+}
+.chat-user-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background .15s;
+}
+.chat-user-item:hover, .chat-user-item.active {
+  background: rgba(34,163,90,.15);
+}
+.chat-user-item img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+/* ---------- DAILY SPIN WHEEL ---------- */
+.wheel-wrapper {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  margin: 15px auto;
+}
+.wheel-pointer {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32px;
+  z-index: 10;
+  filter: drop-shadow(0 2px 4px #000);
+}
+.wheel-disc {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 5px solid var(--gold);
+  box-shadow: 0 0 25px rgba(231,179,62,.5);
+  background: conic-gradient(
+    #22a35a 0deg 60deg,
+    #e7b33e 60deg 120deg,
+    #3b82f6 120deg 180deg,
+    #9333ea 180deg 240deg,
+    #d6455a 240deg 300deg,
+    #f59e0b 300deg 360deg
+  );
+  position: relative;
+  transition: transform 4s cubic-bezier(0.15, 0.85, 0.15, 1);
+}
+.wheel-center-cap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 3px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  z-index: 5;
+  /* الأرقام داخل مثلثات العجلة */
+.wheel-num {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.9);
+  pointer-events: none;
+  margin-top: -10px;
+  margin-left: -20px;
+  width: 40px;
+  text-align: center;
+}
+.pos-1 { transform: rotate(30deg) translateY(-80px) rotate(-30deg); }
+.pos-2 { transform: rotate(90deg) translateY(-80px) rotate(-90deg); }
+.pos-3 { transform: rotate(150deg) translateY(-80px) rotate(-150deg); }
+.pos-4 { transform: rotate(210deg) translateY(-80px) rotate(-210deg); }
+.pos-5 { transform: rotate(270deg) translateY(-80px) rotate(-270deg); }
+.pos-6 { transform: rotate(330deg) translateY(-80px) rotate(-330deg); }
+}
+
 </style>
 </head>
 <body>
 <div id="app">
 
   <div id="screen-splash">
-    <img src="2.png" alt="Loading">
+    <img src="corner.png" alt="Loading">
   </div>
   <!-- AUTH -->
   <div id="screen-auth" class="hidden">
@@ -458,17 +882,83 @@ a{color:inherit;}
 </div>
 
 <script>
+
+ const STAR_PLAYERS = [
+  // -------------------------------------------------------------
+  // ⚽ الهجوم (صورك المحلية من 1.png إلى 11.png)
+  // -------------------------------------------------------------
+  { id:'p1', name:'محمد صلاح', cat:'att', rating:92, photo:'1.png' },
+  { id:'p2', name:'ليونيل ميسي', cat:'att', rating:94, photo:'2.png' },
+  { id:'p3', name:'رونالدو', cat:'att', rating:92, photo:'3.png' },
+  { id:'p4', name:'إمبابي', cat:'att', rating:93, photo:'4.png' },
+  { id:'p5', name:'هالاند', cat:'att', rating:92, photo:'5.png' },
+  { id:'p6', name:'فينيسيوس', cat:'att', rating:90, photo:'6.png' },
+  { id:'p7', name:'لامين يامال', cat:'att', rating:89, photo:'7.png' },
+  { id:'p8', name:'هاري كين', cat:'att', rating:90, photo:'8.png' },
+  { id:'p9', name:'ليفاندوفسكي', cat:'att', rating:89, photo:'9.png' },
+  { id:'p10', name:'نيمار', cat:'att', rating:89, photo:'10.png' },
+  { id:'p11', name:'كول بالمر', cat:'att', rating:87, photo:'11.png' },
+
+  // -------------------------------------------------------------
+  // ⚙️ خط الوسط (صورك المحلية من 12.png إلى 17.png)
+  // -------------------------------------------------------------
+  { id:'p28', name:'زيدان', cat:'mid', rating:94, photo:'12.png' },
+  { id:'p29', name:'إنييستا', cat:'mid', rating:92, photo:'13.png' },
+  { id:'p26', name:'فيرتز', cat:'mid', rating:88, photo:'14.png' },
+  { id:'p25', name:'موسيالا', cat:'mid', rating:88, photo:'15.png' },
+  { id:'p21', name:'بيدري', cat:'mid', rating:87, photo:'16.png' },
+  { id:'p24', name:'أوديجارد', cat:'mid', rating:88, photo:'17.png' },
+  { id:'p16', name:'دي بروين', cat:'mid', rating:91, photo:'https://cdn.futbin.com/content/fifa24/img/players/192985.png' },
+  { id:'p17', name:'بيلينجهام', cat:'mid', rating:91, photo:'https://cdn.futbin.com/content/fifa24/img/players/252371.png' },
+  { id:'p18', name:'رودري', cat:'mid', rating:91, photo:'https://cdn.futbin.com/content/fifa24/img/players/231866.png' },
+  { id:'p19', name:'مودريتش', cat:'mid', rating:88, photo:'https://cdn.futbin.com/content/fifa24/img/players/177003.png' },
+  { id:'p20', name:'توني كروس', cat:'mid', rating:89, photo:'https://cdn.futbin.com/content/fifa24/img/players/182521.png' },
+  { id:'p22', name:'فالفيردي', cat:'mid', rating:88, photo:'https://cdn.futbin.com/content/fifa24/img/players/239053.png' },
+  { id:'p23', name:'برونو فيرنانديز', cat:'mid', rating:88, photo:'https://cdn.futbin.com/content/fifa24/img/players/212198.png' },
+
+  // -------------------------------------------------------------
+  // 🛡️ خط الدفاع (سيرفر EA Sports FUT)
+  // -------------------------------------------------------------
+  { id:'p31', name:'فان دايك', cat:'def', rating:90, photo:'https://cdn.futbin.com/content/fifa24/img/players/203376.png' },
+  { id:'p32', name:'سيرخيو راموس', cat:'def', rating:89, photo:'https://cdn.futbin.com/content/fifa24/img/players/155862.png' },
+  { id:'p33', name:'روبن دياز', cat:'def', rating:89, photo:'https://cdn.futbin.com/content/fifa24/img/players/239818.png' },
+  { id:'p35', name:'ماركينوس', cat:'def', rating:87, photo:'https://cdn.futbin.com/content/fifa24/img/players/207865.png' },
+  { id:'p36', name:'صليبا', cat:'def', rating:87, photo:'https://cdn.futbin.com/content/fifa24/img/players/243715.png' },
+  { id:'p37', name:'أرنولد', cat:'def', rating:87, photo:'https://cdn.futbin.com/content/fifa24/img/players/231281.png' },
+  { id:'p38', name:'أشرف حكيمي', cat:'def', rating:87, photo:'https://cdn.futbin.com/content/fifa24/img/players/235212.png' },
+  { id:'p39', name:'كارفاخال', cat:'def', rating:86, photo:'https://cdn.futbin.com/content/fifa24/img/players/204963.png' },
+  { id:'p40', name:'ديفيز', cat:'def', rating:86, photo:'https://cdn.futbin.com/content/fifa24/img/players/234396.png' },
+  { id:'p41', name:'ثيو هيرنانديز', cat:'def', rating:86, photo:'https://cdn.futbin.com/content/fifa24/img/players/232656.png' },
+
+  // -------------------------------------------------------------
+  // 🧤 حراس المرمى (سيرفر EA Sports FUT)
+  // -------------------------------------------------------------
+  { id:'p45', name:'كورتوا', cat:'gk', rating:90, photo:'https://cdn.futbin.com/content/fifa24/img/players/192119.png' },
+  { id:'p46', name:'أليسون', cat:'gk', rating:89, photo:'https://cdn.futbin.com/content/fifa24/img/players/212831.png' },
+  { id:'p47', name:'نوير', cat:'gk', rating:89, photo:'18.png' },
+  { id:'p48', name:'إيدرسون', cat:'gk', rating:88, photo:'https://cdn.futbin.com/content/fifa24/img/players/210257.png' },
+  { id:'p49', name:'أوبلاك', cat:'gk', rating:88, photo:'19.png' },
+  { id:'p50', name:'دوناروما', cat:'gk', rating:87, photo:'https://cdn.futbin.com/content/fifa24/img/players/230621.png' }
+];
 /* ===================== CONFIG & FOOTBALL-DATA API ===================== */
 // Paste your Football-Data.org API Key here:
 const FOOTBALL_DATA_API_KEY = "6e6dd669a96d463aac236438787c5ca3";
 
+/* ===================== FAST API FETCH WITH 3s TIMEOUT ===================== */
 async function fetchFootballData(endpoint) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000); // قطع الاتصال بعد 3 ثوانٍ كحد أقصى
+
   try {
-    const res = await fetch(`https://corner-football-proxy.viperabdo625.workers.dev/?endpoint=${encodeURIComponent(endpoint)}`);
+    const res = await fetch(`https://corner-football-proxy.viperabdo625.workers.dev/?endpoint=${encodeURIComponent(endpoint)}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
     if(!res.ok) throw new Error(`API response HTTP ${res.status}`);
     return await res.json();
   } catch(err) {
-    console.warn("Football-Data API error:", err);
+    clearTimeout(timeoutId);
+    console.warn("Football-Data API error / timeout:", err);
     return null;
   }
 }
@@ -590,7 +1080,9 @@ let sessionViewedIds = new Set();
 let notifUnsub=null, notifUnreadCount=0, notifItems=[];
 let currentChatTarget=null, currentChatUnsub=null;
 let currentMatchChat=null, matchChatUnsub=null;
-let activeMatchFilter = 'today';
+let activeMatchFilter = 'all';
+let matchTeamSearchQuery = '';
+let lastLoadedMatchesContainer = null;
 let activeStandingsLeague = 'PL';
 
 const processingPostLikes = new Set();
@@ -796,11 +1288,13 @@ async function fetchWikiThumbnail(pageTitle){
   return null;
 }
 
+
+
 async function resolveTeamLogo(team){
   if(!team) return fallbackTeamAvatar('؟');
   const normalized = String(team).trim();
   if(normalized === 'بورنموث' || normalized === 'Bournemouth'){
-    TEAM_LOGO_CACHE[team] = './1.png';
+    TEAM_LOGO_CACHE[team] = './bournemouth.png';
     return TEAM_LOGO_CACHE[team];
   }
   if(TEAM_LOGO_CACHE[team]) return TEAM_LOGO_CACHE[team];
@@ -965,7 +1459,9 @@ function switchTab(tab){
   if(tab==="settings") renderSettingsPanel();
   if(tab==="notifications") renderNotificationsPanel();
   if(tab==="chat") renderChatPanel();
+  if(tab!=="matches"){ clearMatchReactionsListeners(); }
 }
+
 
 /* ===================== NOTIFICATIONS ===================== */
 const NOTIF_META = {
@@ -1029,91 +1525,877 @@ function renderNotificationsPanel(){
     batch.commit().catch(()=>{});
   }
 }
-function renderChatPanel(){
+/* =========================================================================
+   WHATSAPP CHAT & TEAM ROOMS SYSTEM (الكود الموحد المكتمل)
+   ========================================================================= */
+
+ currentTeamChatUnsub = null;
+ activeChatTab = 'teams'; 
+ roomImgFile = null;
+
+// 1) شاشة الدردشة الرئيسية بتصميم الواتساب
+/* ===================== WHATSAPP CHAT WITH DYNAMIC ACTIVE HIGHLIGHT ===================== */
+async function renderChatPanel(){
   const panel = $("#panel-chat");
-  if(currentMatchChat){
-    panel.innerHTML = `
-      <div class="profile-wrap" style="padding-top:calc(14px + var(--safe-top));padding-bottom:0;">
-        <div class="top-header" style="border:none;">
-          <span class="back" id="chatBack">${icon('back')}</span>
-          <span class="t">شات الماتش</span>
+
+  panel.innerHTML = `
+    <div class="whatsapp-layout">
+      <!-- الشريط الأيمن (قائمة الأشخاص والمجموعات) -->
+      <div class="chat-sidebar">
+        <div style="padding:14px; border-bottom:1px solid var(--line);">
+          <div style="font-weight:900; font-size:16px; margin-bottom:10px;">الدردشة والمجموعات</div>
+          <div class="profile-tabs" style="margin:0;">
+            <div class="ptab ${activeChatTab==='direct'?'active':''}" id="tabDirectChat">💬 الرسائل</div>
+            <div class="ptab ${activeChatTab==='teams'?'active':''}" id="tabTeamsGroup">🛡️ المجموعات</div>
+          </div>
         </div>
-        <div style="padding:0 14px 12px;color:var(--muted);font-size:13px;">${esc(currentMatchChat.title)}</div>
-        <div id="chatPanelBody" style="display:flex;flex-direction:column;gap:10px;padding:0 14px 14px;"></div>
-        <div class="sheet-input-bar"><input id="chatInput" placeholder="اكتب رسالة..."><button id="chatSendBtn">إرسال</button></div>
-      </div>`;
-    document.getElementById('chatBack').addEventListener('click', ()=>{ currentMatchChat=null; if(matchChatUnsub){ matchChatUnsub(); matchChatUnsub=null; } renderChatPanel(); });
-    const listEl = document.getElementById('chatPanelBody');
-    const sendBtn = document.getElementById('chatSendBtn');
-    const input = document.getElementById('chatInput');
-    if(matchChatUnsub) matchChatUnsub();
-    const chatRef = db.collection('match_chats').doc(currentMatchChat.matchId).collection('messages').orderBy('createdAt','asc');
-    matchChatUnsub = chatRef.onSnapshot(qs=>{
-      listEl.innerHTML = qs.docs.map(d=>{
-        const m = d.data(); const me = m.from===uid();
-        return `<div style="display:flex;${me?'justify-content:flex-end;':'justify-content:flex-start;'};padding:6px 0"><div style="max-width:72%;background:${me?'var(--pitch)':'var(--bg-elev2)'};color:${me?'#08150d':'#fff'};padding:10px;border-radius:12px">${esc(m.text)}<div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:${me?'right':'left'}">${timeAgo(m.createdAt)}</div></div></div>`;
-      }).join('');
-      listEl.scrollTop = listEl.scrollHeight;
-    },()=>{});
-    sendBtn.addEventListener('click', async ()=>{
-      const t = sanitizeText(input.value, 1000); if(!t) return; input.value='';
-      await db.collection('match_chats').doc(currentMatchChat.matchId).collection('messages').add({text:t, from:uid(), createdAt:FieldValue.serverTimestamp()});
-    });
-    return;
-  }
-  if(!currentChatTarget){
-    const recent = [...new Map(notifItems.filter(n=>n.type==='message').map(n=>[n.fromUid,{uid:n.fromUid,name:n.fromName,photo:n.fromPhoto}])).values()];
-    panel.innerHTML = `
-      <div class="profile-wrap" style="padding-top:calc(14px + var(--safe-top));padding-bottom:24px;">
-        <div class="top-header" style="border:none;">
-          <span class="back" id="chatBack">${icon('back')}</span>
-          <span class="t">المحادثات</span>
+
+        <div id="sidebarListContent" style="flex:1; overflow-y:auto;">
+          <div class="loader">جاري التحميل...</div>
         </div>
-        <div class="notif-list-body">
-          ${recent.length ? recent.map(u=>`<div class="notif-row" data-uid="${u.uid}"><img src="${esc(u.photo||'')}" onerror="this.style.background='#1c211c'"><div><div class="notif-text">${esc(u.name)}</div><div class="notif-preview">اضغط للدردشة</div></div></div>`).join('') : `<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('message')}</div>لا توجد محادثات حتى الآن</div>`}
+      </div>
+
+      <!-- النافذة الرئيسية اليسرى (محادثة الشخص أو المجموعة الحالية) -->
+      <div class="chat-main-window" id="chatMainWindow">
+        <div class="empty-state">
+          <div class="big">${icon('message')}</div>
+          اختر شخصاً أو مجموعة من القائمة للبدء في الشات 💬
         </div>
-      </div>`;
-    document.getElementById('chatBack').addEventListener('click', ()=> switchTab('profile'));
-    panel.querySelectorAll('.notif-row[data-uid]').forEach(el=>{
-      el.addEventListener('click', ()=>{
-        const uid = el.dataset.uid;
-        const user = notifItems.find(n=>n.fromUid===uid);
-        if(user) openChatSheet(uid, user.fromName, user.fromPhoto||'');
+      </div>
+    </div>`;
+
+  $("#tabDirectChat").addEventListener('click', ()=>{ activeChatTab='direct'; renderChatPanel(); });
+  $("#tabTeamsGroup").addEventListener('click', ()=>{ activeChatTab='teams'; renderChatPanel(); });
+
+  const sidebarList = $("#sidebarListContent");
+
+  // 1) عرض كل المتابَعين والأصدقاء مع تظليل ديناميكي
+  if(activeChatTab === 'direct'){
+    const followingUids = Array.isArray(userData && userData.followingChannels) ? userData.followingChannels : [];
+    const msgUids = notifItems.filter(n=>n.fromUid).map(n=>n.fromUid);
+    
+    const allFriendUids = [...new Set([...followingUids, ...msgUids])].filter(id => id && id !== uid());
+
+    let usersList = [];
+    if(allFriendUids.length > 0) {
+      try {
+        const batches = [];
+        for (let i = 0; i < allFriendUids.length; i += 10) {
+          const chunk = allFriendUids.slice(i, i + 10);
+          batches.push(db.collection("users").where("uid", "in", chunk).get());
+        }
+        const snaps = await Promise.all(batches);
+        snaps.forEach(snap => {
+          snap.docs.forEach(d => usersList.push(d.data()));
+        });
+      } catch(e){ console.warn("Fetch friends failed", e); }
+    }
+
+    if(usersList.length === 0){
+      sidebarList.innerHTML = `<div class="empty-state" style="padding:20px;font-size:12px;">تابع بعض الأصدقاء لتبدأ الدردشة معهم!</div>`;
+    } else {
+      sidebarList.innerHTML = `
+        <div style="padding:10px 12px; border-bottom:1px solid var(--line);">
+          <input class="auth-input" id="chatUserSearch" placeholder="🔍 ابحث عن صديق..." style="max-width:100%; padding:8px 10px; font-size:12px; margin:0;">
+        </div>
+        <div id="directUsersList"></div>`;
+
+      const renderUsers = (query = '') => {
+        const listEl = $("#directUsersList");
+        if(!listEl) return;
+        const q = query.toLowerCase().trim();
+        const filtered = usersList.filter(u => (u.displayName||'').toLowerCase().includes(q));
+
+        if(filtered.length === 0){
+          listEl.innerHTML = `<div class="empty-state" style="padding:20px;font-size:12px;">لا يوجد صديق بهذا الاسم</div>`;
+          return;
+        }
+
+        listEl.innerHTML = filtered.map(u => `
+          <div class="chat-user-item ${currentChatTarget && currentChatTarget.uid === u.uid ? 'active' : ''}" data-uid="${u.uid}">
+            <img src="${esc(u.photoURL||'')}" onerror="this.style.background='#1c211c'">
+            <div>
+              <div style="font-weight:800; font-size:13px;">${esc(u.displayName)}${verifiedBadge(u.verified)}</div>
+              <div style="font-size:11px; color:var(--muted);">${esc(u.favTeam || 'مشجع كروي')}</div>
+            </div>
+          </div>
+        `).join('');
+
+        listEl.querySelectorAll('.chat-user-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const targetUid = item.dataset.uid;
+            const uObj = usersList.find(x => x.uid === targetUid);
+            if(uObj) {
+              currentChatTarget = { uid: uObj.uid, name: uObj.displayName, photo: uObj.photoURL };
+
+              // 💡 تحديث التظليل الأخضر ديناميكياً للشخص المختار الآن
+              listEl.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
+              item.classList.add('active');
+
+              openDirectConversationWindow(currentChatTarget);
+            }
+          });
+        });
+      };
+
+      renderUsers();
+      $("#chatUserSearch").addEventListener('input', (e) => renderUsers(e.target.value));
+    }
+
+    if(currentChatTarget) {
+      openDirectConversationWindow(currentChatTarget);
+    }
+
+  } else {
+    // 2) عرض المجموعات الخاصة للأندية
+    const myFollowedTeams = new Set([userData.favTeam, ...(userData.followTeams || [])].filter(Boolean));
+    let allTeamsList = [];
+    Object.keys(LEAGUES).forEach(l => { allTeamsList = allTeamsList.concat(LEAGUES[l]); });
+    allTeamsList = [...new Set(allTeamsList)];
+
+    sidebarList.innerHTML = allTeamsList.map(t => {
+      const isAllowed = myFollowedTeams.has(t);
+      return `
+        <div class="chat-user-item" data-teamname="${esc(t)}">
+          <img data-team="${esc(t)}" src="${fallbackTeamAvatar(t)}" style="width:36px;height:36px;object-fit:contain;">
+          <div>
+            <div style="font-weight:800; font-size:13px;">${esc(t)}</div>
+            <div style="font-size:10.5px; color:${isAllowed?'var(--pitch)':'var(--red)'}">
+              ${isAllowed ? '🔓 مجموعة متاحة' : '🔒 غير متابَع'}
+            </div>
+          </div>openVideoSheet
+        </div>`;
+    }).join('');
+
+    populateTeamLogos(sidebarList);
+
+    sidebarList.querySelectorAll('.chat-user-item[data-teamname]').forEach(card => {
+      card.addEventListener('click', () => {
+        const tName = card.dataset.teamname;
+        if(myFollowedTeams.has(tName)) {
+          sidebarList.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
+          card.classList.add('active');
+
+          openTeamRoomConversationWindow(tName);
+        } else {
+          toast(`🔒 يجب متابعة فريق ${tName} أولاً لدخول المجموعة الخاصة!`);
+        }
       });
     });
-    return;
   }
-  panel.innerHTML = `
-    <div class="profile-wrap" style="padding-top:calc(14px + var(--safe-top));padding-bottom:0;">
-      <div class="top-header" style="border:none;">
-        <span class="back" id="chatBack">${icon('back')}</span>
-        <span class="t">${esc(currentChatTarget.name)}</span>
-      </div>
-      <div id="chatPanelBody" style="display:flex;flex-direction:column;gap:10px;padding:0 0 14px;"></div>
-      <div class="sheet-input-bar"><input id="chatInput" placeholder="اكتب رسالة..."><button id="chatSendBtn">إرسال</button></div>
+}
+
+// 2) شات الرسائل الفردية المباشرة
+
+
+// 3) شات المجموعات الخاصة بالأندية
+async function openTeamRoomConversationWindow(teamName){
+  const mainWin = $("#chatMainWindow");
+  if(!mainWin) return;
+
+  const logoUrl = await resolveTeamLogo(teamName);
+
+  mainWin.innerHTML = `
+    <div style="padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; background:var(--bg-elev);">
+      <img src="${esc(logoUrl)}" style="width:32px; height:32px; object-fit:contain;">
+      <div style="font-weight:900; font-size:15px;">مجموعة ${esc(teamName)}</div>
+    </div>
+
+    <div class="poll-inputs-wrap" id="groupPollBox" style="display:none; margin:10px 14px 0;">
+      <div style="font-size:11.5px; color:var(--gold); font-weight:800; margin-bottom:6px">📊 إضافة استطلاع لشات المجموعة:</div>
+      <input class="poll-input" id="gPollQ" placeholder="السؤال (مثال: مين يوصل النهائي؟)">
+      <input class="poll-input" id="gPollO1" placeholder="خيار 1">
+      <input class="poll-input" id="gPollO2" placeholder="خيار 2">
+    </div>
+
+    <div id="groupImgPreview" style="display:none; padding:6px 14px; font-size:11px; color:var(--gold);">تم اختيار صورة 📷</div>
+
+    <div id="groupChatMessages" style="flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px;">
+      <div class="loader">جاري فتح المجموعة...</div>
+    </div>
+
+    <div class="sheet-input-bar" style="gap:6px;">
+      <button id="groupImgBtn" class="icon-btn" style="flex:none; background:var(--bg-elev2);">${icon('camera')}</button>
+      <button id="groupPollBtn" class="icon-btn" style="flex:none; background:var(--bg-elev2); color:var(--gold);">📊</button>
+      <input type="file" accept="image/*" id="groupImgInput" style="display:none">
+      
+      <input id="groupChatInput" placeholder="اكتب رسالة لجماهير ${esc(teamName)}..." style="flex:1;">
+      <button id="groupSendBtn" style="background:var(--pitch); color:#08150d; font-weight:900;">إرسال</button>
     </div>`;
-  document.getElementById('chatBack').addEventListener('click', ()=>{ currentChatTarget=null; if(currentChatUnsub){ currentChatUnsub(); currentChatUnsub=null; } renderChatPanel(); });
-  const listEl = document.getElementById('chatPanelBody');
-  const sendBtn = document.getElementById('chatSendBtn');
-  const input = document.getElementById('chatInput');
-  if(currentChatUnsub) currentChatUnsub();
-  const cid = chatIdFor(uid(), currentChatTarget.uid);
-  const chatRef = db.collection('chats').doc(cid).collection('messages').orderBy('createdAt','asc');
-  currentChatUnsub = chatRef.onSnapshot(qs=>{
-    listEl.innerHTML = qs.docs.map(d=>{
-      const m = d.data(); const me = m.from===uid();
-      return `<div style="display:flex;${me?'justify-content:flex-end;':'justify-content:flex-start;'};padding:6px 0"><div style="max-width:72%;background:${me?'var(--pitch)':'var(--bg-elev2)'};color:${me?'#08150d':'#fff'};padding:10px;border-radius:12px">${esc(m.text)}<div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:${me?'right':'left'}">${timeAgo(m.createdAt)}</div></div></div>`;
-    }).join('');
-    listEl.scrollTop = listEl.scrollHeight;
+
+  $("#groupImgBtn").addEventListener('click', ()=> $("#groupImgInput").click());
+  $("#groupImgInput").addEventListener('change', (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    roomImgFile = f;
+    $("#groupImgPreview").style.display = 'block';
   });
-  sendBtn.addEventListener('click', async ()=>{
-    const t = sanitizeText(input.value, 1000); if(!t) return; input.value='';
-    const msgRef = db.collection('chats').doc(cid).collection('messages');
-    await msgRef.add({text:t, from:uid(), to:currentChatTarget.uid, createdAt:FieldValue.serverTimestamp()});
-    createNotification(currentChatTarget.uid, 'message', {text:t});
+
+  $("#groupPollBtn").addEventListener('click', ()=>{
+    const box = $("#groupPollBox");
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  });
+
+  if(currentTeamChatUnsub) currentTeamChatUnsub();
+  const messagesEl = $("#groupChatMessages");
+
+  currentTeamChatUnsub = db.collection('team_chats').doc(teamName).collection('messages').orderBy('createdAt','asc').limit(50)
+    .onSnapshot(qs => {
+      messagesEl.innerHTML = qs.docs.map(d => {
+        const m = d.data();
+        const me = m.fromUid === uid();
+
+        let pollHtml = "";
+        if(m.poll && m.poll.options){
+          const totalVotes = m.poll.counts ? m.poll.counts.reduce((a,b)=>a+b, 0) : 0;
+          const myVoteIdx = m.poll.voters ? m.poll.voters[uid()] : undefined;
+
+          pollHtml = `<div style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">`;
+          m.poll.options.forEach((opt, idx) => {
+            const count = m.poll.counts[idx] || 0;
+            const pct = totalVotes > 0 ? Math.round((count/totalVotes)*100) : 0;
+            pollHtml += `
+              <div class="poll-option-btn ${myVoteIdx===idx?'voted':''}" data-msgid="${d.id}" data-idx="${idx}" style="padding:6px 8px; font-size:11.5px;">
+                <div class="poll-fill-bar" style="width:${pct}%"></div>
+                <span class="poll-option-label">${esc(opt)}</span>
+                <span class="poll-pct-text">${pct}%</span>
+              </div>`;
+          });
+          pollHtml += `</div>`;
+        }
+
+        return `
+          <div style="display:flex; gap:8px; ${me ? 'flex-direction:row-reverse;' : ''}">
+            <img src="${esc(m.fromPhoto||'')}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0;" onerror="this.style.background='#1c211c'">
+            <div style="max-width:75%; background:${me ? 'var(--pitch)' : 'var(--bg-elev2)'}; color:${me ? '#08150d' : '#fff'}; padding:10px 14px; border-radius:14px;">
+              <div style="font-size:11px; font-weight:800; opacity:0.8; margin-bottom:4px;">${esc(m.fromName)}</div>
+              ${m.text ? `<div>${esc(m.text)}</div>` : ''}
+              ${m.imageURL ? `<img src="${esc(m.imageURL)}" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-top:6px;">` : ''}
+              ${pollHtml}
+              <div style="font-size:9.5px; opacity:0.6; margin-top:4px; text-align:${me?'left':'right'}">${timeAgo(m.createdAt)}</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      messagesEl.querySelectorAll('.poll-option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const msgId = btn.dataset.msgid;
+          const idx = parseInt(btn.dataset.idx);
+          castTeamRoomPollVote(teamName, msgId, idx);
+        });
+      });
+    });
+
+  $("#groupSendBtn").addEventListener('click', async () => {
+    const text = sanitizeText($("#groupChatInput").value, 1000);
+    const q = sanitizeText($("#gPollQ").value, 200);
+    const o1 = sanitizeText($("#gPollO1").value, 100);
+    const o2 = sanitizeText($("#gPollO2").value, 100);
+
+    let pollData = null;
+    if(q && o1 && o2){
+      pollData = { question: q, options: [o1, o2], counts: [0, 0], voters: {} };
+    }
+
+    if(!text && !roomImgFile && !pollData) return;
+
+    $("#groupSendBtn").textContent = "...";
+
+    let imageURL = "";
+    if(roomImgFile){
+      const ref = storage.ref(`team_chat_images/${teamName}_${Date.now()}.jpg`);
+      await ref.put(roomImgFile);
+      imageURL = await ref.getDownloadURL();
+    }
+
+    await db.collection('team_chats').doc(teamName).collection('messages').add({
+      text,
+      imageURL,
+      poll: pollData,
+      fromUid: uid(),
+      fromName: userData.displayName,
+      fromPhoto: userData.photoURL || "",
+      createdAt: FieldValue.serverTimestamp()
+    });
+
+    $("#groupChatInput").value = "";
+    roomImgFile = null;
+    $("#groupImgPreview").style.display = 'none';
+    $("#groupPollBox").style.display = 'none';
+    $("#gPollQ").value = ""; $("#gPollO1").value = ""; $("#gPollO2").value = "";
+    $("#groupSendBtn").textContent = "إرسال";
   });
 }
 
+// 4) دالة التصويت لـ استطلاعات المجموعة
+async function castTeamRoomPollVote(teamName, msgId, optionIdx){
+  if(!uid()) return;
+  const ref = db.collection('team_chats').doc(teamName).collection('messages').doc(msgId);
+  try{
+    await db.runTransaction(async t => {
+      const doc = await t.get(ref);
+      if(!doc.exists) return;
+      const poll = doc.data().poll;
+      if(!poll) return;
+
+      const voters = poll.voters || {};
+      const counts = poll.counts || [0, 0];
+      const curVote = voters[uid()];
+
+      if(curVote === optionIdx) return;
+      if(curVote !== undefined) counts[curVote] = Math.max(0, counts[curVote] - 1);
+
+      voters[uid()] = optionIdx;
+      counts[optionIdx] = (counts[optionIdx] || 0) + 1;
+
+      t.update(ref, { "poll.voters": voters, "poll.counts": counts });
+    });
+  }catch(e){}
+}
+
+// 5) دالة المراسلة الفردية عند الضغط على زر مراسلة في بروفايل أي شخص
+function openChatSheet(targetUid, targetName, targetPhoto){
+  if(!uid()){ toast('سجل دخولك أولاً للمراسلة'); return; }
+  currentChatTarget = { uid: targetUid, name: targetName || 'مستخدم', photo: targetPhoto || '' };
+  activeChatTab = 'direct';
+  switchTab('chat');
+}
+/* ===================== DIRECT CHAT WITH FUT GIFTS ===================== */
+function openDirectConversationWindow(targetUser){
+  const mainWin = $("#chatMainWindow");
+  if(!mainWin) return;
+
+  mainWin.innerHTML = `
+    <div style="padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; background:var(--bg-elev);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <img src="${esc(targetUser.photo||'')}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" onerror="this.style.background='#1c211c'">
+        <div style="font-weight:900; font-size:14px;">${esc(targetUser.name)}</div>
+      </div>
+      <button id="directGiftBtn" style="background:rgba(231,179,62,.15); border:1px solid var(--gold); color:var(--gold); border-radius:12px; padding:6px 12px; font-size:12px; font-weight:800; cursor:pointer;">
+        🎁 إهداء كارت / XP
+      </button>
+    </div>
+
+    <div id="directChatMessages" style="flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px;">
+      <div class="loader">جاري جلب المحادثة...</div>
+    </div>
+
+    <div class="sheet-input-bar">
+      <input id="directMsgInput" placeholder="اكتب رسالة لـ ${esc(targetUser.name)}..." style="flex:1;">
+      <button id="directSendBtn" style="background:var(--pitch); color:#08150d; font-weight:900;">إرسال</button>
+    </div>`;
+
+  $("#directGiftBtn").addEventListener('click', () => openGiftCardOrXpSheet(targetUser));
+
+  const listEl = $("#directChatMessages");
+  const cid = chatIdFor(uid(), targetUser.uid);
+
+  if(currentChatUnsub) currentChatUnsub();
+  currentChatUnsub = db.collection('chats').doc(cid).collection('messages').orderBy('createdAt','asc')
+    .onSnapshot(qs => {
+      listEl.innerHTML = qs.docs.map(d => {
+        const m = d.data();
+        const me = m.from === uid();
+
+        // 1) رسالة هدية كارت FUT
+        if (m.type === 'gift_card' && m.player) {
+          return `
+            <div style="display:flex; ${me ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
+              <div style="max-width:220px; background:linear-gradient(135deg,#3a2a05,#1d1402); border:1.5px solid var(--gold); padding:12px; border-radius:16px; text-align:center; box-shadow:0 4px 15px rgba(231,179,62,.25);">
+                <div style="font-size:11px; color:var(--gold); font-weight:900; margin-bottom:6px;">🎁 هدية كارت FUT</div>
+                <div class="fut-card" style="margin:0 auto 8px;">
+                  <div class="card-top"><span class="rating">${m.player.rating}</span></div>
+                  <img class="player-img" src="${esc(m.player.photo)}">
+                  <div class="card-bottom">${esc(m.player.name)}</div>
+                </div>
+                ${!me ? `
+                  <button class="claim-gift-btn" data-cid="${cid}" data-msgid="${d.id}" ${m.claimed?'disabled':''} style="width:100%; background:${m.claimed?'var(--bg-elev2)':'var(--pitch)'}; color:${m.claimed?'var(--muted)':'#08150d'}; font-weight:900; border-radius:10px; padding:6px; font-size:11px;">
+                    ${m.claimed ? 'تم الاستلام ✅' : '📥 استلام الكارت'}
+                  </button>
+                ` : `<div style="font-size:10px; color:var(--gold);">أرسلت كارت ${esc(m.player.name)} هدية</div>`}
+              </div>
+            </div>`;
+        }
+
+        // 2) رسالة هدية نقاط XP
+        if (m.type === 'gift_xp' && m.amount) {
+          return `
+            <div style="display:flex; ${me ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
+              <div style="max-width:220px; background:linear-gradient(135deg,#125c33,#08150d); border:1.5px solid var(--pitch); padding:12px; border-radius:16px; text-align:center;">
+                <div style="font-size:22px; margin-bottom:4px;">💰</div>
+                <div style="font-weight:900; font-size:13px; color:var(--white);">هدية ${m.amount} XP!</div>
+                ${!me ? `
+                  <button class="claim-gift-btn" data-cid="${cid}" data-msgid="${d.id}" ${m.claimed?'disabled':''} style="width:100%; margin-top:8px; background:${m.claimed?'var(--bg-elev2)':'var(--gold)'}; color:${m.claimed?'var(--muted)':'#3a2a05'}; font-weight:900; border-radius:10px; padding:6px; font-size:11px;">
+                    ${m.claimed ? 'تم الاستلام ✅' : `📥 استلام ${m.amount} XP`}
+                  </button>
+                ` : `<div style="font-size:10px; color:var(--pitch); margin-top:4px;">أرسلت ${m.amount} XP هدية</div>`}
+              </div>
+            </div>`;
+        }
+
+        // الرسائل النصية العادية
+        return `
+          <div style="display:flex; ${me ? 'justify-content:flex-end;' : 'justify-content:flex-start;'}">
+            <div style="max-width:72%; background:${me ? 'var(--pitch)' : 'var(--bg-elev2)'}; color:${me ? '#08150d' : '#fff'}; padding:10px 14px; border-radius:14px;">
+              <div>${esc(m.text)}</div>
+              <div style="font-size:9.5px; opacity:0.6; margin-top:4px; text-align:${me?'left':'right'}">${timeAgo(m.createdAt)}</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      listEl.scrollTop = listEl.scrollHeight;
+
+      // أزرار استلام الهدايا
+      listEl.querySelectorAll('.claim-gift-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const chatId = btn.dataset.cid;
+          const msgId = btn.dataset.msgid;
+          claimChatGift(chatId, msgId);
+        });
+      });
+    });
+
+  $("#directSendBtn").addEventListener('click', async () => {
+    const input = $("#directMsgInput");
+    const t = sanitizeText(input.value, 1000); if(!t) return; input.value = '';
+    
+    await db.collection('chats').doc(cid).collection('messages').add({
+      text: t,
+      from: uid(),
+      to: targetUser.uid,
+      createdAt: FieldValue.serverTimestamp()
+    });
+
+    createNotification(targetUser.uid, 'message', { text: t });
+  });
+}
+let giftTab = 'card';
+
+function openGiftCardOrXpSheet(targetUser){
+  const unlocked = Array.isArray(userData && userData.unlockedPlayers) ? userData.unlockedPlayers : [];
+  const ownedPlayers = STAR_PLAYERS.filter(p => unlocked.includes(p.id));
+  const myXp = userData ? (userData.xp || 0) : 0;
+
+  openSheet(`
+    <div class="sheet" style="height:75%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">🎁 إهداء هدية لـ ${esc(targetUser.name)}</div>
+      
+      <div class="profile-tabs" style="padding:0 14px; margin-bottom:10px;">
+        <div class="ptab ${giftTab==='card'?'active':''}" id="tabGiftCard">كروت FUT الممتلكة</div>
+        <div class="ptab ${giftTab==='xp'?'active':''}" id="tabGiftXp">نقاط XP</div>
+      </div>
+
+      <div class="sheet-body" id="giftBody"></div>
+    </div>`);
+
+  $("#tabGiftCard").addEventListener('click', ()=>{ giftTab='card'; openGiftCardOrXpSheet(targetUser); });
+  $("#tabGiftXp").addEventListener('click', ()=>{ giftTab='xp'; openGiftCardOrXpSheet(targetUser); });
+
+  const body = $("#giftBody");
+
+  if(giftTab === 'card'){
+    if(ownedPlayers.length === 0){
+      body.innerHTML = `<div class="empty-state">لا تملك كروت FUT جاهزة للإهداء! اشترِ كروت من السوق أولاً 🛒</div>`;
+      return;
+    }
+
+    body.innerHTML = `
+      <div style="font-size:11.5px; color:var(--muted); text-align:center; margin-bottom:10px;">اختر كارت لإرساله هدية (سيتم تحويل ملكيته لصديقك):</div>
+      <div class="player-picker-grid">
+        ${ownedPlayers.map(p => `
+          <div class="fut-card" data-pid="${p.id}" style="margin:0 auto;">
+            <div class="card-top"><span class="rating">${p.rating}</span></div>
+            <img class="player-img" src="${esc(p.photo)}">
+            <div class="card-bottom">🎁 إهداء ${esc(p.name)}</div>
+          </div>
+        `).join('')}
+      </div>`;
+
+    body.querySelectorAll('.fut-card').forEach(card => {
+      card.addEventListener('click', async () => {
+        const pId = card.dataset.pid;
+        const playerObj = STAR_PLAYERS.find(x => x.id === pId);
+        if(!playerObj) return;
+
+        const cid = chatIdFor(uid(), targetUser.uid);
+
+        // خصم الكارت من قائمة المقتنيات للمُرسِل
+        await db.collection("users").doc(uid()).update({
+          unlockedPlayers: FieldValue.arrayRemove(pId)
+        });
+        userData.unlockedPlayers = (userData.unlockedPlayers||[]).filter(x => x !== pId);
+
+        // إرسال رسالة الكارت في الشات
+        await db.collection('chats').doc(cid).collection('messages').add({
+          type: 'gift_card',
+          player: playerObj,
+          from: uid(),
+          to: targetUser.uid,
+          claimed: false,
+          createdAt: FieldValue.serverTimestamp()
+        });
+
+        toast(`تم إرسال كارت ${playerObj.name} هدية 🎁`);
+        closeSheet();
+      });
+    });
+
+  } else {
+    body.innerHTML = `
+      <div style="padding:10px; text-align:center;">
+        <div style="font-size:12.5px; color:var(--gold); font-weight:800; margin-bottom:12px;">💰 رصيدك المتاح: ${fmtNum(myXp)} XP</div>
+        <input class="auth-input" id="giftXpAmount" type="number" min="10" max="${myXp}" placeholder="اكتب عدد النقاط (مثال: 50)" style="max-width:100%; margin-bottom:14px;">
+        <button id="sendXpGiftBtn" style="width:100%; background:var(--pitch); color:#08150d; font-weight:900; padding:12px; border-radius:12px;">
+          إرسال النقاط هدية 🎁
+        </button>
+      </div>`;
+
+    $("#sendXpGiftBtn").addEventListener('click', async () => {
+      const amount = parseInt($("#giftXpAmount").value) || 0;
+      if(amount < 10){ toast("الحد الأدنى للإهداء 10 XP"); return; }
+      if(amount > myXp){ toast("رصيدك غير كافٍ لهذا المبلغ!"); return; }
+
+      const cid = chatIdFor(uid(), targetUser.uid);
+
+      // خصم النقاط من الراسل
+      await db.collection("users").doc(uid()).update({
+        xp: FieldValue.increment(-amount)
+      });
+      userData.xp = (userData.xp || 0) - amount;
+
+      // إرسال رسالة نقاط XP
+      await db.collection('chats').doc(cid).collection('messages').add({
+        type: 'gift_xp',
+        amount: amount,
+        from: uid(),
+        to: targetUser.uid,
+        claimed: false,
+        createdAt: FieldValue.serverTimestamp()
+      });
+
+      toast(`تم إرسال ${amount} XP هدية 🎁`);
+      closeSheet();
+      if(activeTab === 'profile') renderProfilePanel();
+    });
+  }
+}
+/* ===================== CLAIM GIFT TRANSACTION ===================== */
+async function claimChatGift(chatId, msgId) {
+  if(!uid()) return;
+  const ref = db.collection('chats').doc(chatId).collection('messages').doc(msgId);
+
+  try {
+    await db.runTransaction(async t => {
+      const doc = await t.get(ref);
+      if(!doc.exists) return;
+      const m = doc.data();
+
+      if(m.claimed) throw new Error("تم استلام هذه الهدية مسبقاً!");
+      if(m.to !== uid()) throw new Error("هذه الهدية ليست موجهة لك!");
+
+      const receiverRef = db.collection('users').doc(uid());
+
+      if(m.type === 'gift_card' && m.player) {
+        // إضافة الكارت لمقتنيات المستلِم
+        t.update(receiverRef, {
+          unlockedPlayers: FieldValue.arrayUnion(m.player.id)
+        });
+      } else if(m.type === 'gift_xp' && m.amount) {
+        // إضافة نقاط الـ XP لرصيد المستلِم
+        t.update(receiverRef, {
+          xp: FieldValue.increment(m.amount)
+        });
+      }
+
+      t.update(ref, { claimed: true });
+    });
+
+    // تحديث البيانات المحلية
+    const fresh = await db.collection('users').doc(uid()).get();
+    userData = fresh.data();
+
+    toast("🎉 مبروك! تم استلام الهدية وإضافتها لحسابك والمقتنيات!");
+    if(currentChatTarget) openDirectConversationWindow(currentChatTarget);
+  } catch(e) {
+    toast(e.message || "حدث خطأ أثناء استلام الهدية");
+  }
+}
+
+ roomImgFile = null;
+
+async function openTeamRoomChat(teamName){
+  const panel = $("#panel-chat");
+  const logoUrl = await resolveTeamLogo(teamName);
+
+  panel.innerHTML = `
+    <div class="profile-wrap" style="padding-top:calc(14px + var(--safe-top));padding-bottom:0;height:100%;display:flex;flex-direction:column;">
+      <div class="top-header" style="border:none;">
+        <span class="back" id="groupBack">${icon('back')}</span>
+        <img src="${esc(logoUrl)}" style="width:28px;height:28px;object-fit:contain;margin-left:6px;">
+        <span class="t">مجموعة ${esc(teamName)}</span>
+      </div>
+
+      <!-- صندوق خيارات الاستطلاع الشات -->
+      <div class="poll-inputs-wrap" id="groupPollBox" style="display:none;margin:0 14px 10px;">
+        <div style="font-size:11.5px;color:var(--gold);font-weight:800;margin-bottom:6px">📊 إضافة استطلاع لشات المجموعة:</div>
+        <input class="poll-input" id="gPollQ" placeholder="السؤال (مثال: مين يوصل النهائي؟)">
+        <input class="poll-input" id="gPollO1" placeholder="خيار 1">
+        <input class="poll-input" id="gPollO2" placeholder="خيار 2">
+      </div>
+
+      <div id="groupImgPreview" style="display:none;padding:6px 14px;font-size:11px;color:var(--gold);">تم اختيار صورة 📷</div>
+
+      <div id="groupChatMessages" style="flex:1;overflow-y:auto;padding:0 14px 10px;display:flex;flex-direction:column;gap:10px;">
+        <div class="loader">جاري فتح المجموعة...</div>
+      </div>
+
+      <!-- شريط الإدخال المتقدم -->
+      <div class="sheet-input-bar" style="gap:6px;">
+        <button id="groupImgBtn" class="icon-btn" style="flex:none;background:var(--bg-elev2);">${icon('camera')}</button>
+        <button id="groupPollBtn" class="icon-btn" style="flex:none;background:var(--bg-elev2);color:var(--gold);">📊</button>
+        <input type="file" accept="image/*" id="groupImgInput" style="display:none">
+        
+        <input id="groupChatInput" placeholder="اكتب رسالة لجماهير ${esc(teamName)}..." style="flex:1;">
+        <button id="groupSendBtn" style="background:var(--pitch);color:#08150d;font-weight:900;">إرسال</button>
+      </div>
+    </div>`;
+
+  $("#groupBack").addEventListener('click', ()=>{ 
+    if(currentTeamChatUnsub){ currentTeamChatUnsub(); currentTeamChatUnsub=null; }
+    renderChatPanel(); 
+  });
+
+  $("#groupImgBtn").addEventListener('click', ()=> $("#groupImgInput").click());
+  $("#groupImgInput").addEventListener('change', (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    roomImgFile = f;
+    $("#groupImgPreview").style.display = 'block';
+  });
+
+  $("#groupPollBtn").addEventListener('click', ()=>{
+    const box = $("#groupPollBox");
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // الاستماع اللحظي لرسايل المجموعة
+  if(currentTeamChatUnsub) currentTeamChatUnsub();
+  const messagesEl = $("#groupChatMessages");
+
+  currentTeamChatUnsub = db.collection('team_chats').doc(teamName).collection('messages').orderBy('createdAt','asc').limit(50)
+    .onSnapshot(qs => {
+      messagesEl.innerHTML = qs.docs.map(d => {
+        const m = d.data();
+        const me = m.fromUid === uid();
+
+        // رسم الاستطلاع إن وجد داخل الشات
+        let pollHtml = "";
+        if(m.poll && m.poll.options){
+          const totalVotes = m.poll.counts ? m.poll.counts.reduce((a,b)=>a+b, 0) : 0;
+          const myVoteIdx = m.poll.voters ? m.poll.voters[uid()] : undefined;
+
+          pollHtml = `<div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">`;
+          m.poll.options.forEach((opt, idx) => {
+            const count = m.poll.counts[idx] || 0;
+            const pct = totalVotes > 0 ? Math.round((count/totalVotes)*100) : 0;
+            pollHtml += `
+              <div class="poll-option-btn ${myVoteIdx===idx?'voted':''}" data-msgid="${d.id}" data-idx="${idx}" style="padding:6px 8px;font-size:11.5px;">
+                <div class="poll-fill-bar" style="width:${pct}%"></div>
+                <span class="poll-option-label">${esc(opt)}</span>
+                <span class="poll-pct-text">${pct}%</span>
+              </div>`;
+          });
+          pollHtml += `</div>`;
+        }
+
+        return `
+          <div style="display:flex; gap:8px; ${me ? 'flex-direction:row-reverse;' : ''}">
+            <img src="${esc(m.fromPhoto||'')}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.background='#1c211c'">
+            <div style="max-width:75%; background:${me ? 'var(--pitch)' : 'var(--bg-elev2)'}; color:${me ? '#08150d' : '#fff'}; padding:10px; border-radius:14px;">
+              <div style="font-size:11px; font-weight:800; opacity:0.8; margin-bottom:4px;">${esc(m.fromName)}</div>
+              ${m.text ? `<div>${esc(m.text)}</div>` : ''}
+              ${m.imageURL ? `<img src="${esc(m.imageURL)}" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-top:6px;">` : ''}
+              ${pollHtml}
+              <div style="font-size:9.5px; opacity:0.6; margin-top:4px; text-align:${me?'left':'right'}">${timeAgo(m.createdAt)}</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      // التصويت داخل استطلاعات الشات
+      messagesEl.querySelectorAll('.poll-option-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const msgId = btn.dataset.msgid;
+          const idx = parseInt(btn.dataset.idx);
+          castTeamRoomPollVote(teamName, msgId, idx);
+        });
+      });
+    });
+
+  // إرسال الرسالة للمجموعة
+  $("#groupSendBtn").addEventListener('click', async () => {
+    const text = sanitizeText($("#groupChatInput").value, 1000);
+    const q = sanitizeText($("#gPollQ").value, 200);
+    const o1 = sanitizeText($("#gPollO1").value, 100);
+    const o2 = sanitizeText($("#gPollO2").value, 100);
+
+    let pollData = null;
+    if(q && o1 && o2){
+      pollData = {
+        question: q,
+        options: [o1, o2],
+        counts: [0, 0],
+        voters: {}
+      };
+    }
+
+    if(!text && !roomImgFile && !pollData) return;
+
+    $("#groupSendBtn").textContent = "...";
+
+    let imageURL = "";
+    if(roomImgFile){
+      const ref = storage.ref(`team_chat_images/${teamName}_${Date.now()}.jpg`);
+      await ref.put(roomImgFile);
+      imageURL = await ref.getDownloadURL();
+    }
+
+    await db.collection('team_chats').doc(teamName).collection('messages').add({
+      text,
+      imageURL,
+      poll: pollData,
+      fromUid: uid(),
+      fromName: userData.displayName,
+      fromPhoto: userData.photoURL || "",
+      createdAt: FieldValue.serverTimestamp()
+    });
+
+    $("#groupChatInput").value = "";
+    roomImgFile = null;
+    $("#groupImgPreview").style.display = 'none';
+    $("#groupPollBox").style.display = 'none';
+    $("#gPollQ").value = ""; $("#gPollO1").value = ""; $("#gPollO2").value = "";
+    $("#groupSendBtn").textContent = "إرسال";
+  });
+}
+
+/* ===================== XP & LEADERBOARD SYSTEM ===================== */
+
+// دالة احتساب الـ +10 XP تلقائياً للمتوقعين الصحيحين عند نهاية الماتش
+async function checkAndAwardPredictionXP(matchId, homeScore, awayScore) {
+  if (homeScore === null || awayScore === null || homeScore === undefined) return;
+
+  // تحديد الفائز الفعلي
+  let actualWinner = 'draw';
+  if (homeScore > awayScore) actualWinner = 'home';
+  else if (homeScore < awayScore) actualWinner = 'away';
+
+  const ref = db.collection('match_predictions').doc(matchId);
+
+  try {
+    await db.runTransaction(async t => {
+      const doc = await t.get(ref);
+      if (!doc.exists) return;
+      const data = doc.data();
+
+      // لو الماتش اتصرفت نقاطه قبل كده، لا نكررها
+      if (data.processed) return;
+
+      const voters = data.voters || {};
+      const winnerUids = [];
+
+      // التفتيش على من توقع النتيجة الصحيحة
+      Object.keys(voters).forEach(userUid => {
+        if (voters[userUid] === actualWinner) {
+          winnerUids.push(userUid);
+        }
+      });
+
+      // إعطاء +10 XP لكل صاحب توقع صحيح
+      winnerUids.forEach(userUid => {
+        const userRef = db.collection('users').doc(userUid);
+        t.update(userRef, { xp: FieldValue.increment(10) });
+      });
+
+      // تعليم الماتش بأنه تم معالجة نقاطه
+      t.update(ref, { processed: true, actualWinner });
+    });
+  } catch(e) {
+    console.error('XP Award Transaction Failed:', e);
+  }
+}
+async function openLeaderboardSheet() {
+  openSheet(`
+    <div class="sheet" style="height:75%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">🏆 لوحة المتصدرين (أبطال التوقعات +10 XP)</div>
+      <div class="sheet-body" id="leaderboardBody"><div class="loader">جاري جلب الأسطورين...</div></div>
+    </div>`);
+
+  const body = $("#leaderboardBody");
+  
+  try {
+    // جلب أعلى 20 مستخدم في نقاط الـ XP
+    const qs = await db.collection("users").orderBy("xp", "desc").limit(20).get();
+
+    if(qs.empty) {
+      body.innerHTML = `<div class="empty-state">لا يوجد متوقعين حتى الآن</div>`;
+      return;
+    }
+
+    body.innerHTML = qs.docs.map((d, idx) => {
+      const u = d.data();
+      const rank = idx + 1;
+      let badge = `#${rank}`;
+      if(rank === 1) badge = '🥇 الأول';
+      else if(rank === 2) badge = '🥈 الثاني';
+      else if(rank === 3) badge = '🥉 الثالث';
+
+      return `
+        <div class="list-row" style="padding:12px 4px;border-bottom:1px solid var(--line);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-weight:900;min-width:60px;color:var(--gold);font-size:12px;">${badge}</span>
+            <img src="${esc(u.photoURL||'')}" style="width:38px;height:38px;border-radius:12px;object-fit:cover;" onerror="this.style.background='#1c211c'">
+            <div>
+              <div style="font-weight:800;font-size:13px;">${esc(u.displayName)}${verifiedBadge(u.verified)}</div>
+              <div style="font-size:11px;color:var(--muted);">${esc(u.favTeam || 'مشجع كروي')}</div>
+            </div>
+          </div>
+          <div style="font-weight:900;color:var(--pitch);font-size:14px;">${fmtNum(u.xp||0)} XP</div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    console.error(e);
+    body.innerHTML = `<div class="empty-state">تعذر تحميل القائمة حالياً</div>`;
+  }
+}
+// دالة تصويت استطلاعات الشات
+async function castTeamRoomPollVote(teamName, msgId, optionIdx){
+  if(!uid()) return;
+  const ref = db.collection('team_chats').doc(teamName).collection('messages').doc(msgId);
+  try{
+    await db.runTransaction(async t => {
+      const doc = await t.get(ref);
+      if(!doc.exists) return;
+      const poll = doc.data().poll;
+      if(!poll) return;
+
+      const voters = poll.voters || {};
+      const counts = poll.counts || [0, 0];
+      const curVote = voters[uid()];
+
+      if(curVote === optionIdx) return;
+      if(curVote !== undefined) counts[curVote] = Math.max(0, counts[curVote] - 1);
+
+      voters[uid()] = optionIdx;
+      counts[optionIdx] = (counts[optionIdx] || 0) + 1;
+
+      t.update(ref, { "poll.voters": voters, "poll.counts": counts });
+    });
+  }catch(e){}
+}
 function renderNotifList(body){
   if(!body) return;
   if(!notifItems.length){
@@ -1138,9 +2420,111 @@ function renderNotifList(body){
 }
 
 /* ===================== HOME FEED ===================== */
+/* ===================== BULLETPROOF FEED SYSTEM ===================== */
+
 function isBlocked(ownerUid){
-  const list = Array.isArray(userData && userData.blockedUsers) ? userData.blockedUsers : [];
-  return list.includes(ownerUid);
+  if(!userData || !Array.isArray(userData.blockedUsers)) return false;
+  return userData.blockedUsers.includes(ownerUid);
+}
+
+function prioritizeHomeFeed(videos){
+  if(!Array.isArray(videos)) return [];
+  const following = (userData && Array.isArray(userData.followingChannels)) ? userData.followingChannels : [];
+  const favTeam = userData ? userData.favTeam : null;
+  const followedSet = new Set(following);
+  const followed = [];
+  const sameTeam = [];
+  const others = [];
+
+  videos.forEach(v=>{
+    if(followedSet.has(v.ownerUid)) followed.push(v);
+    else if(favTeam && v.ownerFavTeam === favTeam) sameTeam.push(v);
+    else others.push(v);
+  });
+
+  const sortByDate = arr => arr.sort((a,b)=>((b.createdAt && b.createdAt.seconds?b.createdAt.seconds:0) - (a.createdAt && a.createdAt.seconds?a.createdAt.seconds:0)));
+  sortByDate(followed);
+  sortByDate(sameTeam);
+  sortByDate(others);
+
+  const targetFollowed = Math.ceil(HOME_FEED_LIMIT * 0.8);
+  const targetOthers = HOME_FEED_LIMIT - Math.min(targetFollowed, followed.length);
+  const selected = followed.slice(0, targetFollowed);
+  const remainder = sameTeam.concat(others).slice(0, targetOthers);
+  return selected.concat(remainder).slice(0, HOME_FEED_LIMIT);
+}
+
+function renderHomeFeed(){
+  const panel=$("#panel-home");
+  if(!panel) return;
+  if(feedUnsub) return;
+  panel.innerHTML = `<div class="feed-scroll" id="feedScroll"><div class="loader">جاري تحميل الفيديوهات...</div></div>`;
+
+  feedUnsub = db.collection("videos").limit(60)
+    .onSnapshot(qs=>{
+      const scrollEl=$("#feedScroll");
+      if(!scrollEl) return;
+
+      if(!qs || qs.empty){
+        scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
+        return;
+      }
+
+      try {
+        let allVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
+
+        allVideos.sort((a,b) => {
+          const tA = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
+          const tB = b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
+          return tB - tA;
+        });
+
+        if(allVideos.length === 0){
+          scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
+          return;
+        }
+
+        feedVideos = prioritizeHomeFeed(allVideos);
+        drawFeed();
+      } catch(err) {
+        console.error("Error drawing feed:", err);
+        scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>حدث خطأ أثناء عرض الفيديوهات</div>`;
+      }
+    }, err=>{
+      console.error("Feed snapshot error:", err);
+      const scrollEl=$("#feedScroll");
+      if(scrollEl) scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>تعذر الاتصال بالسيرفر حالياً</div>`;
+    });
+}
+
+function drawFeed(){
+  const scrollEl=$("#feedScroll");
+  if(!scrollEl) return;
+
+  if(!feedVideos || feedVideos.length===0){
+    scrollEl.innerHTML = `<div class="empty-state"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
+    return;
+  }
+
+  try {
+    const existingSlides = scrollEl.querySelectorAll(".video-slide");
+    if(existingSlides.length > 0) {
+      feedVideos.forEach((v) => {
+        const slide = scrollEl.querySelector(`.video-slide[data-id="${v.id}"]`);
+        if(slide) {
+          updateSlideFromData(slide, v);
+        }
+      });
+      return;
+    }
+
+    scrollEl.innerHTML = feedVideos.map((v,i)=>videoSlideHTML(v,i)).join("");
+    scrollEl.querySelectorAll(".video-slide").forEach((slide,i)=>bindVideoSlide(slide, feedVideos[i]));
+
+    setupFeedObserver();
+  } catch(e) {
+    console.error("drawFeed Error:", e);
+  }
 }
 
 async function blockUser(ownerUid){
@@ -1193,17 +2577,44 @@ function prioritizeHomeFeed(videos){
   const remainder = sameTeam.concat(others).slice(0, targetOthers);
   return selected.concat(remainder).slice(0, HOME_FEED_LIMIT);
 }
+/* ===================== BULLETPROOF HOME FEED ===================== */
 function renderHomeFeed(){
   const panel=$("#panel-home");
   if(feedUnsub) return;
   panel.innerHTML = `<div class="feed-scroll" id="feedScroll"><div class="loader">جاري تحميل الفيديوهات...</div></div>`;
-  feedUnsub = db.collection("videos").orderBy("createdAt","desc").limit(60)
+
+  // جلب الفيديوهات وترتيبها أوتوماتيكياً في الذاكرة
+  feedUnsub = db.collection("videos").limit(60)
     .onSnapshot(qs=>{
-      if(!qs){ panel.innerHTML=`<div class="empty-state"><div class="big">⚠️</div>تعذر تحميل الفيديوهات</div>`; return; }
-      const allVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
+      const scrollEl=$("#feedScroll");
+      if(!scrollEl) return;
+
+      if(!qs || qs.empty){
+        scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
+        return;
+      }
+
+      let allVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
+
+      // ترتيب الفيديوهات بحسب الأحدث من الذاكرة لضمان عدم توقف الصفحة
+      allVideos.sort((a,b) => {
+        const tA = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
+        const tB = b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
+        return tB - tA;
+      });
+
+      if(allVideos.length === 0){
+        scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
+        return;
+      }
+
       feedVideos = prioritizeHomeFeed(allVideos);
       drawFeed();
-    }, err=>{ console.error(err); panel.innerHTML=`<div class="empty-state"><div class="big">⚠️</div>تعذر تحميل الفيديوهات</div>`; });
+    }, err=>{
+      console.error("Feed snapshot error:", err);
+      const scrollEl=$("#feedScroll");
+      if(scrollEl) scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>تعذر جلب الفيديوهات حالياً، حاول مرة أخرى</div>`;
+    });
 }
 
 function drawFeed(){
@@ -1478,6 +2889,135 @@ function closeSheet(){
   if(matchChatUnsub){ matchChatUnsub(); matchChatUnsub=null; currentMatchChat=null; }
 }
 
+
+/* ===================== GUARANTEED DAILY SPIN WHEEL ===================== */
+const WHEEL_PRIZES = [
+  { xp: 10, label: '+10 XP', angle: 30 },
+  { xp: 25, label: '+25 XP', angle: 90 },
+  { xp: 50, label: '+50 XP', angle: 150 },
+  { xp: 100, label: '🏆 100 XP', angle: 210 },
+  { xp: 15, label: '+15 XP', angle: 270 },
+  { xp: 5, label: '+5 XP', angle: 330 }
+];
+
+function openDailyWheelSheet(){
+  if(!uid()){ toast('سجل دخولك أولاً لتدوير العجلة'); return; }
+
+  const lastSpin = userData ? (userData.lastSpinTimestamp || 0) : 0;
+  const now = Date.now();
+  const cooldown = 24 * 60 * 60 * 1000;
+  const timePassed = now - lastSpin;
+  const isEligible = timePassed >= cooldown;
+  const hoursLeft = Math.ceil((cooldown - timePassed) / (1000 * 60 * 60));
+  const userXp = userData ? (userData.xp || 0) : 0;
+
+  openSheet(`
+    <div class="sheet" style="height:82%">
+      <div class="sheet-handle"></div>
+      
+      <div style="padding:8px 16px; background:var(--bg-elev2); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+        <span class="sheet-title" style="border:none;padding:0;">🎡 عجلة الحظ اليومية</span>
+        <span style="font-weight:900; font-size:12px; color:var(--gold);">💰 رصيدك: ${fmtNum(userXp)} XP</span>
+      </div>
+      
+      <div class="sheet-body" style="text-align:center; padding:10px 14px;">
+        <!-- العجلة والأرقام المباشرة المضمونة -->
+        <div class="wheel-wrapper">
+          <div class="wheel-pointer">📌</div>
+          <div class="wheel-disc" id="spinDisc" style="position:relative;">
+            <span style="display:block;position:absolute;top:50%;left:50%;width:60px;height:20px;margin-top:-10px;margin-left:-30px;text-align:center;font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 5px #000;pointer-events:none;transform:rotate(30deg) translateY(-80px) rotate(-30deg);z-index:4;">+10</span>
+            <span style="display:block;position:absolute;top:50%;left:50%;width:60px;height:20px;margin-top:-10px;margin-left:-30px;text-align:center;font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 5px #000;pointer-events:none;transform:rotate(90deg) translateY(-80px) rotate(-90deg);z-index:4;">+25</span>
+            <span style="display:block;position:absolute;top:50%;left:50%;width:60px;height:20px;margin-top:-10px;margin-left:-30px;text-align:center;font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 5px #000;pointer-events:none;transform:rotate(150deg) translateY(-80px) rotate(-150deg);z-index:4;">+50</span>
+            <span style="display:block;position:absolute;top:50%;left:50%;width:60px;height:20px;margin-top:-10px;margin-left:-30px;text-align:center;font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 5px #000;pointer-events:none;transform:rotate(210deg) translateY(-80px) rotate(-210deg);z-index:4;">100★</span>
+            <span style="display:block;position:absolute;top:50%;left:50%;width:60px;height:20px;margin-top:-10px;margin-left:-30px;text-align:center;font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 5px #000;pointer-events:none;transform:rotate(270deg) translateY(-80px) rotate(-270deg);z-index:4;">+15</span>
+            <span style="display:block;position:absolute;top:50%;left:50%;width:60px;height:20px;margin-top:-10px;margin-left:-30px;text-align:center;font-size:13px;font-weight:900;color:#fff;text-shadow:0 2px 5px #000;pointer-events:none;transform:rotate(330deg) translateY(-80px) rotate(-330deg);z-index:4;">+5</span>
+          </div>
+          <div class="wheel-center-cap">⚽</div>
+        </div>
+
+        <div id="wheelStatusMsg" style="font-size:12px; color:${isEligible?'var(--pitch)':'var(--gold)'}; font-weight:800; margin-top:4px;">
+          ${isEligible ? '✨ اللفة اليومية المجانية متاحة الآن!' : `🔒 انتهت اللفة المجانية (انتظر ${hoursLeft} ساعة)`}
+        </div>
+      </div>
+
+      <!-- أزرار التدوير والشراء -->
+      <div class="sheet-input-bar" style="flex-direction:column; gap:8px;">
+        ${isEligible ? `
+          <button id="startSpinBtn" style="width:100%; background:var(--gold); color:#3a2a05; font-weight:900; padding:12px; border-radius:14px;">
+            🎡 لف العجلة المجانية الآن
+          </button>
+        ` : `
+          <button id="buyExtraSpinBtn" style="width:100%; background:var(--pitch); color:#08150d; font-weight:900; padding:12px; border-radius:14px;">
+            ⚡ شراء لفة إضافية بـ 10 XP (رصيدك: ${userXp} XP)
+          </button>
+        `}
+      </div>
+    </div>`);
+
+  const executeSpin = async (isExtra = false) => {
+    const disc = $("#spinDisc");
+    const freeBtn = $("#startSpinBtn");
+    const extraBtn = $("#buyExtraSpinBtn");
+
+    if(freeBtn) freeBtn.disabled = true;
+    if(extraBtn) extraBtn.disabled = true;
+
+    if(isExtra) {
+      if(userXp < 10) {
+        toast("🔒 رصيدك غير كافٍ! تحتاج 10 XP لشراء لفة إضافية");
+        if(extraBtn) extraBtn.disabled = false;
+        return;
+      }
+      
+      try {
+        await db.collection("users").doc(uid()).update({ xp: FieldValue.increment(-10) });
+        userData.xp = (userData.xp || 0) - 10;
+      } catch(e) {
+        toast("حدث خطأ في عملية خصم النقاط");
+        return;
+      }
+    }
+
+    const randomIndex = Math.floor(Math.random() * WHEEL_PRIZES.length);
+    const prize = WHEEL_PRIZES[randomIndex];
+
+    const totalRotation = (5 * 360) + (360 - prize.angle);
+    disc.style.transform = `rotate(${totalRotation}deg)`;
+
+    setTimeout(async () => {
+      try {
+        const userRef = db.collection("users").doc(uid());
+        const nowTs = Date.now();
+
+        const updateObj = { xp: FieldValue.increment(prize.xp) };
+        if(!isExtra) updateObj.lastSpinTimestamp = nowTs;
+
+        await userRef.update(updateObj);
+
+        userData.xp = (userData.xp || 0) + prize.xp;
+        if(!isExtra) userData.lastSpinTimestamp = nowTs;
+
+        toast(`🎉 مبروك! ربحت ${prize.label}!`);
+        openDailyWheelSheet();
+        if(activeTab === 'profile') renderProfilePanel();
+      } catch(e) {
+        console.error(e);
+        toast("حدث خطأ أثناء إضافة الجائزة");
+      }
+    }, 4000);
+  };
+
+  const freeBtn = $("#startSpinBtn");
+  const extraBtn = $("#buyExtraSpinBtn");
+
+  if(freeBtn) freeBtn.addEventListener('click', () => executeSpin(false));
+  if(extraBtn) extraBtn.addEventListener('click', () => executeSpin(true));
+}
+
+
+
+
+
 function openCommentsSheet(videoId){
   currentCommentsVideoId = videoId;
   openSheet(`
@@ -1645,8 +3185,9 @@ const chatsUnsubs = {};
 function chatIdFor(a,b){ return [a,b].sort().join('_'); }
 
 function openChatSheet(targetUid, targetName, targetPhoto){
-  if(!uid()){ toast('سجل دخول عشان تتواصل'); return; }
-  currentChatTarget = {uid: targetUid, name: targetName||'مستخدم', photo: targetPhoto||''};
+  if(!uid()){ toast('سجل دخولك أولاً للمراسلة'); return; }
+  currentChatTarget = { uid: targetUid, name: targetName || 'مستخدم', photo: targetPhoto || '' };
+  activeChatTab = 'direct';
   switchTab('chat');
 }
 
@@ -1934,102 +3475,540 @@ function renderSearchPanel(){
 }
 
 /* ===================== MATCH CENTER ===================== */
+/* ===================== MATCH CENTER ===================== */
+/* ===================== MATCH CENTER WITH LEADERBOARD ===================== */
+/* ===================== MATCH CENTER WITH DATE PICKER ===================== */
+/* ===================== MATCH CENTER WITH WORKING CALENDAR ===================== */
+/* ===================== MATCH CENTER FIX ===================== */
 function renderMatchesPanel(){
+  clearMatchReactionsListeners();
   const panel=$("#panel-matches");
+
   panel.innerHTML = `
     <div class="top-header"><span class="t">مركز المباريات</span></div>
+    
+    <div style="padding:12px 14px 0;">
+      <button id="showLeaderboardBtn" style="background:var(--bg-elev2);border:1px solid var(--gold);color:var(--gold);border-radius:12px;padding:9px 14px;font-size:12.5px;font-weight:800;cursor:pointer;margin-bottom:10px;width:100%;">
+        🏆 لوحة صدارة المتوقعين (Top Predictors)
+      </button>
+
+      <!-- شريط التواريخ الأفقي 📅 -->
+      <div class="match-date-strip" id="matchDateStrip">
+        <button class="date-chip" data-day="yesterday">أمس</button>
+        <button class="date-chip active" data-day="today">اليوم</button>
+        <button class="date-chip" data-day="tomorrow">غداً</button>
+        
+        <button class="date-chip" id="customDateBtn" type="button" style="position:relative;">
+          📅 <span id="customDateText">اختر تاريخ</span>
+          <input type="date" id="matchCustomDatePicker" style="position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;z-index:5;">
+        </button>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <input id="matchTeamSearch" placeholder="🔍 اكتب اسم الفريق (بحث في كل الموسم)"
+          style="flex:1; background:var(--bg-elev); border:1px solid var(--line); border-radius:14px; padding:11px 14px; color:#fff; font-size:14px;">
+        <button id="matchSearchBtn" style="background:var(--pitch); color:#08150d; font-weight:800; border-radius:14px; padding:0 18px; font-size:14px; cursor:pointer; flex-shrink:0;">بحث</button>
+      </div>
+    </div>
+    
     <div class="match-subnav">
-      <button class="match-subbtn ${activeMatchFilter==='today'?'active':''}" data-mfilter="today">اليوم</button>
+      <button class="match-subbtn ${activeMatchFilter==='all'?'active':''}" data-mfilter="all">الكل</button>
       <button class="match-subbtn ${activeMatchFilter==='live'?'active':''}" data-mfilter="live">مباشر 🔴</button>
-      <button class="match-subbtn ${activeMatchFilter==='upcoming'?'active':''}" data-mfilter="upcoming">المقبلة</button>
+      <button class="match-subbtn ${activeMatchFilter==='upcoming'?'active':''}" data-mfilter="upcoming">القادمة</button>
       <button class="match-subbtn ${activeMatchFilter==='standings'?'active':''}" data-mfilter="standings">جدول الترتيب</button>
     </div>
     <div id="matchesContainer" style="padding:14px 14px 90px;"></div>`;
 
-  panel.querySelectorAll('.match-subbtn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      activeMatchFilter = btn.dataset.mfilter;
-      renderMatchesPanel();
+  $("#showLeaderboardBtn").addEventListener('click', openLeaderboardSheet);
+
+  // أحداث زرار التواريخ
+  const dateStrip = $("#matchDateStrip");
+  dateStrip.querySelectorAll('.date-chip[data-day]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      dateStrip.querySelectorAll('.date-chip').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+
+      const dayType = btn.dataset.day;
+      const targetDate = new Date();
+      if(dayType === 'yesterday') targetDate.setDate(targetDate.getDate() - 1);
+      else if(dayType === 'tomorrow') targetDate.setDate(targetDate.getDate() + 1);
+
+      selectedMatchDateStr = formatDateYYYYMMDD(targetDate);
+      $("#customDateText").textContent = "اختر تاريخ";
+
+      activeMatchFilter = 'all';
+      panel.querySelectorAll('.match-subbtn').forEach(x => x.classList.remove('active'));
+      panel.querySelector('[data-mfilter="all"]').classList.add('active');
+
+      renderMatchesContent();
     });
   });
 
+  const customDateBtn = $("#customDateBtn");
+  const datePickerInput = $("#matchCustomDatePicker");
+
+  customDateBtn.addEventListener('click', () => {
+    try {
+      if (datePickerInput.showPicker) datePickerInput.showPicker();
+      else datePickerInput.click();
+    } catch (err) { datePickerInput.click(); }
+  });
+
+  datePickerInput.addEventListener('change', (e) => {
+    const val = e.target.value;
+    if(!val) return;
+    
+    dateStrip.querySelectorAll('.date-chip').forEach(x => x.classList.remove('active'));
+    customDateBtn.classList.add('active');
+
+    selectedMatchDateStr = val;
+    $("#customDateText").textContent = val;
+
+    activeMatchFilter = 'all';
+    panel.querySelectorAll('.match-subbtn').forEach(x => x.classList.remove('active'));
+    panel.querySelector('[data-mfilter="all"]').classList.add('active');
+
+    renderMatchesContent();
+  });
+
+  // أحداث التبويب (الكل / مباشر / القادمة / جدول الترتيب)
+  panel.querySelectorAll('.match-subbtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeMatchFilter = btn.dataset.mfilter;
+      panel.querySelectorAll('.match-subbtn').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      renderMatchesContent();
+    });
+  });
+
+  const searchInput = $("#matchTeamSearch");
+  const searchBtn = $("#matchSearchBtn");
+
+  const executeSearch = () => {
+    const q = sanitizeText(searchInput.value, 40);
+    if(q){
+      searchTeamAcrossSeason(q);
+    } else {
+      renderMatchesContent();
+    }
+  };
+
+  searchInput.addEventListener('input', ()=>{
+    matchTeamSearchQuery = sanitizeText(searchInput.value, 40);
+    applyMatchTeamFilter();
+  });
+
+  searchInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') executeSearch();
+  });
+
+  searchBtn.addEventListener('click', executeSearch);
+
+  renderMatchesContent();
+}
+/* ===================== MATCH CONTENT RENDERER FIX ===================== */
+/* ===================== INSTANT MATCH RENDERER ===================== */
+async function renderMatchesContent() {
   const container = $("#matchesContainer");
+  if(!container) return;
+  lastLoadedMatchesContainer = container;
+
   if(activeMatchFilter === 'standings') {
     renderStandingsView(container);
-  } else {
-    loadMatchCenterMatches(container, activeMatchFilter);
+    return;
   }
+
+  container.innerHTML = `<div class="loader">جاري جلب جدول المباريات...</div>`;
+
+  let allMatches = [];
+  try {
+    allMatches = await fetchAllSeasonMatches();
+  } catch(e) {
+    allMatches = [];
+  }
+
+  // لو السيرفر لم يرد خلال 3 ثوانٍ، يعرض الماتشات فوراً دون انتظار
+  if(!allMatches || allMatches.length === 0) {
+    container.innerHTML = MATCHES.map(m => formatMockMatchCard(m)).join('');
+    bindMatchCardEvents(container);
+    applyMatchTeamFilter();
+    return;
+  }
+
+  let filtered = [];
+
+  try {
+    if(activeMatchFilter === 'live') {
+      filtered = allMatches.filter(m => isMatchLive(m));
+    } 
+    else if(activeMatchFilter === 'upcoming') {
+      const now = Date.now();
+      filtered = allMatches.filter(m => !isMatchFinished(m) && !isMatchLive(m) && new Date(m.utcDate).getTime() > now);
+      filtered.sort((a,b) => new Date(a.utcDate) - new Date(b.utcDate));
+    } 
+    else {
+      if(selectedMatchDateStr) {
+filtered = allMatches.filter(m => {
+  if(!m.utcDate) return false;
+  return m.utcDate.startsWith(selectedMatchDateStr);
+});
+      } else {
+        filtered = sortAndFilterMatches(allMatches, 'all');
+      }
+    }
+  } catch(e) {
+    filtered = [];
+  }
+
+  if(filtered.length === 0) {
+    let msg = "لا توجد مباريات متاحة حالياً";
+    if(activeMatchFilter === 'live') msg = "لا توجد مباريات مباشرة حالياً 🔴";
+    else if(activeMatchFilter === 'upcoming') msg = "لا توجد مباريات قادمة مؤكدة حالياً";
+    else if(selectedMatchDateStr) msg = `لا توجد مباريات مجدولة في تاريخ ${selectedMatchDateStr}`;
+
+    container.innerHTML = `<div class="empty-state"><div class="big">${icon('matches')}</div>${msg}</div>`;
+    applyMatchTeamFilter();
+    return;
+  }
+
+  const followedSet = getFollowedTeamsEnglishNames();
+  container.innerHTML = filtered.slice(0, 60).map(m => formatApiMatchCard(m, isFollowedMatch(m, followedSet))).join('');
+  bindMatchCardEvents(container);
+  applyMatchTeamFilter();
+}
+/* ===================== MATCH PREDICTIONS LOGIC ===================== */
+let matchPredictionsUnsubs = {};
+
+function clearMatchPredictionsListeners(){
+  Object.values(matchPredictionsUnsubs).forEach(unsub=>{ try{ unsub(); }catch(e){} });
+  matchPredictionsUnsubs = {};
+}
+
+function watchMatchPredictions(matchId, cardEl){
+  if(!matchId || matchPredictionsUnsubs[matchId]) return;
+  const wrap = cardEl.querySelector('.match-predictions-wrap');
+  if(!wrap) return;
+
+  matchPredictionsUnsubs[matchId] = db.collection('match_predictions').doc(matchId).onSnapshot(doc=>{
+    const data = doc.exists ? doc.data() : { counts:{home:0, draw:0, away:0}, voters:{} };
+    const counts = data.counts || {home:0, draw:0, away:0};
+    const voters = data.voters || {};
+    const myChoice = voters[uid()] || null;
+
+    const h = counts.home || 0;
+    const d = counts.draw || 0;
+    const a = counts.away || 0;
+    const total = h + d + a;
+
+    let hPct = 33.3, dPct = 33.3, aPct = 33.4;
+    if(total > 0){
+      hPct = Math.round((h / total) * 100);
+      dPct = Math.round((d / total) * 100);
+      aPct = 100 - hPct - dPct; // يضمن أن المجموع دائماً 100%
+    }
+
+    // تحديث شريط النسب والأرقام
+    const segHome = wrap.querySelector('.pred-seg.home');
+    const segDraw = wrap.querySelector('.pred-seg.draw');
+    const segAway = wrap.querySelector('.pred-seg.away');
+    if(segHome) segHome.style.width = hPct + '%';
+    if(segDraw) segDraw.style.width = dPct + '%';
+    if(segAway) segAway.style.width = aPct + '%';
+
+    const lblHome = wrap.querySelector('.lbl-home');
+    const lblDraw = wrap.querySelector('.lbl-draw');
+    const lblAway = wrap.querySelector('.lbl-away');
+    if(lblHome) lblHome.textContent = hPct + '%';
+    if(lblDraw) lblDraw.textContent = dPct + '%';
+    if(lblAway) lblAway.textContent = aPct + '%';
+
+    const countEl = wrap.querySelector('.pred-total-count');
+    if(countEl) countEl.textContent = `${fmtNum(total)} تصويت`;
+
+    // تمييز خيار المستخدم الحالي
+    wrap.querySelectorAll('.pred-btn').forEach(btn=>{
+      const choice = btn.dataset.choice;
+      btn.classList.toggle('active', myChoice === choice);
+    });
+  }, err => console.warn('prediction listener failed', err));
+}
+
+async function toggleMatchPrediction(matchId, choice){
+  if(!uid()){ toast('سجل دخول للتوقع في الماتش'); return; }
+  const ref = db.collection('match_predictions').doc(matchId);
+  try{
+    await db.runTransaction(async t=>{
+      const doc = await t.get(ref);
+      const data = doc.exists ? doc.data() : { counts:{home:0, draw:0, away:0}, voters:{} };
+      const counts = data.counts || {home:0, draw:0, away:0};
+      const voters = data.voters || {};
+      const currentChoice = voters[uid()];
+
+      if(currentChoice === choice){
+        // إلغاء التوقع عند الضغط عليه مرة أخرى
+        delete voters[uid()];
+        counts[choice] = Math.max(0, (counts[choice]||0) - 1);
+      } else {
+        // خصم التوقع القديم إن وجد
+        if(currentChoice){
+          counts[currentChoice] = Math.max(0, (counts[currentChoice]||0) - 1);
+        }
+        voters[uid()] = choice;
+        counts[choice] = (counts[choice]||0) + 1;
+      }
+      t.set(ref, { counts, voters }, { merge: false });
+    });
+  }catch(e){
+    console.error('toggleMatchPrediction failed', e);
+    toast('حدث خطأ أثناء حفظ توقعك');
+  }
+}
+/* ---- Match relevance helpers: followed-team matching, recency weighting, caching ---- */
+const FINISHED_MATCH_RETENTION_MS = 7 * 24 * 60 * 60 * 1000; // اختفاء المباريات المنتهية بعد أسبوع
+let seasonMatchesCache = { data: null, ts: 0 };
+const SEASON_CACHE_TTL_MS = 3 * 60 * 1000; // كاش 3 دقائق لتقليل عدد نداءات الـ API
+
+function normalizeTeamName(s){
+  return (s||'')
+    .toString()
+    .toLowerCase()
+    .replace(/_/g,' ')
+    .replace(/[.]/g,'')
+    .replace(/\b(fc|cf|cfc|afc|sc|ac|club|de|do|the)\b/g,'')
+    .replace(/[^a-z0-9\u00c0-\u017f ]/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function getFollowedTeamsEnglishNames(){
+  const set = new Set();
+  if(userData){
+    const names = [];
+    if(userData.favTeam) names.push(userData.favTeam);
+    if(Array.isArray(userData.followTeams)) names.push(...userData.followTeams);
+    names.forEach(t=>{
+      const wiki = TEAM_WIKI_MAP[t];
+      if(wiki){
+        const clean = normalizeTeamName(decodeURIComponent(wiki));
+        if(clean) set.add(clean);
+      }
+    });
+  }
+  return set;
+}
+
+function isFollowedMatch(m, followedSet){
+  if(!followedSet || followedSet.size===0) return false;
+  const home = normalizeTeamName((m.homeTeam.name||'') + ' ' + (m.homeTeam.shortName||''));
+  const away = normalizeTeamName((m.awayTeam.name||'') + ' ' + (m.awayTeam.shortName||''));
+  for(const f of followedSet){
+    if(!f) continue;
+    if(home.includes(f) || away.includes(f)) return true;
+    const words = f.split(' ').filter(w=>w.length>=4);
+    if(words.some(w=> home.includes(w) || away.includes(w))) return true;
+  }
+  return false;
+}
+
+function isMatchLive(m){ return m.status === 'IN_PLAY' || m.status === 'PAUSED'; }
+function isMatchFinished(m){ return m.status === 'FINISHED' || m.status === 'AWARDED'; }
+function getMatchTimeWeight(m){ return Math.abs(new Date(m.utcDate).getTime() - Date.now()); }
+function isWithinRetentionWindow(m){
+  const t = new Date(m.utcDate).getTime();
+  return (Date.now() - t) <= FINISHED_MATCH_RETENTION_MS;
+}
+
+// يجيب كل مباريات الموسم (ماضية وجاية) لكل الدوريات المتاحة، مع كاش لتحسين الأداء
+/* ===================== FAST & BULLETPROOF API FETCH ===================== */
+async function fetchAllSeasonMatches(forceRefresh){
+  const now = Date.now();
+  if(!forceRefresh && seasonMatchesCache.data && (now - seasonMatchesCache.ts) < SEASON_CACHE_TTL_MS){
+    return seasonMatchesCache.data;
+  }
+  
+  try {
+    const results = await Promise.all(COMPETITION_CODES.map(c => 
+      fetchFootballData(`competitions/${c.code}/matches`).catch(() => null)
+    ));
+    let all = [];
+    results.forEach(data => {
+      if(data && Array.isArray(data.matches)) all = all.concat(data.matches);
+    });
+    if(all.length){ seasonMatchesCache = { data: all, ts: now }; }
+    return all;
+  } catch(e) {
+    console.warn("fetchAllSeasonMatches error:", e);
+    return [];
+  }
+}
+
+// فلترة وترتيب: المباشر أولاً، ثم فرق المتابعة، ثم الأقرب زمنياً للحظة الحالية (أحدث نتيجة / أقرب موعد)
+function sortAndFilterMatches(matches, mode){
+  const followedSet = getFollowedTeamsEnglishNames();
+  const seen = new Set();
+  let list = matches.filter(m=>{
+    if(!m || !m.id || seen.has(m.id)) return false;
+    seen.add(m.id);
+    if(isMatchFinished(m)) return isWithinRetentionWindow(m);
+    return true; // كل المباريات الجاية بدون سقف زمني
+  });
+  if(mode === 'upcoming'){
+    const now = Date.now();
+    list = list.filter(m=> !isMatchFinished(m) && !isMatchLive(m) && new Date(m.utcDate).getTime() > now);
+  }
+  list.sort((a,b)=>{
+    const aLive = isMatchLive(a) ? 0 : 1, bLive = isMatchLive(b) ? 0 : 1;
+    if(aLive !== bLive) return aLive - bLive;
+    const aF = isFollowedMatch(a, followedSet) ? 0 : 1, bF = isFollowedMatch(b, followedSet) ? 0 : 1;
+    if(aF !== bF) return aF - bF;
+    return getMatchTimeWeight(a) - getMatchTimeWeight(b);
+  });
+  return list;
+}
+
+function formatMatchDateLabel(m){
+  const d = new Date(m.utcDate);
+  const now = new Date();
+  const timeStr = d.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+  if(d.toDateString() === now.toDateString()) return timeStr;
+  const dateStr = d.toLocaleDateString('ar-EG', {day:'numeric', month:'short'});
+  return `${dateStr} · ${timeStr}`;
+}
+
+
+async function searchTeamAcrossSeason(query){
+  const container = $("#matchesContainer");
+  if(!container) return;
+  lastLoadedMatchesContainer = container;
+  container.innerHTML = `<div class="loader">جاري البحث عن "${esc(query)}" في كل الدوريات...</div>`;
+
+  const allMatches = await fetchAllSeasonMatches();
+
+  const q = query.toLowerCase();
+  const found = allMatches.filter(m=>{
+    const home = ((m.homeTeam.name||'') + ' ' + (m.homeTeam.shortName||'')).toLowerCase();
+    const away = ((m.awayTeam.name||'') + ' ' + (m.awayTeam.shortName||'')).toLowerCase();
+    return home.includes(q) || away.includes(q);
+  });
+
+  found.sort((a,b)=> new Date(b.utcDate) - new Date(a.utcDate));
+
+  if(found.length === 0){
+    container.innerHTML = `<div class="empty-state"><div class="big">${icon('search')}</div>مفيش مباريات لفريق "${esc(query)}" في الدوريات المتاحة</div>`;
+    return;
+  }
+
+  const followedSet = getFollowedTeamsEnglishNames();
+  container.innerHTML = found.slice(0, 40).map(m=>formatApiMatchCard(m, isFollowedMatch(m, followedSet))).join('');
+  bindMatchCardEvents(container);
 }
 
 async function loadMatchCenterMatches(container, filter) {
-  container.innerHTML = `<div class="loader">جاري تحميل المباريات من Football-Data...</div>`;
+  lastLoadedMatchesContainer = container;
+  container.innerHTML = `<div class="loader">جاري تحميل المباريات...</div>`;
 
-  let apiEndpoint = '';
-  const todayStr = new Date().toISOString().split('T')[0];
-
-  if(filter === 'today'){
-    apiEndpoint = `matches?dateFrom=${todayStr}&dateTo=${todayStr}`;
-  } else if(filter === 'live'){
-    apiEndpoint = `matches?status=IN_PLAY,PAUSED`;
-  } else if(filter === 'upcoming'){
-    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-    const nextWeek = new Date(); nextWeek.setDate(nextWeek.getDate() + 7);
-    apiEndpoint = `matches?dateFrom=${tomorrow.toISOString().split('T')[0]}&dateTo=${nextWeek.toISOString().split('T')[0]}`;
+  if(filter === 'live'){
+    const apiData = await fetchFootballData(`matches?status=IN_PLAY,PAUSED`);
+    if(apiData && apiData.matches && apiData.matches.length > 0) {
+      const followedSet = getFollowedTeamsEnglishNames();
+      const sorted = apiData.matches.slice().sort((a,b)=>{
+        const aF = isFollowedMatch(a, followedSet) ? 0 : 1, bF = isFollowedMatch(b, followedSet) ? 0 : 1;
+        if(aF !== bF) return aF - bF;
+        return getMatchTimeWeight(a) - getMatchTimeWeight(b);
+      });
+      container.innerHTML = sorted.map(m => formatApiMatchCard(m, isFollowedMatch(m, followedSet))).join('');
+      bindMatchCardEvents(container);
+    } else {
+      container.innerHTML = `<div class="empty-state"><div class="big">${icon('matches')}</div>لا توجد مباريات مباشرة حالياً</div>`;
+    }
+    applyMatchTeamFilter();
+    return;
   }
 
-  const apiData = await fetchFootballData(apiEndpoint);
+  // 'all' و 'upcoming': نجيب كل مباريات الموسم عبر كل الدوريات المتاحة (مع كاش) ثم نفلتر ونرتب
+  const all = await fetchAllSeasonMatches();
 
-  let html = '';
-  if(!FOOTBALL_DATA_API_KEY || FOOTBALL_DATA_API_KEY === "6e6dd669a96d463aac236438787c5ca3"){
-  }
-
-  if(apiData && apiData.matches && apiData.matches.length > 0) {
-    html += apiData.matches.map(m => formatApiMatchCard(m)).join('');
-    container.innerHTML = html;
+  if(!all || all.length === 0){
+    // fallback على البيانات التجريبية لو الـ API مش متاح
+    container.innerHTML = MATCHES.map(m => formatMockMatchCard(m)).join('');
     bindMatchCardEvents(container);
-  } else if(apiData && apiData.matches && apiData.matches.length === 0) {
-    html += `<div class="empty-state"><div class="big">${icon('matches')}</div>لا توجد مباريات متاحة لهذا الفلتر حالياً</div>`;
-    container.innerHTML = html;
-  } else {
-    // Fallback to static matches array
-    const filteredMatches = MATCHES;
-    html += filteredMatches.map(m => formatMockMatchCard(m)).join('');
-    container.innerHTML = html;
-    bindMatchCardEvents(container);
+    applyMatchTeamFilter();
+    return;
   }
+
+  const list = sortAndFilterMatches(all, filter);
+  if(list.length === 0){
+    container.innerHTML = `<div class="empty-state"><div class="big">${icon('matches')}</div>لا توجد مباريات متاحة حالياً</div>`;
+    applyMatchTeamFilter();
+    return;
+  }
+
+  const followedSet = getFollowedTeamsEnglishNames();
+  container.innerHTML = list.slice(0, 60).map(m => formatApiMatchCard(m, isFollowedMatch(m, followedSet))).join('');
+  bindMatchCardEvents(container);
+  applyMatchTeamFilter();
 }
+ 
 
-function formatApiMatchCard(m) {
-  const isLive = m.status === 'IN_PLAY' || m.status === 'PAUSED';
-  const statusLabel = isLive ? 'مباشر 🔴' : (m.status === 'FINISHED' ? 'انتهت' : new Date(m.utcDate).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}));
+
+function formatApiMatchCard(m, isFollowed) {
+  const isLive = isMatchLive(m);
+  const finished = isMatchFinished(m);
+  const statusLabel = isLive ? 'مباشر 🔴' : (finished ? `انتهت · ${formatMatchDateLabel(m)}` : formatMatchDateLabel(m));
   const homeScore = m.score && m.score.fullTime && m.score.fullTime.home !== null ? m.score.fullTime.home : '-';
   const awayScore = m.score && m.score.fullTime && m.score.fullTime.away !== null ? m.score.fullTime.away : '-';
   const competitionName = (m.competition && m.competition.name) ? m.competition.name : 'مباراة دولية';
   const matchId = 'api_' + m.id;
+  const homeName = m.homeTeam.shortName || m.homeTeam.name;
+  const awayName = m.awayTeam.shortName || m.awayTeam.name;
 
   return `
-    <div class="match-card ${isLive?'is-live':''}" data-match="${esc(matchId)}">
+    <div class="match-card ${isLive?'is-live':''} ${isFollowed?'is-followed':''}" data-match="${esc(matchId)}">
       <div class="match-header">
-        <span class="match-league">${esc(competitionName)}</span>
+        <span class="match-league">${isFollowed?`<span class="followed-star" title="من فرقك المتابَعة">${icon('star')}</span>`:''}${esc(competitionName)}</span>
         <span class="match-status ${isLive?'live':''}">${statusLabel}</span>
       </div>
       <div class="match-teams">
         <div class="team-box">
           <img src="${esc(m.homeTeam.crest || fallbackTeamAvatar(m.homeTeam.name))}" onerror="this.src='${fallbackTeamAvatar(m.homeTeam.name)}'">
-          <div class="team-name">${esc(m.homeTeam.shortName || m.homeTeam.name)}</div>
+          <div class="team-name">${esc(homeName)}</div>
         </div>
         <div class="match-score">${homeScore} : ${awayScore}</div>
         <div class="team-box">
           <img src="${esc(m.awayTeam.crest || fallbackTeamAvatar(m.awayTeam.name))}" onerror="this.src='${fallbackTeamAvatar(m.awayTeam.name)}'">
-          <div class="team-name">${esc(m.awayTeam.shortName || m.awayTeam.name)}</div>
+          <div class="team-name">${esc(awayName)}</div>
         </div>
       </div>
-      <div class="match-actions">
+
+      <!-- قسم التوقعات والنسب المئوية -->
+      <div class="match-predictions-wrap" data-match="${esc(matchId)}">
+        <div class="pred-header">
+          <span>🔮 توقعات الجمهور</span>
+          <span class="pred-total-count" style="color:var(--muted);font-weight:400">0 تصويت</span>
+        </div>
+        <div class="pred-buttons">
+          <button class="pred-btn" data-choice="home">فوز ${esc(homeName)}</button>
+          <button class="pred-btn" data-choice="draw">تعادل</button>
+          <button class="pred-btn" data-choice="away">فوز ${esc(awayName)}</button>
+        </div>
+        <div class="pred-bar">
+          <div class="pred-seg home" style="width:33.3%"></div>
+          <div class="pred-seg draw" style="width:33.3%"></div>
+          <div class="pred-seg away" style="width:33.3%"></div>
+        </div>
+        <div class="pred-pcts">
+          <span class="lbl-home">33%</span>
+          <span class="lbl-draw">33%</span>
+          <span class="lbl-away">33%</span>
+        </div>
+      </div>
+
+      <div class="match-actions" style="margin-top:12px;">
         ${MATCH_REACT_EMOJIS.map(react=>`<button class="match-react-btn" data-match="${esc(matchId)}" data-react="${react.key}">${react.icon} ${react.label}</button>`).join('')}
       </div>
       <div class="match-meta">
         <button class="match-btn" data-act="details" data-mid="${m.id}">تفاصيل المباراة</button>
-        <button class="match-btn" data-act="chat" data-match="${esc(matchId)}" data-title="${esc((m.homeTeam.shortName||m.homeTeam.name) + ' - ' + (m.awayTeam.shortName||m.awayTeam.name))}">شات الماتش</button>
+        <button class="match-btn" data-act="chat" data-match="${esc(matchId)}" data-title="${esc(homeName + ' - ' + awayName)}">شات الماتش</button>
       </div>
     </div>`;
 }
@@ -2053,7 +4032,31 @@ function formatMockMatchCard(m) {
           <div class="team-name">${esc(m.away)}</div>
         </div>
       </div>
-      <div class="match-actions">
+
+      <!-- قسم التوقعات والنسب المئوية -->
+      <div class="match-predictions-wrap" data-match="${esc(m.id)}">
+        <div class="pred-header">
+          <span>🔮 توقعات الجمهور</span>
+          <span class="pred-total-count" style="color:var(--muted);font-weight:400">0 تصويت</span>
+        </div>
+        <div class="pred-buttons">
+          <button class="pred-btn" data-choice="home">فوز ${esc(m.home)}</button>
+          <button class="pred-btn" data-choice="draw">تعادل</button>
+          <button class="pred-btn" data-choice="away">فوز ${esc(m.away)}</button>
+        </div>
+        <div class="pred-bar">
+          <div class="pred-seg home" style="width:33.3%"></div>
+          <div class="pred-seg draw" style="width:33.3%"></div>
+          <div class="pred-seg away" style="width:33.3%"></div>
+        </div>
+        <div class="pred-pcts">
+          <span class="lbl-home">33%</span>
+          <span class="lbl-draw">33%</span>
+          <span class="lbl-away">33%</span>
+        </div>
+      </div>
+
+      <div class="match-actions" style="margin-top:12px;">
         ${MATCH_REACT_EMOJIS.map(react=>`<button class="match-react-btn" data-match="${esc(m.id)}" data-react="${react.key}">${react.icon} ${react.label} ${fmtNum((m.reactions&&m.reactions[react.key])||0)}</button>`).join('')}
       </div>
       <div class="match-meta">
@@ -2064,11 +4067,35 @@ function formatMockMatchCard(m) {
     </div>`;
 }
 
+function applyMatchTeamFilter(){
+  const container = document.getElementById('matchesContainer');
+  if(!container) return;
+  const q = (matchTeamSearchQuery||'').trim().toLowerCase();
+  const cards = container.querySelectorAll('.match-card');
+  cards.forEach(card=>{
+    if(!q){ card.style.display=''; return; }
+    const names = Array.from(card.querySelectorAll('.team-name')).map(el=> (el.textContent||'').toLowerCase());
+    const matched = names.some(n => n.includes(q));
+    card.style.display = matched ? '' : 'none';
+  });
+}
+
 function bindMatchCardEvents(container) {
   container.querySelectorAll('.match-react-btn').forEach(btn=>btn.addEventListener('click', ()=>{
     const matchId = btn.dataset.match; const react = btn.dataset.react;
     toggleMatchReaction(matchId, react);
   }));
+
+  // ربط أزرار التوقع
+  container.querySelectorAll('.pred-btn').forEach(btn=>btn.addEventListener('click', ()=>{
+    const wrap = btn.closest('.match-predictions-wrap');
+    if(wrap){
+      const matchId = wrap.dataset.match;
+      const choice = btn.dataset.choice;
+      toggleMatchPrediction(matchId, choice);
+    }
+  }));
+
   container.querySelectorAll('.match-btn[data-act="scorers"]').forEach(btn=>btn.addEventListener('click', ()=>openScorersSheet(btn.dataset.match)));
   container.querySelectorAll('.match-btn[data-act="details"]').forEach(btn=>btn.addEventListener('click', ()=>openApiMatchDetails(btn.dataset.mid)));
   container.querySelectorAll('.match-btn[data-act="chat"]').forEach(btn=>btn.addEventListener('click', ()=>{
@@ -2076,6 +4103,15 @@ function bindMatchCardEvents(container) {
     const title = btn.dataset.title || 'شات المباراة';
     openMatchChat(mId, title);
   }));
+
+  // استدعاء الاستماع اللحظي لكل كارت
+  container.querySelectorAll('.match-card').forEach(card=>{
+    const matchId = card.dataset.match;
+    if(matchId){
+      watchMatchReactions(matchId, card);
+      watchMatchPredictions(matchId, card);
+    }
+  });
 }
 
 async function renderStandingsView(container) {
@@ -2158,13 +4194,60 @@ async function openApiMatchDetails(matchId) {
   }
 }
 
-function toggleMatchReaction(matchId, react){
-  const match = MATCHES.find(m=>m.id===matchId);
-  if(match){
-    match.reactions[react] = (match.reactions[react]||0) + 1;
+let matchReactionsUnsubs = {};
+
+function clearMatchReactionsListeners(){
+  Object.values(matchReactionsUnsubs).forEach(unsub=>{ try{ unsub(); }catch(e){} });
+  matchReactionsUnsubs = {};
+  clearMatchPredictionsListeners(); // مسح مستمعي التوقعات
+}
+
+function watchMatchReactions(matchId, cardEl){
+  if(!matchId || matchReactionsUnsubs[matchId]) return;
+  matchReactionsUnsubs[matchId] = db.collection('match_reactions').doc(matchId).onSnapshot(doc=>{
+    const data = doc.exists ? doc.data() : { counts:{}, voters:{} };
+    const counts = data.counts || {};
+    const voters = data.voters || {};
+    const myReaction = voters[uid()] || null;
+    cardEl.querySelectorAll('.match-react-btn').forEach(btn=>{
+      const key = btn.dataset.react;
+      const meta = MATCH_REACT_EMOJIS.find(r=>r.key===key);
+      const count = counts[key] || 0;
+      btn.innerHTML = `${meta.icon} ${meta.label} ${count>0?fmtNum(count):''}`;
+      btn.classList.toggle('active-react', myReaction===key);
+    });
+  }, err=>console.warn('match reaction listener failed', err));
+}
+
+async function toggleMatchReaction(matchId, reactType){
+  if(!uid()){ toast('سجل دخولك الأول'); return; }
+  const ref = db.collection('match_reactions').doc(matchId);
+  try{
+    await db.runTransaction(async t=>{
+      const doc = await t.get(ref);
+      const data = doc.exists ? doc.data() : { counts:{like:0,love:0,wow:0,angry:0}, voters:{} };
+      const counts = data.counts || {like:0,love:0,wow:0,angry:0};
+      const voters = data.voters || {};
+      const current = voters[uid()];
+
+      if(current === reactType){
+        // نفس التفاعل اللي مضغوط قبل كده -> نلغيه (زي اللايك بالظبط)
+        delete voters[uid()];
+        counts[reactType] = Math.max(0, (counts[reactType]||0) - 1);
+      } else {
+        // لو كان له تفاعل قديم مختلف، نشيله الأول
+        if(current){
+          counts[current] = Math.max(0, (counts[current]||0) - 1);
+        }
+        voters[uid()] = reactType;
+        counts[reactType] = (counts[reactType]||0) + 1;
+      }
+      t.set(ref, { counts, voters }, { merge: false });
+    });
+  }catch(e){
+    console.error('toggleMatchReaction failed', e);
+    toast('حصل خطأ، حاول تاني');
   }
-  toast("تم تسجيل تفاعلك!");
-  renderMatchesPanel();
 }
 function openScorersSheet(matchId){
   const match = MATCHES.find(m=>m.id===matchId);
@@ -2339,61 +4422,181 @@ function openVarCreateSheet(){
 }
 
 /* ===================== COMMUNITY ===================== */
+/* ===================== COMMUNITY WITH POLLS ===================== */
+/* ===================== COMMUNITY WITH DYNAMIC POLLS ===================== */
 function renderCommunityPanel(){
   const panel=$("#panel-community");
   panel.innerHTML = `<div style="height:100%;overflow-y:auto;">
     <div class="post-box">
       <textarea id="postText" placeholder="اكتب حاجة لجمهور كورنر..."></textarea>
-      <label class="upload-drop" id="postImgDrop" style="height:100px;display:none;">
+
+      <!-- خيارات الاستطلاع الديناميكية -->
+      <div class="poll-inputs-wrap" id="pollInputsBox" style="display:none;">
+        <div style="font-size:12px;color:var(--gold);font-weight:800;margin-bottom:8px">📊 إضافة خيارات الاستطلاع:</div>
+        
+        <div id="dynamicPollInputs">
+          <input class="poll-input" placeholder="خيار 1 (مثال: الأهلي)">
+          <input class="poll-input" placeholder="خيار 2 (مثال: الزمالك)">
+        </div>
+
+        <button id="addMoreOptBtn" style="background:transparent;border:1px dashed var(--gold);color:var(--gold);border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800;cursor:pointer;margin-top:6px;width:100%;">+ إضافة خيار آخر</button>
+      </div>
+
+      <label class="upload-drop" id="postImgDrop" style="height:100px;display:none;margin-top:8px;">
         <input type="file" accept="image/*" id="postImgInput" style="display:none">
       </label>
-      <div class="row">
-        <button class="btn-ghost" id="postImgBtn" style="flex:none;padding:8px 14px;">${icon('camera')} صورة</button>
-        <button class="btn-primary" id="postSubmitBtn" style="flex:none;width:auto;padding:8px 18px;">نشر</button>
+
+      <div class="row" style="margin-top:8px;gap:6px;flex-wrap:wrap;">
+        <button class="btn-ghost" id="postImgBtn" style="flex:none;padding:8px 12px;">${icon('camera')} صورة</button>
+        <button class="btn-ghost" id="togglePollBtn" style="flex:none;padding:8px 12px;color:var(--gold);">📊 استطلاع رأي</button>
+        <button class="btn-primary" id="postSubmitBtn" style="flex:none;width:auto;padding:8px 18px;margin-right:auto;">نشر</button>
       </div>
     </div>
     <div id="communityFeed"></div>
   </div>`;
+
   let postImgFile=null;
+
+  // فتح/إغلاق مربع الاستطلاع
+  $("#togglePollBtn").addEventListener("click", ()=>{
+    const box = $("#pollInputsBox");
+    const isHidden = box.style.display === "none";
+    box.style.display = isHidden ? "block" : "none";
+    $("#togglePollBtn").style.borderColor = isHidden ? "var(--gold)" : "var(--line)";
+  });
+
+  // إضافة خيار جديد عند الضغط على زرار (+ إضافة خيار آخر)
+  $("#addMoreOptBtn").addEventListener("click", (e)=>{
+    e.preventDefault();
+    const container = $("#dynamicPollInputs");
+    const count = container.querySelectorAll(".poll-input").length + 1;
+    
+    if(count > 8){
+      toast("الحد الأقصى 8 خيارات للاستطلاع");
+      return;
+    }
+
+    const newInput = document.createElement("input");
+    newInput.className = "poll-input";
+    newInput.placeholder = `خيار ${count}`;
+    container.appendChild(newInput);
+  });
+
   $("#postImgBtn").addEventListener("click",()=>$("#postImgInput").click());
   $("#postImgInput").addEventListener("change",e=>{
     const f=e.target.files[0]; if(!f) return; postImgFile=f;
     const drop=$("#postImgDrop"); drop.style.display="flex";
     drop.innerHTML=`<img src="${URL.createObjectURL(f)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`;
   });
+
+  // نشر المنشور بالخيارات الديناميكية
   $("#postSubmitBtn").addEventListener("click", async ()=>{
-    const text=sanitizeText($("#postText").value, 800);
-    if(!text && !postImgFile){toast("اكتب حاجة أو ضيف صورة");return;}
-    let imageURL="";
-    if(postImgFile){
-      const ref=storage.ref(`community_images/${uid()}_${Date.now()}.jpg`);
-      await ref.put(postImgFile); imageURL=await ref.getDownloadURL();
+    const text = sanitizeText($("#postText").value, 800);
+    
+    // جمع كل الخيارات المكتوبة ديناميكياً
+    const optionInputs = $all("#dynamicPollInputs .poll-input");
+    const pollOptions = Array.from(optionInputs)
+      .map(inp => sanitizeText(inp.value, 100))
+      .filter(val => val.length > 0);
+
+    if(!text && !postImgFile && pollOptions.length === 0){
+      toast("اكتب منشوراً، ضيف صورة، أو اعمل استطلاع رأي");
+      return;
     }
+
+    if(pollOptions.length > 0 && pollOptions.length < 2){
+      toast("الاستطلاع يحتاج خيارين على الأقل");
+      return;
+    }
+
+    $("#postSubmitBtn").textContent = "جاري النشر...";
+
+    let imageURL = "";
+    if(postImgFile){
+      const ref = storage.ref(`community_images/${uid()}_${Date.now()}.jpg`);
+      await ref.put(postImgFile); 
+      imageURL = await ref.getDownloadURL();
+    }
+
+    const pollData = pollOptions.length >= 2 ? {
+      options: pollOptions,
+      counts: new Array(pollOptions.length).fill(0),
+      voters: {}
+    } : null;
+
     await db.collection("posts").add({
-      text, imageURL, userId:uid(), userName:userData.displayName, userPhoto:userData.photoURL||"", userVerified:!!userData.verified,
-      likes:[], commentsCount:0, createdAt:FieldValue.serverTimestamp()
+      text, 
+      imageURL, 
+      poll: pollData,
+      userId: uid(), 
+      userName: userData.displayName, 
+      userPhoto: userData.photoURL || "", 
+      userVerified: !!userData.verified,
+      likes: [], 
+      commentsCount: 0, 
+      createdAt: FieldValue.serverTimestamp()
     });
-    $("#postText").value=""; postImgFile=null; $("#postImgDrop").style.display="none";
+
+    toast("تم النشر بنجاح ✨");
+    
+    // إرجاع النماذج لحالتها الأولى
+    $("#postText").value = ""; 
+    postImgFile = null; 
+    $("#postImgDrop").style.display = "none";
+    $("#pollInputsBox").style.display = "none";
+    $("#dynamicPollInputs").innerHTML = `
+      <input class="poll-input" placeholder="خيار 1 (مثال: الأهلي)">
+      <input class="poll-input" placeholder="خيار 2 (مثال: الزمالك)">
+    `;
+    $("#postSubmitBtn").textContent = "نشر";
   });
+
+  // الاستماع اللحظي للمنشورات
   if(communityUnsub) communityUnsub();
   communityUnsub = db.collection("posts").orderBy("createdAt","desc").limit(30).onSnapshot(qs=>{
     const feed=$("#communityFeed");
     if(qs.empty){ feed.innerHTML=`<div class="empty-state"><div class="big">${icon('community')}</div>لسه مفيش منشورات</div>`; return; }
+    
     feed.innerHTML = qs.docs.map(d=>{
-      const p={id:d.id,...d.data()};
-      const liked=(p.likes||[]).includes(uid());
+      const p = {id:d.id, ...d.data()};
+      const liked = (p.likes||[]).includes(uid());
+
+      let pollHtml = "";
+      if(p.poll && p.poll.options){
+        const totalVotes = p.poll.counts ? p.poll.counts.reduce((a,b)=>a+b, 0) : 0;
+        const myVoteIndex = p.poll.voters ? p.poll.voters[uid()] : undefined;
+
+        pollHtml = `<div class="post-poll-wrap" data-pid="${p.id}">`;
+        p.poll.options.forEach((opt, idx) => {
+          const count = p.poll.counts[idx] || 0;
+          const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+          const isVoted = myVoteIndex === idx;
+
+          pollHtml += `
+            <div class="poll-option-btn ${isVoted ? 'voted' : ''}" data-idx="${idx}">
+              <div class="poll-fill-bar" style="width:${pct}%"></div>
+              <span class="poll-option-label">${esc(opt)} ${isVoted ? '✓' : ''}</span>
+              <span class="poll-pct-text">${pct}%</span>
+            </div>`;
+        });
+        pollHtml += `<div style="font-size:11px;color:var(--muted);margin-top:2px;">إجمالي التصويت: ${fmtNum(totalVotes)}</div></div>`;
+      }
+
       return `<div class="post-card" data-pid="${p.id}">
         <div class="post-head"><img src="${esc(p.userPhoto||'')}" onerror="this.style.background='#1c211c'">
           <div><div class="nm">${esc(p.userName)}${verifiedBadge(p.userVerified)}</div><div class="tm">${timeAgo(p.createdAt)}</div></div>
         </div>
         ${p.text?`<div class="post-text">${esc(p.text)}</div>`:""}
+        ${pollHtml}
         ${p.imageURL?`<img class="post-img" src="${esc(p.imageURL)}">`:""}
-        <div class="post-actions">
+        <div class="post-actions" style="margin-top:10px;">
           <span class="${liked?'liked':''}" data-act="like">${icon('heart')} ${fmtNum((p.likes||[]).length)}</span>
           <span data-act="comments">${icon('comment')} ${fmtNum(p.commentsCount||0)}</span>
         </div>
       </div>`;
     }).join("");
+
+    // تفاعل الإعجابات
     feed.querySelectorAll('[data-act="like"]').forEach(el=>{
       el.addEventListener("click", async ()=>{
         const pid=el.closest(".post-card").dataset.pid;
@@ -2408,35 +4611,132 @@ function renderCommunityPanel(){
           el.textContent = `${icon('heart')} ${fmtNum(newLikes.length)}`;
           if(wasLiked) await ref.update({likes:FieldValue.arrayRemove(uid())});
           else { await ref.update({likes:FieldValue.arrayUnion(uid())}); createNotification(snap.data().userId, 'postLike', {postId:pid}); }
-        }catch(e){
-          console.warn('post like failed', e);
-        }
+        }catch(e){}
         processingPostLikes.delete(pid);
       });
     });
+
+    // تفاعل التصويت
+    feed.querySelectorAll('.poll-option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const postId = btn.closest('.post-card').dataset.pid;
+        const optionIdx = parseInt(btn.dataset.idx);
+        castPollVote(postId, optionIdx);
+      });
+    });
+
     feed.querySelectorAll('[data-act="comments"]').forEach(el=>{
       el.addEventListener('click', ()=> openPostCommentsSheet(el.closest('.post-card').dataset.pid));
     });
   });
 }
+async function castPollVote(postId, optionIdx){
+  if(!uid()){ toast("سجل دخول للتصويت في الاستطلاع"); return; }
+  const ref = db.collection("posts").doc(postId);
 
+  try{
+    await db.runTransaction(async t => {
+      const doc = await t.get(ref);
+      if(!doc.exists) return;
+      const poll = doc.data().poll;
+      if(!poll) return;
+
+      const voters = poll.voters || {};
+      const counts = poll.counts || new Array(poll.options.length).fill(0);
+      const currentVote = voters[uid()];
+
+      // لو اضغط على نفس الخيار لا يفعل شيء
+      if(currentVote === optionIdx) return;
+
+      // لو كان صوت لخيار سابق، يخصم منه واحد
+      if(currentVote !== undefined){
+        counts[currentVote] = Math.max(0, counts[currentVote] - 1);
+      }
+
+      // إضافة الصوت الجديد
+      voters[uid()] = optionIdx;
+      counts[optionIdx] = (counts[optionIdx] || 0) + 1;
+
+      t.update(ref, {
+        "poll.voters": voters,
+        "poll.counts": counts
+      });
+    });
+  } catch(e) {
+    console.error("castPollVote failed", e);
+    toast("حدث خطأ أثناء تسجيل صوتك");
+  }
+}
 /* ===================== BADGES / ACHIEVEMENTS ===================== */
+/* ===================== ACHIEVEMENTS & TROPHIES SYSTEM ===================== */
 function computeAchievements(u){
   const badges = [];
-  const followers = u.followersCount||0;
-  const videos = u.videosCount||0;
-  if(followers>=1000) badges.push({icon:'trophy', label:'نجم كورنر'});
-  else if(followers>=100) badges.push({icon:'fire', label:'شعبية صاعدة'});
-  if(videos>=50) badges.push({icon:'video', label:'صانع محتوى محترف'});
-  else if(videos>=10) badges.push({icon:'video', label:'منتج نشيط'});
+  const xp = u.xp || 0;
+  const followers = u.followersCount || 0;
+  const videos = u.videosCount || 0;
+  const dtCount = u.dreamTeam ? Object.keys(u.dreamTeam).length : 0;
+
+  // أوسمة التوقعات والـ XP
+  if(xp >= 100) badges.push({icon:'trophy', label:'ملك التوقعات 🥇'});
+  else if(xp >= 50) badges.push({icon:'fire', label:'محلل محترف 🥈'});
+  else if(xp >= 10) badges.push({icon:'star', label:'محلل صاعد 🥉'});
+
+  // أوسمة التشكيلة والمحتوى
+  if(dtCount >= 11) badges.push({icon:'trophy', label:'التشكيلة الذهبية ⚽'});
+  if(followers >= 100) badges.push({icon:'users', label:'نجم الجماهير 🔥'});
+  if(videos >= 10) badges.push({icon:'video', label:'صانع محتوى 🎬'});
+
+  // أوسمة الحساب والفريق
   if(u.verified) badges.push({icon:'verified', label:'حساب موثّق'});
-  if(u.favTeam) badges.push({icon:'star', label:'جماهيري '+u.favTeam});
-  if(badges.length===0) badges.push({icon:'users', label:'عضو في كورنر'});
+  if(u.favTeam) badges.push({icon:'star', label:'عاشق ' + u.favTeam});
+
+  if(badges.length === 0) badges.push({icon:'users', label:'عضو جديد ⚽'});
   return badges;
+}
+
+function openTrophiesSheet(u) {
+  const xp = u.xp || 0;
+  const followers = u.followersCount || 0;
+  const videos = u.videosCount || 0;
+  const dtCount = u.dreamTeam ? Object.keys(u.dreamTeam).length : 0;
+
+  // قائمة جميع جوائز التطبيق وطريقة فتح كل وسام
+  const ALL_TROPHIES = [
+    { id:'t1', name:'محلل صاعد 🥉', desc:'احصل على 10 XP من التوقعات', unlocked: xp >= 10 },
+    { id:'t2', name:'محلل محترف 🥈', desc:'احصل على 50 XP من التوقعات', unlocked: xp >= 50 },
+    { id:'t3', name:'ملك التوقعات 🥇', desc:'احصل على 100 XP من التوقعات', unlocked: xp >= 100 },
+    { id:'t4', name:'التشكيلة الذهبية ⚽', desc:'اكمل 11 لاعب في تشكيلة الأحلام', unlocked: dtCount >= 11 },
+    { id:'t5', name:'صانع محتوى 🎬', desc:'انشر 10 فيديوهات كروية', unlocked: videos >= 10 },
+    { id:'t6', name:'نجم الجماهير 🔥', desc:'احصل على 100 متابع في التطبيق', unlocked: followers >= 100 },
+    { id:'t7', name:'عاشق الفانلة ⭐', desc:'اختر فريقك المفضل في الحساب', unlocked: !!u.favTeam }
+  ];
+
+  openSheet(`
+    <div class="sheet" style="height:78%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">🏆 خزانة الجوائز والأوسمة (${u.displayName})</div>
+      <div class="sheet-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 4px;">
+          ${ALL_TROPHIES.map(t => `
+            <div style="background:var(--bg-elev2);border:1px solid ${t.unlocked?'var(--gold)':'var(--line)'};border-radius:14px;padding:12px 10px;text-align:center;opacity:${t.unlocked?1:0.55};box-shadow:${t.unlocked?'0 4px 12px rgba(231,179,62,.2)':'none'};">
+              <div style="font-size:26px;margin-bottom:4px;">${t.unlocked?'🏆':'🔒'}</div>
+              <div style="font-weight:900;font-size:12.5px;color:${t.unlocked?'var(--gold)':'var(--white)'};">${esc(t.name)}</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.3;">${esc(t.desc)}</div>
+              <div style="font-size:9.5px;margin-top:8px;font-weight:900;color:${t.unlocked?'var(--pitch)':'var(--red)'};">
+                ${t.unlocked?'مفتوح 🔓':'مغلق 🔒'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>`);
 }
 
 /* ===================== PROFILE ===================== */
 let profileTab='videos';
+/* ===================== PROFILE WITH XP DISPLAY ===================== */
+/* ===================== PROFILE WITH CLICKABLE TROPHY CASE ===================== */
+/* ===================== PROFILE WITH WHEEL BUTTON ===================== */
 async function renderProfilePanel(otherUidParam){
   const panel=$("#panel-profile");
   const targetUid = otherUidParam || uid();
@@ -2448,6 +4748,7 @@ async function renderProfilePanel(otherUidParam){
   const bg = CARD_BACKGROUNDS.find(b=>b.id===u.cardBg) || CARD_BACKGROUNDS[0];
   const following = isMe? false : ((userData.followingChannels||[]).includes(targetUid));
   const badges = computeAchievements(u);
+
   panel.innerHTML = `
     <div class="profile-wrap">
       ${!isMe? `<div class="top-header" style="padding-top:0;border:none;"><span class="back" id="profBack">${icon('back')}</span></div>`:""}
@@ -2460,28 +4761,46 @@ async function renderProfilePanel(otherUidParam){
         <div class="pc-name">${esc(u.displayName)}${verifiedBadge(u.verified)}</div>
         <div class="pc-team">${u.favTeam?`<img class="pc-team-logo" id="pcTeamLogo" src="${fallbackTeamAvatar(u.favTeam)}"><span>⭐ ${esc(u.favTeam)}</span>`:'<span>لسه مختارش فريق</span>'}</div>
       </div>
-      <div class="badges-row">${badges.map(b=>`<div class="badge-chip">${icon(b.icon)}<span>${esc(b.label)}</span></div>`).join("")}</div>
+
+      <div class="badges-row" id="badgesRow" style="cursor:pointer;" title="عرض خزانة الجوائز">
+        ${badges.map(b=>`<div class="badge-chip">${icon(b.icon)}<span>${esc(b.label)}</span></div>`).join("")}
+      </div>
+
       <div class="profile-stats">
         <div class="pstat"><b>${fmtNum(u.followersCount)}</b><span>جماهير</span></div>
-        <div class="pstat"><b>${fmtNum(u.followingCount)}</b><span>يتابع</span></div>
+        <div class="pstat"><b>${fmtNum(u.xp || 0)}</b><span>نقطة XP 🏆</span></div>
         <div class="pstat"><b>${fmtNum(u.videosCount||0)}</b><span>فيديوهات</span></div>
       </div>
+
+      <!-- الأزرار مضاف إليها زرار عجلة الحظ 🎡 -->
       <div class="profile-actions">
-        ${isMe? `<button class="btn-ghost profile-action-btn" id="goSettingsBtn">${icon('settings')} الإعدادات</button>
+        ${isMe? `<button class="btn-ghost profile-action-btn" id="openWheelBtn" style="color:var(--gold); border-color:var(--gold);">🎡 عجلة الحظ</button>
+                 <button class="btn-ghost profile-action-btn" id="goSettingsBtn">${icon('settings')} الإعدادات</button>
                  <button class="btn-ghost profile-action-btn" id="goNotifBtn" style="position:relative">${icon('bell')}<span class="notif-dot ${notifUnreadCount?'':'hidden'}"></span></button>`
               : `<div style="display:flex;gap:8px;width:100%"><button class="btn-next" style="flex:1;background:${following?'var(--bg-elev2)':'var(--pitch)'};color:${following?'#fff':'#08150d'};" id="followProfBtn">${following?'متابَع':'متابعة'}</button><button class="btn-ghost" id="messageProfBtn" style="flex:none">${icon('message')} مراسلة</button></div>`}
       </div>
+
       ${(u.followTeams && u.followTeams.length)? `
       <div class="followed-teams-label">الفرق اللي بيتابعها</div>
       <div class="followed-teams-strip" id="followedTeamsStrip">
         ${u.followTeams.map(t=>`<div class="ft-chip"><img data-team="${esc(t)}" src="${fallbackTeamAvatar(t)}"><span>${esc(t)}</span></div>`).join("")}
       </div>` : ""}
+      
       <div class="profile-tabs">
         <div class="ptab active" data-pt="videos">الفيديوهات</div>
+        <div class="ptab" data-pt="dreamTeam">تشكيلة الأحلام ⚽</div>
         ${isMe?`<div class="ptab" data-pt="lists">القوائم</div>`:""}
       </div>
       <div id="profileTabBody"></div>
     </div>`;
+
+  // ربط زرار عجلة الحظ
+  const wheelBtn = $("#openWheelBtn");
+  if(wheelBtn) wheelBtn.addEventListener('click', openDailyWheelSheet);
+
+  const bRow = $("#badgesRow");
+  if(bRow) bRow.addEventListener('click', () => openTrophiesSheet(u));
+
   if(!isMe) $("#profBack").addEventListener("click",()=>renderProfilePanel());
   if(isMe){
     $("#goSettingsBtn").addEventListener("click",()=>switchTab("settings"));
@@ -2511,15 +4830,22 @@ async function renderProfilePanel(otherUidParam){
     });
   }
 }
+const FORMATION_POSITIONS = [
+  { row: 'ATT', pos: [ {key:'lw', label:'جناح أيسر (LW)'}, {key:'st', label:'مهاجم (ST)'}, {key:'rw', label:'جناح أيمن (RW)'} ] },
+  { row: 'MID', pos: [ {key:'cm1', label:'وسط أيسر (CM)'}, {key:'cm2', label:'صانع ألعاب (CAM)'}, {key:'cm3', label:'وسط أيمن (CM)'} ] },
+  { row: 'DEF', pos: [ {key:'lb', label:'ظهير أيسر (LB)'}, {key:'cb1', label:'دفاع (CB)'}, {key:'cb2', label:'دفاع (CB)'}, {key:'rb', label:'ظهير أيمن (RB)'} ] },
+  { row: 'GK',  pos: [ {key:'gk', label:'حارس مرمى (GK)'} ] }
+];
+
 async function loadProfileTabBody(targetUid, isMe){
   const body=$("#profileTabBody");
-  if(profileTab==='videos' || !isMe){
-    body.innerHTML=`<div class="loader">...</div>`;
+  
+  if(profileTab==='videos'){
+    body.innerHTML=`<div class="loader">جاري التحميل...</div>`;
     let qs;
     try{
       qs = await db.collection("videos").where("ownerUid","==",targetUid).orderBy("createdAt","desc").get();
     }catch(e){
-      console.warn('orderBy failed, falling back',e);
       qs = await db.collection("videos").where("ownerUid","==",targetUid).get();
     }
     if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات</div>`; return; }
@@ -2528,6 +4854,63 @@ async function loadProfileTabBody(targetUid, isMe){
       return `<div class="thumb" data-vid="${d.id}" title="عرض الفيديو"><video src="${esc(v.videoURL)}" muted playsinline preload="metadata"></video><div class="vc">${icon('eye')} ${fmtNum(v.views)}</div></div>`;
     }).join("") + `</div>`;
     body.querySelectorAll('.thumb[data-vid]').forEach(t=>t.addEventListener('click', ()=> openVideoSheet(t.dataset.vid)));
+
+  } else if(profileTab==='dreamTeam') {
+    // عرض تشكيلة الأحلام بكروت FUT
+    body.innerHTML=`<div class="loader">جاري فتح الملعب...</div>`;
+    const userDoc = await db.collection("users").doc(targetUid).get();
+    const dtData = (userDoc.exists && userDoc.data().dreamTeam) ? userDoc.data().dreamTeam : {};
+
+    let pitchHtml = `
+      <div class="dream-pitch">
+        <div class="pitch-lines"></div>
+        <div class="pitch-center-line"></div>
+        <div class="pitch-center-circle"></div>`;
+
+    FORMATION_POSITIONS.forEach(r => {
+      pitchHtml += `<div class="pitch-row">`;
+      r.pos.forEach(p => {
+        const player = dtData[p.key] || null;
+        const posCode = p.key.toUpperCase();
+
+        if(player) {
+          pitchHtml += `
+            <div class="fut-card" data-poskey="${p.key}" data-label="${esc(p.label)}">
+              <div class="card-top">
+                <span class="rating">${player.rating || 90}</span>
+                <span class="pos">${posCode}</span>
+              </div>
+              <img class="player-img" src="${esc(player.photo)}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}'">
+              <div class="card-bottom">${esc(player.name)}</div>
+            </div>`;
+        } else {
+          pitchHtml += `
+            <div class="fut-card empty" data-poskey="${p.key}" data-label="${esc(p.label)}">
+              <span class="add-icon">+</span>
+              <span class="empty-pos">${posCode}</span>
+            </div>`;
+        }
+      });
+      pitchHtml += `</div>`;
+    });
+    pitchHtml += `</div>`;
+
+    body.innerHTML = pitchHtml;
+
+    // عند النقر لاختيار لاعب
+    body.querySelectorAll('.fut-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const pKey = card.dataset.poskey;
+        const label = card.dataset.label;
+        if(isMe) {
+          openPlayerPickerSheet(pKey, label, targetUid);
+        } else {
+          const player = dtData[pKey];
+          if(player) toast(`اللاعب: ${player.name} (${player.rating})`);
+        }
+      });
+    });
+
   } else if(profileTab==='lists'){
     body.innerHTML=`<div class="loader">...</div>`;
     const qs = await db.collection("users").doc(targetUid).collection("lists").get();
@@ -2540,6 +4923,239 @@ async function loadProfileTabBody(targetUid, isMe){
   }
 }
 
+/* ===================== FUT TRANSFER MARKET ===================== */
+function openPlayerPickerSheet(posKey, label, targetUid){
+  let targetCat = 'att';
+  if(posKey === 'gk') targetCat = 'gk';
+  else if(['cb1','cb2','lb','rb'].includes(posKey)) targetCat = 'def';
+  else if(['cm1','cm2','cm3'].includes(posKey)) targetCat = 'mid';
+  else if(['lw','st','rw'].includes(posKey)) targetCat = 'att';
+
+  const userXp = (userData && typeof userData.xp === 'number') ? userData.xp : 0; // رصيدك الحالي
+  const unlocked = Array.isArray(userData && userData.unlockedPlayers) ? userData.unlockedPlayers : [];
+
+  openSheet(`
+    <div class="sheet" style="height:82%">
+      <div class="sheet-handle"></div>
+      
+      <!-- شريط رصيد النقاط المالي -->
+      <div style="padding:10px 16px; background:var(--bg-elev2); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:900; font-size:13.5px; color:var(--white);">سوق انتقالات: ${esc(label)}</span>
+        <span style="font-weight:900; font-size:13px; color:var(--gold); background:rgba(231,179,62,.15); padding:4px 10px; border-radius:12px; border:1px solid var(--gold);">
+          💰 رصيدك: ${fmtNum(userXp)} XP
+        </span>
+      </div>
+
+      <div style="padding:10px 14px 0;">
+        <input class="auth-input" id="playerSearchInput" placeholder="🔍 ابحث في سوق الانتقالات..." style="max-width:100%;margin-bottom:8px;">
+      </div>
+
+      <div class="sheet-body">
+        <div class="player-picker-grid" id="pickerGrid"></div>
+      </div>
+    </div>`);
+
+  const renderGrid = (query = '') => {
+    const grid = $("#pickerGrid");
+    if(!grid) return;
+    const q = query.toLowerCase().trim();
+
+    const list = STAR_PLAYERS.filter(p => p.cat === targetCat && p.name.toLowerCase().includes(q));
+
+    let gridContent = `
+      <div class="fut-card empty custom-add-btn" style="margin:0 auto;border-color:var(--gold);background:rgba(231,179,62,.15);">
+        <span class="add-icon" style="font-size:24px;color:var(--gold); font-weight:900;">+</span>
+        <span class="empty-pos" style="color:var(--gold);font-size:9.5px;font-weight:900;">لاعب مخصص</span>
+      </div>`;
+
+    gridContent += list.map(p => {
+      const price = getPlayerPrice(p.rating);
+      const isOwned = unlocked.includes(p.id);
+      const canAfford = userXp >= price;
+
+      let btnLabel = `🪙 ${price} XP`;
+      let btnColor = "var(--gold)";
+      if (isOwned) {
+        btnLabel = "✅ ممتلك";
+        btnColor = "var(--pitch)";
+      } else if (!canAfford) {
+        btnLabel = `🔒 ${price} XP`;
+        btnColor = "var(--red)";
+      }
+
+      return `
+        <div class="fut-card" data-pid="${p.id}" style="margin:0 auto; position:relative;">
+          <div class="card-top">
+            <span class="rating">${p.rating}</span>
+            <span class="pos">${posKey.toUpperCase()}</span>
+          </div>
+          <img class="player-img" src="${esc(p.photo)}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}'">
+          
+          <!-- شريط السعر والشراء -->
+          <div class="card-bottom" style="background:${isOwned?'linear-gradient(180deg,#125c33,#08150d)':(canAfford?'linear-gradient(180deg,#3a2a05,#1d1402)':'linear-gradient(180deg,#5a1212,#200404)')}; border-color:${btnColor};">
+            ${esc(p.name)}
+            <div style="font-size:8px; color:${btnColor}; font-weight:900; margin-top:1px;">${btnLabel}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    grid.innerHTML = gridContent;
+
+    // زرار رفع لاعب مخصص
+    const customBtn = grid.querySelector('.custom-add-btn');
+    if(customBtn){
+      customBtn.addEventListener('click', () => {
+        openCustomPlayerCreateSheet(posKey, label, targetUid);
+      });
+    }
+
+    // شراء واختيار لاعب من السوق
+    grid.querySelectorAll('.fut-card[data-pid]').forEach(card => {
+      card.addEventListener('click', async () => {
+        const pId = card.dataset.pid;
+        const selectedPlayer = STAR_PLAYERS.find(x => x.id === pId);
+        if(!selectedPlayer) return;
+
+        const price = getPlayerPrice(selectedPlayer.rating);
+        const isOwned = unlocked.includes(pId);
+
+        // لو ممتلك بالفعل -> حطه في التشكيلة فوراً مجاناً
+        if(isOwned) {
+          await db.collection("users").doc(uid()).update({
+            [`dreamTeam.${posKey}`]: {
+              name: selectedPlayer.name,
+              photo: selectedPlayer.photo,
+              rating: selectedPlayer.rating
+            }
+          });
+          toast(`تم تعيين ${selectedPlayer.name} في التشكيلة ⚽`);
+          closeSheet();
+          loadProfileTabBody(targetUid, true);
+          return;
+        }
+
+        // لو مش ممتلك ورصيده مش كافي
+        if(userXp < price) {
+          toast(`🔒 رصيدك لا يكفي! تحتاج ${price - userXp} XP إضافية لضم ${selectedPlayer.name}`);
+          return;
+        }
+
+        // لو رصيده كافي -> شراء اللاعب وخصم السعر وتملّكه
+        toast(`جاري شراء ${selectedPlayer.name}... 🛒`);
+        
+        try {
+          await db.runTransaction(async t => {
+            const userRef = db.collection("users").doc(uid());
+            const uDoc = await t.get(userRef);
+            const currentXp = uDoc.data().xp || 100;
+            const currentUnlocked = uDoc.data().unlockedPlayers || [];
+
+            if(currentXp < price) throw new Error("رصيد غير كافٍ");
+
+            // خصم النقاط وإضافة اللاعب للمقتنيات والتشكيلة
+            t.update(userRef, {
+              xp: currentXp - price,
+              unlockedPlayers: FieldValue.arrayUnion(pId),
+              [`dreamTeam.${posKey}`]: {
+                name: selectedPlayer.name,
+                photo: selectedPlayer.photo,
+                rating: selectedPlayer.rating
+              }
+            });
+          });
+
+          // تحديث بيانات المستخدم المحلية
+          userData.xp = (userData.xp || 100) - price;
+          if(!userData.unlockedPlayers) userData.unlockedPlayers = [];
+          userData.unlockedPlayers.push(pId);
+
+          toast(`🎉 مبروك! تم شراء وتعين ${selectedPlayer.name} بـ ${price} XP!`);
+          closeSheet();
+          loadProfileTabBody(targetUid, true);
+        } catch(e) {
+          console.error(e);
+          toast("حدث خطأ أثناء إتمام الصفقة، حاول ثانيةً");
+        }
+      });
+    });
+  };
+
+  renderGrid();
+  $("#playerSearchInput").addEventListener('input', (e) => renderGrid(e.target.value));
+}
+// دالة حساب سعر اللاعب بالـ XP بناءً على تقييمه
+function getPlayerPrice(rating) {
+  if (rating >= 94) return 500;
+  if (rating >= 90) return 300;
+  if (rating >= 87) return 150;
+  if (rating >= 85) return 80;
+  return 50;
+}
+
+let customPlayerFile = null;
+
+function openCustomPlayerCreateSheet(posKey, label, targetUid){
+  customPlayerFile = null;
+  openSheet(`
+    <div class="sheet" style="height:65%">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">إضافة لاعب مخصص لـ ${esc(label)}</div>
+      <div class="sheet-body" style="padding:16px 14px;">
+        <label class="photo-picker" id="customPhotoPicker" style="margin:0 auto 12px;width:75px;height:75px;border-radius:14px;border:2px dashed var(--gold);">
+          <span class="ph">📷</span>
+          <input type="file" accept="image/*" id="customPhotoInput" style="display:none">
+        </label>
+        <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:12px">اضغط اختر صورة اللاعب من جهازك</div>
+        <input class="auth-input" id="customPlayerName" placeholder="اسم اللاعب (مثال: أحمد / صاحبي)" style="max-width:100%;margin-bottom:10px;">
+        <input class="auth-input" id="customPlayerRating" type="number" min="50" max="99" value="90" placeholder="طاقة الكارت (من 50 لـ 99)" style="max-width:100%;">
+      </div>
+      <div class="sheet-input-bar">
+        <button id="saveCustomPlayerBtn" style="flex:1;background:var(--gold);color:#3a2a05;font-weight:900;">إضافة للتشكيلة 🌟</button>
+      </div>
+    </div>`);
+
+  $("#customPhotoPicker").addEventListener("click", () => $("#customPhotoInput").click());
+  $("#customPhotoInput").addEventListener("change", e => {
+    const f = e.target.files[0]; if(!f) return;
+    customPlayerFile = f;
+    $("#customPhotoPicker").innerHTML = `<img src="${URL.createObjectURL(f)}" style="width:100%;height:100%;object-fit:cover;">`;
+  });
+
+  $("#saveCustomPlayerBtn").addEventListener("click", async () => {
+    const name = sanitizeText($("#customPlayerName").value, 30);
+    const rating = parseInt($("#customPlayerRating").value) || 90;
+
+    if(!name){ toast("اكتب اسم اللاعب الأل"); return; }
+    
+    $("#saveCustomPlayerBtn").textContent = "جاري الرفع والحفظ...";
+    let photoURL = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0d4224&color=e7b33e&bold=true`;
+
+    try {
+      if(customPlayerFile){
+        const ref = storage.ref(`custom_players/${uid()}_${posKey}_${Date.now()}.jpg`);
+        await ref.put(customPlayerFile);
+        photoURL = await ref.getDownloadURL();
+      }
+
+      await db.collection("users").doc(uid()).update({
+        [`dreamTeam.${posKey}`]: {
+          name,
+          photo: photoURL,
+          rating: Math.min(99, Math.max(50, rating))
+        }
+      });
+
+      toast(`تمت إضافة ${name} لكارت FUT ✨`);
+      closeSheet();
+      loadProfileTabBody(targetUid, true);
+    } catch(err) {
+      console.error(err);
+      toast("حدث خطأ أثناء رفع الصورة، حاول ثانيةً");
+      $("#saveCustomPlayerBtn").textContent = "إضافة للتشكيلة 🌟";
+    }
+  });
+}
 async function openListSheet(listId){
   const ref = db.collection('users').doc(uid()).collection('lists').doc(listId);
   const snap = await ref.get(); if(!snap.exists){ toast('القائمة غير موجودة'); return; }
@@ -2561,24 +5177,49 @@ async function openListSheet(listId){
   body.querySelectorAll('.list-thumb').forEach(t=>t.addEventListener('click', ()=> openVideoSheet(t.dataset.vid)));
 }
 
+/* ===================== RESPONSIVE VIDEO SHEET FIX ===================== */
 async function openVideoSheet(videoId){
-  const snap = await db.collection('videos').doc(videoId).get(); if(!snap.exists){ toast('الفيديو غير موجود'); return; }
+  const snap = await db.collection('videos').doc(videoId).get(); 
+  if(!snap.exists){ toast('الفيديو غير موجود'); return; }
   const v = snap.data();
+
   openSheet(`
-    <div class="sheet" style="height:78%">
+    <div class="sheet" style="height:85%; max-width:480px; margin:0 auto; border-radius:20px 20px 0 0;">
       <div class="sheet-handle"></div>
-      <div class="sheet-title">${esc(v.ownerName||'مستخدم')}</div>
-      <div class="sheet-body" id="videoSheetBody" style="display:flex;flex-direction:column;">
-        <div style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg-elev);border-radius:10px;overflow:hidden;padding:6px"><video id="sheetVideoPlayer" src="${esc(v.videoURL)}" controls playsinline style="width:100%;height:100%;object-fit:contain"></video></div>
-        <div style="padding:10px 0"><div style="font-weight:800">${esc(v.description||'')}</div><div style="color:var(--muted);font-size:13px;margin-top:6px">${icon('eye')} ${fmtNum(v.views)} · ${icon('comment')} ${fmtNum(v.commentsCount||0)}</div></div>
+      <div class="sheet-title">${esc(v.ownerName||'مستخدم')}${verifiedBadge(v.ownerVerified)}</div>
+      
+      <div class="sheet-body" id="videoSheetBody" style="display:flex; flex-direction:column; padding:10px 14px; overflow-y:auto;">
+        <!-- مشغل الفيديو بابعاد 9:16 العرضية المضبوطة -->
+        <div style="width:100%; max-height:380px; aspect-ratio:9/16; background:#000; border-radius:14px; overflow:hidden; margin:0 auto; display:flex; align-items:center; justify-content:center; border:1px solid var(--line);">
+          <video id="sheetVideoPlayer" src="${esc(v.videoURL)}" controls playsinline autoplay loop style="width:100%; height:100%; object-fit:contain; background:#000;"></video>
+        </div>
+
+        <!-- الوصف والإحصائيات -->
+        <div style="padding:10px 4px 4px;">
+          <div style="font-weight:800; font-size:13.5px; color:#fff; line-height:1.5;">${renderHashtags(v.description||'')}</div>
+          <div style="color:var(--muted); font-size:12px; margin-top:8px; display:flex; gap:14px; align-items:center;">
+            <span>${icon('eye')} ${fmtNum(v.views)} مشاهدة</span>
+            <span>${icon('comment')} ${fmtNum(v.commentsCount||0)} تعليق</span>
+          </div>
+        </div>
       </div>
-      <div class="sheet-input-bar"><button id="sheetSaveBtn">${icon('save')} حفظ</button><button id="sheetCommentsBtn">${icon('comment')} التعليقات</button><button id="sheetShareBtn">${icon('share')} مشاركة</button></div>
+
+      <!-- شريط الأزرار المتناسق المتناسب مع العرض -->
+      <div class="sheet-input-bar" style="justify-content:space-around; gap:8px;">
+        <button id="sheetSaveBtn" style="flex:1; padding:10px 6px; font-size:12px;">${icon('save')} حفظ</button>
+        <button id="sheetCommentsBtn" style="flex:1; padding:10px 6px; font-size:12px;">${icon('comment')} التعليقات</button>
+        <button id="sheetShareBtn" style="flex:1; padding:10px 6px; font-size:12px;">${icon('share')} مشاركة</button>
+      </div>
     </div>`);
+
+  const player = document.getElementById('sheetVideoPlayer');
+  if(player) player.play().catch(()=>{});
+
   document.getElementById('sheetSaveBtn').addEventListener('click', ()=> openSaveSheet(videoId));
   document.getElementById('sheetCommentsBtn').addEventListener('click', ()=>{ closeSheet(); setTimeout(()=>openCommentsSheet(videoId),120); });
   document.getElementById('sheetShareBtn').addEventListener('click', ()=>{ openShareSheet(videoId); });
+  
   maybeCountView(videoId);
-  const player = document.getElementById('sheetVideoPlayer'); player.play().catch(()=>{});
 }
 
 function openOtherProfile(targetUid){
@@ -2637,6 +5278,42 @@ function renderSettingsPanel(){
       location.reload();
     }catch(e){ toast("يلزم تسجيل دخول حديث لحذف الحساب. سجل خروج ثم ادخل تاني وجرب."); }
   });
+}
+// =========================================================================
+//  دوال التواريخ والماتشات (انسخ الكود ده وضعه في ملفك)
+// =========================================================================
+
+// آلة تحويل صيغة التاريخ
+function formatDateYYYYMMDD(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+let selectedMatchDateStr = formatDateYYYYMMDD(new Date());
+
+// محرك جلب ماتشات التاريخ المختار
+async function loadMatchesBySelectedDate(dateStr) {
+  const container = $("#matchesContainer");
+  if(!container) return;
+  lastLoadedMatchesContainer = container;
+
+  container.innerHTML = `<div class="loader">جاري جلب مباريات تاريخ ${esc(dateStr)}...</div>`;
+
+  // جلب ماتشات التاريخ من السيرفر
+  const apiData = await fetchFootballData(`matches?dateFrom=${dateStr}&dateTo=${dateStr}`);
+
+  if(apiData && apiData.matches && apiData.matches.length > 0) {
+    const followedSet = getFollowedTeamsEnglishNames();
+    const sorted = apiData.matches.slice().sort((a,b) => new Date(a.utcDate) - new Date(b.utcDate));
+    
+    container.innerHTML = sorted.map(m => formatApiMatchCard(m, isFollowedMatch(m, followedSet))).join('');
+    bindMatchCardEvents(container);
+  } else {
+    container.innerHTML = `<div class="empty-state"><div class="big">${icon('matches')}</div>لا توجد مباريات مجدولة في تاريخ ${esc(dateStr)}</div>`;
+  }
+  applyMatchTeamFilter();
 }
 </script>
 </body>
