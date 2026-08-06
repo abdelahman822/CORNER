@@ -674,18 +674,79 @@ a{color:inherit;}
   font-weight: 900;
   box-shadow: 0 2px 8px rgba(34,163,90,.3);
 }
-/* ---------- WHATSAPP MESSENGER LAYOUT ---------- */
-.whatsapp-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  height: calc(100vh - 110px);
-  background: var(--bg);
-  overflow: hidden;
+/* ==========================================================================
+   NO-GAP MOBILE CHAT LAYOUT (الحل الجذري النهائي لإلغاء الفراغ الأسود)
+   ========================================================================== */
+
+/* 1. إجبار شاشة الشات إنها تملا ارتفاع الفريم المتاح بالكامل */
+#panel-chat {
+  height: 100% !important;
+  overflow: hidden !important;
 }
+
+.whatsapp-layout {
+  display: flex !important;
+  width: 100% !important;
+  height: 100% !important; /* ملء الارتفاع بالكامل بدون أي طرح بكسلات */
+  background: var(--bg) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* 2. تثبيت الهيدر فوق والرسائل بالنص وصندوق الكتابة بالأرضية تماماً */
+.chat-main-window {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: var(--bg) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  padding-bottom: 0 !important;
+}
+
+/* 3. صندوق الرسائل يأخذ كامل المساحة والسحب يكون داخلياً فقط */
+#groupChatMessages, #directChatMessages, #matchChatMessages {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 14px !important;
+}
+
+/* 4. صندوق الكتابة يستقر بالأرضية ملامساً للهيدر السفلي مباشرةً دون أي فراغ أسود */
+.chat-main-window .sheet-input-bar {
+  flex: none !important;
+  width: 100% !important;
+  background: var(--bg-elev) !important;
+  border-top: 1px solid var(--line) !important;
+  padding: 10px 14px !important;
+  margin-top: auto !important; /* التثبيت بالأرضية المباشرة */
+  z-index: 10 !important;
+}
+
+/* التنسيق للكمبيوتر والموبايل */
 @media (min-width: 700px) {
-  .whatsapp-layout {
-    grid-template-columns: 320px 1fr; /* اليمين للقائمة واليسار للشات */
-  }
+  .chat-sidebar { width: 320px !important; flex: none !important; display: flex !important; }
+  .chat-main-window { flex: 1 !important; display: flex !important; }
+  .mobile-chat-back { display: none !important; }
+}
+
+@media (max-width: 699px) {
+  .whatsapp-layout.has-active-chat .chat-sidebar { display: none !important; }
+  .whatsapp-layout.has-active-chat .chat-main-window { display: flex !important; }
+  .whatsapp-layout:not(.has-active-chat) .chat-sidebar { display: flex !important; }
+  .whatsapp-layout:not(.has-active-chat) .chat-main-window { display: none !important; }
+  .mobile-chat-back { display: inline-flex !important; }
+}
+/* تثبيت صندوق الكتابة بأسفل الشات بدون تغطية */
+.chat-main-window .sheet-input-bar {
+  flex: none !important;
+  position: relative !important;
+  bottom: 0 !important;
+  z-index: 10 !important;
+  background: var(--bg-elev) !important;
+  border-top: 1px solid var(--line) !important;
 }
 
 .chat-sidebar {
@@ -790,7 +851,199 @@ a{color:inherit;}
 .pos-5 { transform: rotate(270deg) translateY(-80px) rotate(-270deg); }
 .pos-6 { transform: rotate(330deg) translateY(-80px) rotate(-330deg); }
 }
+/* ---------- MOBILE CHAT INPUT FIX ---------- */
+@media (max-width: 700px) {
+  .chat-main-window {
+    padding-bottom: 65px !important; /* رفع شريط الكتابة فوق الهيدر السفلي للموبايل */
+  }
+  .whatsapp-layout {
+    height: calc(100vh - 120px) !important;
+  }
+}
+/* ---------- FULLSCREEN IMAGE LIGHTBOX ---------- */
+.lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 9999; /* أعلى فوق كل شاشات التطبيق */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn .2s ease-out;
+  backdrop-filter: blur(10px);
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+.lightbox-close-btn {
+  position: absolute;
+  top: calc(18px + var(--safe-top));
+  right: 20px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10000;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: background .2s, transform .15s;
+}
+.lightbox-close-btn:hover {
+  background: var(--red);
+  transform: scale(1.08);
+}
+.lightbox-img {
+  max-width: 92%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+/* ---------- PERFECT MOBILE FULLSCREEN CHAT ---------- */
+.whatsapp-layout {
+  display: flex;
+  height: calc(100vh - 65px);
+  background: var(--bg);
+  overflow: hidden;
+  position: relative;
+}
+
+.chat-sidebar {
+  width: 100%;
+  height: 100%;
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev);
+  overflow-y: auto;
+}
+
+.chat-main-window {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* التنسيق على الكمبيوتر (الشاشات العريضة >= 700px): جنب بعض */
+@media (min-width: 700px) {
+  .chat-sidebar { width: 320px !important; flex: none !important; display: flex !important; }
+  .chat-main-window { flex: 1 !important; display: flex !important; }
+  .mobile-chat-back { display: none !important; }
+}
+
+/* التنسيق على الموبايل (< 700px): شاشة واحدة ملء الشاشة زي الواتساب */
+@media (max-width: 699px) {
+  .whatsapp-layout.has-active-chat .chat-sidebar { display: none !important; } /* إخفاء القائمة عند فتح الشات */
+  .whatsapp-layout.has-active-chat .chat-main-window { display: flex !important; } /* إظهار الشات ملء الشاشة */
+  
+  .whatsapp-layout:not(.has-active-chat) .chat-sidebar { display: flex !important; } /* إظهار القائمة عند عدم اختيار شات */
+  .whatsapp-layout:not(.has-active-chat) .chat-main-window { display: none !important; }
+  
+  .mobile-chat-back { display: inline-flex !important; cursor: pointer; margin-right: 6px; }
+}
+/* ---------- ZERO GAP MOBILE CHAT FIX ---------- */
+#panel-chat {
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.whatsapp-layout {
+  display: flex !important;
+  width: 100% !important;
+  height: calc(100% - 65px) !important; /* ملء الشاشة المباشر فوق الهيدر السفلي */
+  background: var(--bg) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.chat-sidebar {
+  width: 100%;
+  height: 100%;
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev);
+  overflow-y: auto;
+}
+
+.chat-main-window {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* الرسايل بالسحب الداخلي المرن */
+#groupChatMessages, #directChatMessages, #matchChatMessages {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 14px 20px 14px !important;
+}
+
+/* تثبيت صندوق الكتابة بأسفل الشات ملامساً للأزرار تماماً */
+.chat-main-window .sheet-input-bar {
+  flex: none !important;
+  background: var(--bg-elev) !important;
+  border-top: 1px solid var(--line) !important;
+  padding: 10px 14px !important;
+  z-index: 10;
+}
+
+@media (min-width: 700px) {
+  .chat-sidebar { width: 320px !important; flex: none !important; display: flex !important; }
+  .chat-main-window { flex: 1 !important; display: flex !important; }
+  .mobile-chat-back { display: none !important; }
+}
+
+@media (max-width: 699px) {
+  .whatsapp-layout.has-active-chat .chat-sidebar { display: none !important; }
+  .whatsapp-layout.has-active-chat .chat-main-window { display: flex !important; }
+  .whatsapp-layout:not(.has-active-chat) .chat-sidebar { display: flex !important; }
+  .whatsapp-layout:not(.has-active-chat) .chat-main-window { display: none !important; }
+  .mobile-chat-back { display: inline-flex !important; }
+}
+/* ===== FINAL CHAT FIX - يبطل أي تعارض قديم ===== */
+#panel-chat{padding-bottom:0!important;}
+.whatsapp-layout{height:100%!important;padding-bottom:0!important;}
+.chat-main-window{padding-bottom:0!important;}
+.chat-main-window .sheet-input-bar{
+  position:relative!important;
+  bottom:0!important;
+  margin-top:0!important;
+  flex:none!important;
+}
+#groupChatMessages,#directChatMessages,#matchChatMessages{
+  flex:1 1 auto!important;
+  min-height:0!important;
+}
+/* ===== FORCE MENU BUTTON VISIBLE ===== */
+.vs-top-right{display:flex!important;gap:8px!important;}
+.vs-top-right .icon-btn{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:34px!important;
+  height:34px!important;
+  flex-shrink:0!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.menu-btn{display:flex!important;}
 </style>
 </head>
 <body>
@@ -1426,6 +1679,47 @@ function enterApp(){
   paintNavIcons();
   switchTab("home");
   startNotificationsListener();
+  openSharedVideoFromURL();
+}
+function openSharedVideoFromURL(){
+  try{
+    const params = new URLSearchParams(location.search);
+    const vid = params.get('v');
+    if(vid){
+      setTimeout(()=>{ renderFullVideoPage(vid); }, 500);
+    }
+  }catch(e){}
+}
+
+async function renderFullVideoPage(videoId){
+  const snap = await db.collection('videos').doc(videoId).get();
+  if(!snap.exists){ toast('الفيديو غير موجود'); return; }
+  const v = snap.data();
+  const overlay = document.createElement('div');
+  overlay.id = 'fullVideoPageOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999;display:flex;flex-direction:column;';
+  overlay.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;padding:calc(14px + var(--safe-top)) 16px 12px;background:var(--bg-elev);border-bottom:1px solid var(--line);flex:none;">
+      <button id="fullVideoBackBtn" style="background:rgba(255,255,255,.1);border:1px solid var(--line);color:#fff;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:900;">➔ رجوع</button>
+      <div style="font-weight:900;font-size:14px;color:#fff;">${esc(v.ownerName||'مستخدم')}${verifiedBadge(v.ownerVerified)}</div>
+    </div>
+    <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#000;">
+      <video id="fullVideoPlayer" src="${esc(v.videoURL)}" controls playsinline autoplay loop style="max-width:100%;max-height:100%;width:auto;height:100%;object-fit:contain;background:#000;"></video>
+    </div>
+    <div style="padding:12px 16px;background:var(--bg-elev);border-top:1px solid var(--line);flex:none;">
+      <div style="font-size:13.5px;color:#fff;line-height:1.5;">${renderHashtags(v.description||'')}</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:8px;display:flex;gap:16px;">
+        <span>${icon('eye')} ${fmtNum(v.views)} مشاهدة</span>
+        <span>${icon('comment')} ${fmtNum(v.commentsCount||0)} تعليق</span>
+      </div>
+    </div>`;
+  document.querySelectorAll('video').forEach(vd=>{ try{ vd.pause(); }catch(e){} });
+  document.body.appendChild(overlay);
+  document.getElementById('fullVideoBackBtn').addEventListener('click', ()=>{
+    overlay.remove();
+    history.replaceState(null, '', location.pathname);
+  });
+  maybeCountView(videoId);
 }
 function paintNavIcons(){
   $all(".nav-btn .ic").forEach(el=>{
@@ -1535,18 +1829,111 @@ function renderNotificationsPanel(){
 
 // 1) شاشة الدردشة الرئيسية بتصميم الواتساب
 /* ===================== WHATSAPP CHAT WITH DYNAMIC ACTIVE HIGHLIGHT ===================== */
+/* ===================== WHATSAPP CHAT CLEANED ===================== */
+/* ===================== WHATSAPP CHAT CLEANED ===================== */
+/* ===================== CHAT PANEL WITH MATCH CHAT SUPPORT ===================== */
+/* ===================== MATCH CHAT WITH EMPTY STATE FIX ===================== */
+/* ===================== MATCH CHAT SEND FIX ===================== */
+/* ===================== CHAT PANEL WITH MOBILE FULLSCREEN FIX ===================== */
+ currentTeamRoom = null;
+
 async function renderChatPanel(){
   const panel = $("#panel-chat");
 
+  // 1) شات الماتش المباشر من مركز المباريات
+  if(currentMatchChat){
+    panel.innerHTML = `
+      <div class="profile-wrap" style="padding-top:calc(14px + var(--safe-top));padding-bottom:0;height:100%;display:flex;flex-direction:column;">
+        <div class="top-header" style="border:none;">
+          <span class="back" id="matchChatBack">${icon('back')}</span>
+          <span class="t">💬 شات الماتش: ${esc(currentMatchChat.title)}</span>
+        </div>
+        <div id="matchChatMessages" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;">
+          <div class="loader">جاري جلب محادثة الماتش...</div>
+        </div>
+        <div class="sheet-input-bar">
+          <input id="matchChatInput" placeholder="اكتب رسالة لجماهير الماتش..." style="flex:1;">
+          <button id="matchChatSendBtn" style="background:var(--pitch);color:#08150d;font-weight:900;">إرسال</button>
+        </div>
+      </div>`;
+
+    document.getElementById('matchChatBack').addEventListener('click', ()=>{
+      currentMatchChat = null;
+      if(matchChatUnsub){ matchChatUnsub(); matchChatUnsub = null; }
+      renderChatPanel();
+    });
+
+    const listEl = document.getElementById('matchChatMessages');
+    const sendBtn = document.getElementById('matchChatSendBtn');
+    const input = document.getElementById('matchChatInput');
+
+    if(matchChatUnsub) matchChatUnsub();
+    const chatRef = db.collection('match_chats').doc(currentMatchChat.matchId).collection('messages').orderBy('createdAt','asc');
+    
+    matchChatUnsub = chatRef.onSnapshot(qs => {
+      if(!listEl) return;
+
+      if(!qs || qs.empty){
+        listEl.innerHTML = `<div class="empty-state" style="padding:30px;font-size:12.5px;"><div class="big">${icon('message')}</div>لا توجد رسائل في شات هذه المباراة بعد..<br>كن أول من يكتب رسالة لجماهير الماتش! ⚽</div>`;
+        return;
+      }
+
+      listEl.innerHTML = qs.docs.map(d => {
+        const m = d.data(); 
+        const me = m.from === uid();
+        return `
+          <div style="display:flex; gap:8px; ${me ? 'flex-direction:row-reverse;' : ''}">
+            <img src="${esc(m.fromPhoto||'')}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">
+            <div style="max-width:75%; background:${me ? 'var(--pitch)' : 'var(--bg-elev2)'}; color:${me ? '#08150d' : '#fff'}; padding:10px 14px; border-radius:14px;">
+              <div style="font-size:10.5px; font-weight:800; opacity:0.8; margin-bottom:2px;">${esc(m.fromName || 'مشجع')}</div>
+              <div>${esc(m.text)}</div>
+              <div style="font-size:9.5px; opacity:0.6; margin-top:4px; text-align:${me ? 'left' : 'right'}">${timeAgo(m.createdAt)}</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      listEl.scrollTop = listEl.scrollHeight;
+    }, err => {
+      listEl.innerHTML = `<div class="empty-state" style="padding:20px;font-size:12.5px;">لا توجد رسائل في شات هذه المباراة بعد..<br>كن أول من يعلّق! ⚽</div>`;
+    });
+
+    sendBtn.addEventListener('click', async ()=>{
+      const t = sanitizeText(input.value, 1000); 
+      if(!t) return; 
+      input.value = '';
+      sendBtn.textContent = '...';
+
+      try {
+        await db.collection('match_chats').doc(currentMatchChat.matchId).collection('messages').add({
+          text: t,
+          from: uid(),
+          fromName: (userData && userData.displayName) || 'مشجع كروي',
+          fromPhoto: (userData && userData.photoURL) || '',
+          createdAt: FieldValue.serverTimestamp()
+        });
+      } catch(err) {
+        console.error("Match chat send error:", err);
+        toast("حدث خطأ أثناء إرسال الرسالة");
+      } finally {
+        sendBtn.textContent = 'إرسال';
+      }
+    });
+
+    return;
+  }
+
+  // 2) الواجهة الرئيسية للواتساب والمجموعات
+  const hasActive = !!(currentChatTarget || currentTeamRoom);
+
   panel.innerHTML = `
-    <div class="whatsapp-layout">
+    <div class="whatsapp-layout ${hasActive ? 'has-active-chat' : ''}">
       <!-- الشريط الأيمن (قائمة الأشخاص والمجموعات) -->
       <div class="chat-sidebar">
         <div style="padding:14px; border-bottom:1px solid var(--line);">
           <div style="font-weight:900; font-size:16px; margin-bottom:10px;">الدردشة والمجموعات</div>
           <div class="profile-tabs" style="margin:0;">
-            <div class="ptab ${activeChatTab==='direct'?'active':''}" id="tabDirectChat">💬 الرسائل</div>
             <div class="ptab ${activeChatTab==='teams'?'active':''}" id="tabTeamsGroup">🛡️ المجموعات</div>
+            <div class="ptab ${activeChatTab==='direct'?'active':''}" id="tabDirectChat">💬 الرسائل</div>
           </div>
         </div>
 
@@ -1564,16 +1951,14 @@ async function renderChatPanel(){
       </div>
     </div>`;
 
-  $("#tabDirectChat").addEventListener('click', ()=>{ activeChatTab='direct'; renderChatPanel(); });
   $("#tabTeamsGroup").addEventListener('click', ()=>{ activeChatTab='teams'; renderChatPanel(); });
+  $("#tabDirectChat").addEventListener('click', ()=>{ activeChatTab='direct'; renderChatPanel(); });
 
   const sidebarList = $("#sidebarListContent");
 
-  // 1) عرض كل المتابَعين والأصدقاء مع تظليل ديناميكي
   if(activeChatTab === 'direct'){
     const followingUids = Array.isArray(userData && userData.followingChannels) ? userData.followingChannels : [];
     const msgUids = notifItems.filter(n=>n.fromUid).map(n=>n.fromUid);
-    
     const allFriendUids = [...new Set([...followingUids, ...msgUids])].filter(id => id && id !== uid());
 
     let usersList = [];
@@ -1613,7 +1998,7 @@ async function renderChatPanel(){
 
         listEl.innerHTML = filtered.map(u => `
           <div class="chat-user-item ${currentChatTarget && currentChatTarget.uid === u.uid ? 'active' : ''}" data-uid="${u.uid}">
-            <img src="${esc(u.photoURL||'')}" onerror="this.style.background='#1c211c'">
+            <img src="${esc(u.photoURL||'')}" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">
             <div>
               <div style="font-weight:800; font-size:13px;">${esc(u.displayName)}${verifiedBadge(u.verified)}</div>
               <div style="font-size:11px; color:var(--muted);">${esc(u.favTeam || 'مشجع كروي')}</div>
@@ -1626,12 +2011,9 @@ async function renderChatPanel(){
             const targetUid = item.dataset.uid;
             const uObj = usersList.find(x => x.uid === targetUid);
             if(uObj) {
+              currentTeamRoom = null;
               currentChatTarget = { uid: uObj.uid, name: uObj.displayName, photo: uObj.photoURL };
-
-              // 💡 تحديث التظليل الأخضر ديناميكياً للشخص المختار الآن
-              listEl.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
-              item.classList.add('active');
-
+              renderChatPanel();
               openDirectConversationWindow(currentChatTarget);
             }
           });
@@ -1647,48 +2029,87 @@ async function renderChatPanel(){
     }
 
   } else {
-    // 2) عرض المجموعات الخاصة للأندية
+    // 2) قائمة المجموعات الخاصة
     const myFollowedTeams = new Set([userData.favTeam, ...(userData.followTeams || [])].filter(Boolean));
     let allTeamsList = [];
     Object.keys(LEAGUES).forEach(l => { allTeamsList = allTeamsList.concat(LEAGUES[l]); });
     allTeamsList = [...new Set(allTeamsList)];
 
-    sidebarList.innerHTML = allTeamsList.map(t => {
-      const isAllowed = myFollowedTeams.has(t);
-      return `
-        <div class="chat-user-item" data-teamname="${esc(t)}">
-          <img data-team="${esc(t)}" src="${fallbackTeamAvatar(t)}" style="width:36px;height:36px;object-fit:contain;">
-          <div>
-            <div style="font-weight:800; font-size:13px;">${esc(t)}</div>
-            <div style="font-size:10.5px; color:${isAllowed?'var(--pitch)':'var(--red)'}">
-              ${isAllowed ? '🔓 مجموعة متاحة' : '🔒 غير متابَع'}
+    sidebarList.innerHTML = `
+      <div style="padding:10px 12px; border-bottom:1px solid var(--line);">
+        <input class="auth-input" id="teamGroupSearch" placeholder="🔍 ابحث عن فريق..." style="max-width:100%; padding:8px 10px; font-size:12px; margin:0;">
+      </div>
+      <div id="teamGroupsList"></div>`;
+
+    const renderTeamGroups = (query = '') => {
+      const listEl = document.getElementById('teamGroupsList');
+      if(!listEl) return;
+      const normalizeArabic = (s) => (s||'').toLowerCase().trim()
+        .replace(/[أإآا]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[\u064B-\u065F]/g,'');
+      const q = normalizeArabic(query);
+      const filteredTeams = allTeamsList.filter(t => normalizeArabic(t).includes(q));
+
+      if(filteredTeams.length === 0){
+        listEl.innerHTML = `<div class="empty-state" style="padding:20px;font-size:12px;">لا يوجد فريق بهذا الاسم</div>`;
+        return;
+      }
+
+      listEl.innerHTML = filteredTeams.map(t => {
+        const isAllowed = myFollowedTeams.has(t);
+        return `
+          <div class="chat-user-item ${currentTeamRoom === t ? 'active' : ''}" data-teamname="${esc(t)}">
+            <img class="team-img" data-team="${esc(t)}" src="${fallbackTeamAvatar(t)}" style="width:36px;height:36px;object-fit:contain;">
+            <div>
+              <div style="font-weight:800; font-size:13px;">${esc(t)}</div>
+              <div style="font-size:10.5px; color:${isAllowed?'var(--pitch)':'var(--red)'}">
+                ${isAllowed ? '🔓 مجموعة متاحة' : '🔒 غير متابَع'}
+              </div>
             </div>
-          </div>openVideoSheet
-        </div>`;
-    }).join('');
+          </div>`;
+      }).join('');
 
-    populateTeamLogos(sidebarList);
+      populateTeamLogos(listEl);
 
-    sidebarList.querySelectorAll('.chat-user-item[data-teamname]').forEach(card => {
-      card.addEventListener('click', () => {
-        const tName = card.dataset.teamname;
-        if(myFollowedTeams.has(tName)) {
-          sidebarList.querySelectorAll('.chat-user-item').forEach(el => el.classList.remove('active'));
-          card.classList.add('active');
-
-          openTeamRoomConversationWindow(tName);
-        } else {
-          toast(`🔒 يجب متابعة فريق ${tName} أولاً لدخول المجموعة الخاصة!`);
-        }
+      listEl.querySelectorAll('.chat-user-item[data-teamname]').forEach(card => {
+        card.addEventListener('click', () => {
+          const tName = card.dataset.teamname;
+          if(myFollowedTeams.has(tName)) {
+            currentChatTarget = null;
+            currentTeamRoom = tName;
+            renderChatPanel();
+            openTeamRoomConversationWindow(tName);
+          } else {
+            toast(`🔒 يجب متابعة فريق ${tName} أولاً لدخول المجموعة الخاصة!`);
+          }
+        });
       });
-    });
+    };
+
+    renderTeamGroups();
+    document.getElementById('teamGroupSearch').addEventListener('input', (e) => renderTeamGroups(e.target.value));
+
+    if(currentTeamRoom) {
+      openTeamRoomConversationWindow(currentTeamRoom);
+    }
   }
 }
-
 // 2) شات الرسائل الفردية المباشرة
 
 
 // 3) شات المجموعات الخاصة بالأندية
+/* ===================== GROUP CHAT WITH POLL QUESTION DISPLAY ===================== */
+/* ===================== FIXED MOBILE INPUT TEAM ROOM ===================== */
+roomImgFile = null;
+
+/* ===================== FIXED SCROLL TEAM ROOM ===================== */
+ roomImgFile = null;
+
+/* ===================== FULLSCREEN TEAM ROOM WITH BACK BTN ===================== */
+ roomImgFile = null;
+
+/* ===================== PERFECT MOBILE CHAT WITH BACK BUTTON ===================== */
+ roomImgFile = null;
+
 async function openTeamRoomConversationWindow(teamName){
   const mainWin = $("#chatMainWindow");
   if(!mainWin) return;
@@ -1696,38 +2117,64 @@ async function openTeamRoomConversationWindow(teamName){
   const logoUrl = await resolveTeamLogo(teamName);
 
   mainWin.innerHTML = `
-    <div style="padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; background:var(--bg-elev);">
+    <!-- هيدر الشات ومعه زرار الرجوع للموبايل -->
+    <div style="padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; background:var(--bg-elev); flex:none;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="mobile-chat-back" id="groupChatMobileBack" style="background:rgba(255,255,255,.1); border:1px solid var(--line); color:#fff; border-radius:10px; padding:6px 12px; font-size:12px; font-weight:900; cursor:pointer;">
+          ➔ رجوع
+        </button>
+        <div style="font-weight:900; font-size:15px; color:#fff;">مجموعة ${esc(teamName)}</div>
+      </div>
       <img src="${esc(logoUrl)}" style="width:32px; height:32px; object-fit:contain;">
-      <div style="font-weight:900; font-size:15px;">مجموعة ${esc(teamName)}</div>
     </div>
 
-    <div class="poll-inputs-wrap" id="groupPollBox" style="display:none; margin:10px 14px 0;">
+    <!-- صندوق خيارات الاستطلاع الشات -->
+    <div class="poll-inputs-wrap" id="groupPollBox" style="display:none; margin:10px 14px 0; flex:none;">
       <div style="font-size:11.5px; color:var(--gold); font-weight:800; margin-bottom:6px">📊 إضافة استطلاع لشات المجموعة:</div>
       <input class="poll-input" id="gPollQ" placeholder="السؤال (مثال: مين يوصل النهائي؟)">
       <input class="poll-input" id="gPollO1" placeholder="خيار 1">
       <input class="poll-input" id="gPollO2" placeholder="خيار 2">
     </div>
 
-    <div id="groupImgPreview" style="display:none; padding:6px 14px; font-size:11px; color:var(--gold);">تم اختيار صورة 📷</div>
+    <div id="groupImgPreview" style="display:none; padding:6px 14px; font-size:11px; color:var(--gold); flex:none;">تم اختيار صورة 📷</div>
 
-    <div id="groupChatMessages" style="flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px;">
+    <!-- رسايل المجموعة بالسحب الداخلي -->
+    <div id="groupChatMessages">
       <div class="loader">جاري فتح المجموعة...</div>
     </div>
 
+    <!-- شريط الإدخال الثابت بأسفل الشات ملامس تماماً لأسفل الصفحة -->
     <div class="sheet-input-bar" style="gap:6px;">
-      <button id="groupImgBtn" class="icon-btn" style="flex:none; background:var(--bg-elev2);">${icon('camera')}</button>
-      <button id="groupPollBtn" class="icon-btn" style="flex:none; background:var(--bg-elev2); color:var(--gold);">📊</button>
+      <button id="groupImgBtn" class="icon-btn" style="flex:none; background:var(--bg-elev2); font-size:16px;" title="أضف صورة من جهازك">📷</button>
+      <button id="groupPollBtn" class="icon-btn" style="flex:none; background:var(--bg-elev2); font-size:16px;" title="أضف استطلاع رأي">📊</button>
       <input type="file" accept="image/*" id="groupImgInput" style="display:none">
       
       <input id="groupChatInput" placeholder="اكتب رسالة لجماهير ${esc(teamName)}..." style="flex:1;">
       <button id="groupSendBtn" style="background:var(--pitch); color:#08150d; font-weight:900;">إرسال</button>
     </div>`;
 
+  // زرار الرجوع للموبايل
+  const mobileBack = $("#groupChatMobileBack");
+  if(mobileBack) {
+    mobileBack.addEventListener('click', () => {
+      currentTeamRoom = null;
+      if(currentTeamChatUnsub){ currentTeamChatUnsub(); currentTeamChatUnsub = null; }
+      renderChatPanel();
+    });
+  }
+
   $("#groupImgBtn").addEventListener('click', ()=> $("#groupImgInput").click());
   $("#groupImgInput").addEventListener('change', (e)=>{
     const f = e.target.files[0]; if(!f) return;
     roomImgFile = f;
-    $("#groupImgPreview").style.display = 'block';
+    const prevEl = $("#groupImgPreview");
+    prevEl.style.display = 'flex';
+    prevEl.style.alignItems = 'center';
+    prevEl.style.gap = '8px';
+    prevEl.innerHTML = `
+      <img src="${URL.createObjectURL(f)}" style="width:38px;height:38px;border-radius:8px;object-fit:cover;border:1px solid var(--gold);">
+      <span style="font-size:11px;color:var(--gold);font-weight:800;">تم اختيار صورة.. اضغط إرسال 🚀</span>
+    `;
   });
 
   $("#groupPollBtn").addEventListener('click', ()=>{
@@ -1749,12 +2196,15 @@ async function openTeamRoomConversationWindow(teamName){
           const totalVotes = m.poll.counts ? m.poll.counts.reduce((a,b)=>a+b, 0) : 0;
           const myVoteIdx = m.poll.voters ? m.poll.voters[uid()] : undefined;
 
-          pollHtml = `<div style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">`;
+          pollHtml = `<div style="margin-top:6px; display:flex; flex-direction:column; gap:4px; width:100%; min-width:200px;">`;
+          if(m.poll.question) {
+            pollHtml += `<div style="font-weight:900; font-size:12.5px; margin-bottom:4px; color:${me?'#08150d':'var(--gold)'};">📊 ${esc(m.poll.question)}</div>`;
+          }
           m.poll.options.forEach((opt, idx) => {
             const count = m.poll.counts[idx] || 0;
             const pct = totalVotes > 0 ? Math.round((count/totalVotes)*100) : 0;
             pollHtml += `
-              <div class="poll-option-btn ${myVoteIdx===idx?'voted':''}" data-msgid="${d.id}" data-idx="${idx}" style="padding:6px 8px; font-size:11.5px;">
+              <div class="poll-option-btn ${myVoteIdx===idx?'voted':''}" data-msgid="${d.id}" data-idx="${idx}" style="padding:6px 10px; font-size:11.5px; min-height:30px;">
                 <div class="poll-fill-bar" style="width:${pct}%"></div>
                 <span class="poll-option-label">${esc(opt)}</span>
                 <span class="poll-pct-text">${pct}%</span>
@@ -1765,7 +2215,7 @@ async function openTeamRoomConversationWindow(teamName){
 
         return `
           <div style="display:flex; gap:8px; ${me ? 'flex-direction:row-reverse;' : ''}">
-            <img src="${esc(m.fromPhoto||'')}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0;" onerror="this.style.background='#1c211c'">
+            <img src="${esc(m.fromPhoto||'')}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0;" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">
             <div style="max-width:75%; background:${me ? 'var(--pitch)' : 'var(--bg-elev2)'}; color:${me ? '#08150d' : '#fff'}; padding:10px 14px; border-radius:14px;">
               <div style="font-size:11px; font-weight:800; opacity:0.8; margin-bottom:4px;">${esc(m.fromName)}</div>
               ${m.text ? `<div>${esc(m.text)}</div>` : ''}
@@ -1776,7 +2226,9 @@ async function openTeamRoomConversationWindow(teamName){
           </div>`;
       }).join('');
 
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+      setTimeout(() => {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }, 100);
 
       messagesEl.querySelectorAll('.poll-option-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1788,7 +2240,7 @@ async function openTeamRoomConversationWindow(teamName){
     });
 
   $("#groupSendBtn").addEventListener('click', async () => {
-    const text = sanitizeText($("#groupChatInput").value, 1000);
+    let text = sanitizeText($("#groupChatInput").value, 1000);
     const q = sanitizeText($("#gPollQ").value, 200);
     const o1 = sanitizeText($("#gPollO1").value, 100);
     const o2 = sanitizeText($("#gPollO2").value, 100);
@@ -1796,6 +2248,7 @@ async function openTeamRoomConversationWindow(teamName){
     let pollData = null;
     if(q && o1 && o2){
       pollData = { question: q, options: [o1, o2], counts: [0, 0], voters: {} };
+      if(!text) text = q;
     }
 
     if(!text && !roomImgFile && !pollData) return;
@@ -1861,25 +2314,35 @@ function openChatSheet(targetUid, targetName, targetPhoto){
   activeChatTab = 'direct';
   switchTab('chat');
 }
+/* ===================== FULLSCREEN DIRECT CHAT WITH BACK BTN ===================== */
 function openDirectConversationWindow(targetUser){
-  
   const mainWin = $("#chatMainWindow");
   if(!mainWin) return;
 
   mainWin.innerHTML = `
-    <div style="padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; background:var(--bg-elev);">
-      <img src="${esc(targetUser.photo||'')}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" onerror="this.style.background='#1c211c'">
+    <div style="padding:12px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; background:var(--bg-elev); flex:none;">
+      <button class="mobile-chat-back" id="directChatMobileBack" style="display:inline-flex!important; background:rgba(255,255,255,.1); border:1px solid var(--line); color:#fff; border-radius:10px; padding:6px 12px; font-size:12px; font-weight:900; cursor:pointer;">➔ رجوع</button>
+      <img src="${esc(targetUser.photo||'')}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">
       <div style="font-weight:900; font-size:14px;">${esc(targetUser.name)}</div>
     </div>
 
-    <div id="directChatMessages" style="flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px;">
+    <div id="directChatMessages" style="flex:1; min-height:0; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px;">
       <div class="loader">جاري جلب المحادثة...</div>
     </div>
 
-    <div class="sheet-input-bar">
+    <div class="sheet-input-bar" style="flex:none; background:var(--bg-elev);">
       <input id="directMsgInput" placeholder="اكتب رسالة لـ ${esc(targetUser.name)}..." style="flex:1;">
       <button id="directSendBtn" style="background:var(--pitch); color:#08150d; font-weight:900;">إرسال</button>
     </div>`;
+
+  const mobileBack = $("#directChatMobileBack");
+  if(mobileBack) {
+    mobileBack.addEventListener('click', () => {
+      currentChatTarget = null;
+      if(currentChatUnsub){ currentChatUnsub(); currentChatUnsub = null; }
+      renderChatPanel();
+    });
+  }
 
   const listEl = $("#directChatMessages");
   const cid = chatIdFor(uid(), targetUser.uid);
@@ -2004,7 +2467,7 @@ async function openTeamRoomChat(teamName){
 
         return `
           <div style="display:flex; gap:8px; ${me ? 'flex-direction:row-reverse;' : ''}">
-            <img src="${esc(m.fromPhoto||'')}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.background='#1c211c'">
+            <img src="${esc(m.fromPhoto||'')}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">
             <div style="max-width:75%; background:${me ? 'var(--pitch)' : 'var(--bg-elev2)'}; color:${me ? '#08150d' : '#fff'}; padding:10px; border-radius:14px;">
               <div style="font-size:11px; font-weight:800; opacity:0.8; margin-bottom:4px;">${esc(m.fromName)}</div>
               ${m.text ? `<div>${esc(m.text)}</div>` : ''}
@@ -2150,7 +2613,7 @@ async function openLeaderboardSheet() {
         <div class="list-row" style="padding:12px 4px;border-bottom:1px solid var(--line);">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="font-weight:900;min-width:60px;color:var(--gold);font-size:12px;">${badge}</span>
-            <img src="${esc(u.photoURL||'')}" style="width:38px;height:38px;border-radius:12px;object-fit:cover;" onerror="this.style.background='#1c211c'">
+            <img src="${esc(u.photoURL||'')}" style="width:38px;height:38px;border-radius:12px;object-fit:cover;" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">
             <div>
               <div style="font-weight:800;font-size:13px;">${esc(u.displayName)}${verifiedBadge(u.verified)}</div>
               <div style="font-size:11px;color:var(--muted);">${esc(u.favTeam || 'مشجع كروي')}</div>
@@ -2198,7 +2661,7 @@ function renderNotifList(body){
   body.innerHTML = notifItems.map(n=>{
     const meta = NOTIF_META[n.type] || NOTIF_META.system;
     return `<div class="notif-row ${n.read?'':'unread'}" data-nid="${n.id}">
-      ${n.fromPhoto? `<img src="${esc(n.fromPhoto)}" onerror="this.style.background='#1c211c'">` : `<div class="notif-icon">${icon(meta.icon)}</div>`}
+      ${n.fromPhoto? `<img src="${esc(n.fromPhoto)}" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">` : `<div class="notif-icon">${icon(meta.icon)}</div>`}
       <div><div class="notif-text">${meta.text(n)}</div>${n.type==='message'&&n.text?`<div class="notif-preview">${esc(n.text)}</div>`:''}<div class="notif-time">${timeAgo(n.createdAt)}</div></div>
     </div>`;
   }).join("");
@@ -2443,12 +2906,23 @@ function setupFeedObserver(){
       const vidEl = en.target.querySelector("video");
       if(!vidEl) return;
       if(en.isIntersecting && en.intersectionRatio>0.6){
+        if(!vidEl.src && vidEl.dataset.src){ vidEl.src = vidEl.dataset.src; }
         vidEl.play().catch(()=>{});
         const vId = en.target.dataset.id;
         activeVideoIndex = feedVideos.findIndex(v=>v.id===vId);
         maybeCountView(vId);
+        const idx = feedVideos.findIndex(v=>v.id===vId);
+        const nextSlide = document.querySelectorAll('.video-slide')[idx+1];
+        if(nextSlide){
+          const nextVid = nextSlide.querySelector('video');
+          if(nextVid && !nextVid.src && nextVid.dataset.src){ nextVid.src = nextVid.dataset.src; }
+        }
       } else {
         vidEl.pause();
+        if(en.intersectionRatio===0 && vidEl.src){
+          vidEl.removeAttribute('src');
+          vidEl.load();
+        }
       }
     });
   },{threshold:[0,0.6]});
@@ -2457,7 +2931,7 @@ function setupFeedObserver(){
 
 function updateSlideFromData(slide, v){
   const vid = slide.querySelector('video');
-  if(vid && vid.src !== v.videoURL){ try{ const cur = vid.currentTime; vid.src = v.videoURL; vid.currentTime = cur; }catch(e){} }
+  if(vid){ vid.dataset.src = v.videoURL; }
   const cname = slide.querySelector('.cname'); if(cname) cname.innerHTML = esc(v.ownerName||'مستخدم') + verifiedBadge(v.ownerVerified);
   const avatarImg = slide.querySelector('.circ.avatar img'); if(avatarImg) avatarImg.src = v.ownerPhoto||avatarImg.src;
   const goalBtn = slide.querySelector('[data-act="goal"] .cnt'); if(goalBtn) goalBtn.textContent = fmtNum(v.goalsCount);
@@ -2482,13 +2956,14 @@ function videoSlideHTML(v,i){
   const following = (userData && userData.followingChannels && userData.followingChannels.includes(v.ownerUid));
   return `
     <div class="video-slide" data-id="${v.id}" data-owner="${v.ownerUid}">
-    <video src="${esc(v.videoURL)}" playsinline autoplay loop preload="metadata"></video>
+    <video data-src="${esc(v.videoURL)}" playsinline loop preload="none"></video>
     <div class="vs-top">
       <div class="vs-top-right">
         <div class="icon-btn notif-btn"><span class="notif-dot ${notifUnreadCount?'':'hidden'}"></span>${icon('bell')}</div>
       </div>
       <div class="vs-top-right">
         <div class="icon-btn mute-btn">${icon('mute')}</div>
+        <div class="icon-btn menu-btn">${icon('menu')}</div>
         <div class="icon-btn menu-btn">${icon('menu')}</div>
       </div>
     </div>
@@ -2835,7 +3310,7 @@ function openCommentsSheet(videoId){
         const liked = (c.likes||[]).includes(uid());
         const repliesCount = c.repliesCount||0;
         return `<div class="comment-row" data-cid="${d.id}">
-          <img src="${esc(c.userPhoto||'')}" onerror="this.style.background='#1c211c'">
+          <img src="${esc(c.userPhoto||'')}" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">
           <div>
             <div class="comment-name">${esc(c.userName)}</div>
             <div class="comment-text">${esc(c.text)}</div>
@@ -2931,7 +3406,7 @@ function openPostCommentsSheet(postId){
       if(qs.empty){ body.innerHTML=`<div class="empty-state" style="height:auto;padding:30px;"><div class="big">${icon('comment')}</div>لسه مفيش تعليقات</div>`; return; }
       body.innerHTML = qs.docs.map(d=>{
         const c=d.data(); const liked = (c.likes||[]).includes(uid()); const repliesCount = c.repliesCount||0;
-        return `<div class="comment-row" data-cid="${d.id}"><img src="${esc(c.userPhoto||'')}" onerror="this.style.background='#1c211c'"><div><div class="comment-name">${esc(c.userName)}</div><div class="comment-text">${esc(c.text)}</div><div class="comment-actions"><span data-act="like" style="${liked?'color:var(--pitch);font-weight:800;':''}">❤ ${fmtNum((c.likes||[]).length)}</span><span data-act="replyBtn" style="margin-left:10px;cursor:pointer">رد</span><span data-act="showReplies" style="margin-left:8px;cursor:pointer">💬 ${fmtNum(repliesCount)}</span><span>${timeAgo(c.createdAt)}</span></div><div class="replies" data-cid="${d.id}" style="margin-top:8px;"></div></div></div>`;
+        return `<div class="comment-row" data-cid="${d.id}"><img src="${esc(c.userPhoto||'')}" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'"><div><div class="comment-name">${esc(c.userName)}</div><div class="comment-text">${esc(c.text)}</div><div class="comment-actions"><span data-act="like" style="${liked?'color:var(--pitch);font-weight:800;':''}">❤ ${fmtNum((c.likes||[]).length)}</span><span data-act="replyBtn" style="margin-left:10px;cursor:pointer">رد</span><span data-act="showReplies" style="margin-left:8px;cursor:pointer">💬 ${fmtNum(repliesCount)}</span><span>${timeAgo(c.createdAt)}</span></div><div class="replies" data-cid="${d.id}" style="margin-top:8px;"></div></div></div>`;
       }).join("");
       body.querySelectorAll('[data-act="like"]').forEach(el=>{
         el.addEventListener("click",()=>{
@@ -2998,7 +3473,7 @@ function toggleShowVideoReplies(videoId, cid, container){
       if(qs.empty){ container.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:8px 0;">لا توجد ردود بعد</div>`; return; }
       container.innerHTML = qs.docs.map(d=>{
         const r=d.data(); const liked = (r.likes||[]).includes(uid());
-        return `<div class="reply-row" data-rid="${d.id}" style="display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><img src="${esc(r.userPhoto||'')}" style="width:30px;height:30px;border-radius:8px;object-fit:cover" onerror="this.style.background='#1c211c'"><div style="flex:1"><div style="font-weight:800;font-size:12px">${esc(r.userName)}</div><div style="font-size:13px;margin-top:4px">${esc(r.text)}</div><div style="font-size:11px;color:var(--muted);margin-top:6px"><span data-act="likeReply">❤ ${fmtNum((r.likes||[]).length)}</span> <span style="margin-left:8px">${timeAgo(r.createdAt)}</span> <span style=\"margin-left:8px;cursor:pointer;color:var(--muted)\" data-act=\"replyToReply\">رد</span></div><div class=\"subreplies\" style=\"margin-top:8px;padding-left:6px;border-left:2px solid rgba(255,255,255,.03)\"></div></div></div>`;
+        return `<div class="reply-row" data-rid="${d.id}" style="display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><img src="${esc(r.userPhoto||'')}" style="width:30px;height:30px;border-radius:8px;object-fit:cover" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'"><div style="flex:1"><div style="font-weight:800;font-size:12px">${esc(r.userName)}</div><div style="font-size:13px;margin-top:4px">${esc(r.text)}</div><div style="font-size:11px;color:var(--muted);margin-top:6px"><span data-act="likeReply">❤ ${fmtNum((r.likes||[]).length)}</span> <span style="margin-left:8px">${timeAgo(r.createdAt)}</span> <span style=\"margin-left:8px;cursor:pointer;color:var(--muted)\" data-act=\"replyToReply\">رد</span></div><div class=\"subreplies\" style=\"margin-top:8px;padding-left:6px;border-left:2px solid rgba(255,255,255,.03)\"></div></div></div>`;
       }).join('');
       container.querySelectorAll('[data-act="likeReply"]').forEach(el=>{
         el.addEventListener('click', ()=>{
@@ -3059,7 +3534,7 @@ function toggleShowPostReplies(postId, cid, container){
       if(qs.empty){ container.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:8px 0;">لا توجد ردود بعد</div>`; return; }
       container.innerHTML = qs.docs.map(d=>{
         const r=d.data(); const liked = (r.likes||[]).includes(uid());
-        return `<div class="reply-row" data-rid="${d.id}" style="display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><img src="${esc(r.userPhoto||'')}" style="width:30px;height:30px;border-radius:8px;object-fit:cover" onerror="this.style.background='#1c211c'"><div style="flex:1"><div style="font-weight:800;font-size:12px">${esc(r.userName)}</div><div style="font-size:13px;margin-top:4px">${esc(r.text)}</div><div style="font-size:11px;color:var(--muted);margin-top:6px"><span data-act="likeReply">❤ ${fmtNum((r.likes||[]).length)}</span> <span style="margin-left:8px">${timeAgo(r.createdAt)}</span> <span style=\"margin-left:8px;cursor:pointer;color:var(--muted)\" data-act=\"replyToReply\">رد</span></div><div class=\"subreplies\" style=\"margin-top:8px;padding-left:6px;border-left:2px solid rgba(255,255,255,.03)\"></div></div></div>`;
+        return `<div class="reply-row" data-rid="${d.id}" style="display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><img src="${esc(r.userPhoto||'')}" style="width:30px;height:30px;border-radius:8px;object-fit:cover" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'"><div style="flex:1"><div style="font-weight:800;font-size:12px">${esc(r.userName)}</div><div style="font-size:13px;margin-top:4px">${esc(r.text)}</div><div style="font-size:11px;color:var(--muted);margin-top:6px"><span data-act="likeReply">❤ ${fmtNum((r.likes||[]).length)}</span> <span style="margin-left:8px">${timeAgo(r.createdAt)}</span> <span style=\"margin-left:8px;cursor:pointer;color:var(--muted)\" data-act=\"replyToReply\">رد</span></div><div class=\"subreplies\" style=\"margin-top:8px;padding-left:6px;border-left:2px solid rgba(255,255,255,.03)\"></div></div></div>`;
       }).join('');
       container.querySelectorAll('[data-act="likeReply"]').forEach(el=>{
         el.addEventListener('click', ()=>{
@@ -3217,7 +3692,17 @@ function openUploadSheet(){
     const f=e.target.files[0]; if(!f) return;
     if(!f.type || !f.type.startsWith('video/')){ toast('اختر ملف فيديو صالح'); return; }
     if(f.size > 300*1024*1024){ toast('حجم الفيديو كبير جدًا (الحد الأقصى 300 ميجا)'); return; }
-    uploadFile=f;
+    const tempVid = document.createElement('video');
+  tempVid.preload = 'metadata';
+  tempVid.onloadedmetadata = function(){
+    URL.revokeObjectURL(tempVid.src);
+    if(tempVid.duration > 120){
+      toast('مدة الفيديو أطول من دقيقتين، اختر فيديو أقصر');
+      $("#uploadFileInput").value = '';
+      return;
+    }
+  };
+  tempVid.src = URL.createObjectURL(f);
     const url=URL.createObjectURL(f);
     $("#uploadDrop").innerHTML = `<video src="${url}" muted></video><span class="lbl">${esc(f.name)}</span>`;
   });
@@ -3746,7 +4231,7 @@ async function loadMatchCenterMatches(container, filter) {
 
 function formatApiMatchCard(m, isFollowed) {
   const isLive = isMatchLive(m);
-  const finished = isMatchFinished(m);
+  const finished = isMatchFinished(m); // التحقق هل الماتش انتهى
   const statusLabel = isLive ? 'مباشر 🔴' : (finished ? `انتهت · ${formatMatchDateLabel(m)}` : formatMatchDateLabel(m));
   const homeScore = m.score && m.score.fullTime && m.score.fullTime.home !== null ? m.score.fullTime.home : '-';
   const awayScore = m.score && m.score.fullTime && m.score.fullTime.away !== null ? m.score.fullTime.away : '-';
@@ -3773,16 +4258,16 @@ function formatApiMatchCard(m, isFollowed) {
         </div>
       </div>
 
-      <!-- قسم التوقعات والنسب المئوية -->
-      <div class="match-predictions-wrap" data-match="${esc(matchId)}">
+      <!-- قسم التوقعات مع قفل الماتشات المنتهية -->
+      <div class="match-predictions-wrap" data-match="${esc(matchId)}" data-finished="${finished ? '1' : '0'}">
         <div class="pred-header">
-          <span>🔮 توقعات الجمهور</span>
+          <span>🔮 توقعات الجمهور ${finished ? '<span style="color:var(--red); font-size:10.5px;">(مغلقة 🔒)</span>' : ''}</span>
           <span class="pred-total-count" style="color:var(--muted);font-weight:400">0 تصويت</span>
         </div>
         <div class="pred-buttons">
-          <button class="pred-btn" data-choice="home">فوز ${esc(homeName)}</button>
-          <button class="pred-btn" data-choice="draw">تعادل</button>
-          <button class="pred-btn" data-choice="away">فوز ${esc(awayName)}</button>
+          <button class="pred-btn" data-choice="home" ${finished ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>فوز ${esc(homeName)}</button>
+          <button class="pred-btn" data-choice="draw" ${finished ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>تعادل</button>
+          <button class="pred-btn" data-choice="away" ${finished ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>فوز ${esc(awayName)}</button>
         </div>
         <div class="pred-bar">
           <div class="pred-seg home" style="width:33.3%"></div>
@@ -3879,10 +4364,16 @@ function bindMatchCardEvents(container) {
     toggleMatchReaction(matchId, react);
   }));
 
-  // ربط أزرار التوقع
+  // ربط أزرار التوقع مع حظر الماتشات المنتهية
   container.querySelectorAll('.pred-btn').forEach(btn=>btn.addEventListener('click', ()=>{
     const wrap = btn.closest('.match-predictions-wrap');
     if(wrap){
+      const isFinished = wrap.dataset.finished === '1';
+      if(isFinished) {
+        toast('🔒 التوقعات مغلقة لهذه المباراة لأنها انتهت بالفعل!');
+        return;
+      }
+
       const matchId = wrap.dataset.match;
       const choice = btn.dataset.choice;
       toggleMatchPrediction(matchId, choice);
@@ -3897,7 +4388,6 @@ function bindMatchCardEvents(container) {
     openMatchChat(mId, title);
   }));
 
-  // استدعاء الاستماع اللحظي لكل كارت
   container.querySelectorAll('.match-card').forEach(card=>{
     const matchId = card.dataset.match;
     if(matchId){
@@ -4105,7 +4595,7 @@ async function runSearch(q){
   if(usersRes.length){
     list.innerHTML += usersRes.map(u=>`
       <div class="sr-user" data-uid="${u.uid}">
-        <img src="${esc(u.photoURL||'')}" onerror="this.style.background='#1c211c'">
+        <img src="${esc(u.photoURL||'')}" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">
         <div><div style="font-weight:800;font-size:13.5px;">${esc(u.displayName)}${verifiedBadge(u.verified)}</div>
         <div style="font-size:11px;color:var(--muted);">${fmtNum(u.followersCount)} متابع</div></div>
       </div>`).join("");
@@ -4376,7 +4866,7 @@ function renderCommunityPanel(){
       }
 
       return `<div class="post-card" data-pid="${p.id}">
-        <div class="post-head"><img src="${esc(p.userPhoto||'')}" onerror="this.style.background='#1c211c'">
+        <div class="post-head"><img src="${esc(p.userPhoto||'')}" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'">
           <div><div class="nm">${esc(p.userName)}${verifiedBadge(p.userVerified)}</div><div class="tm">${timeAgo(p.createdAt)}</div></div>
         </div>
         ${p.text?`<div class="post-text">${esc(p.text)}</div>`:""}
@@ -4423,6 +4913,7 @@ function renderCommunityPanel(){
     });
   });
 }
+/* ===================== GUARANTEED POLL VOTING ===================== */
 async function castPollVote(postId, optionIdx){
   if(!uid()){ toast("سجل دخول للتصويت في الاستطلاع"); return; }
   const ref = db.collection("posts").doc(postId);
@@ -4431,33 +4922,66 @@ async function castPollVote(postId, optionIdx){
     await db.runTransaction(async t => {
       const doc = await t.get(ref);
       if(!doc.exists) return;
-      const poll = doc.data().poll;
+      const data = doc.data();
+      const poll = data.poll;
       if(!poll) return;
 
       const voters = poll.voters || {};
       const counts = poll.counts || new Array(poll.options.length).fill(0);
       const currentVote = voters[uid()];
 
-      // لو اضغط على نفس الخيار لا يفعل شيء
       if(currentVote === optionIdx) return;
 
-      // لو كان صوت لخيار سابق، يخصم منه واحد
-      if(currentVote !== undefined){
-        counts[currentVote] = Math.max(0, counts[currentVote] - 1);
+      if(currentVote !== undefined && currentVote !== null){
+        counts[currentVote] = Math.max(0, (counts[currentVote] || 1) - 1);
       }
 
-      // إضافة الصوت الجديد
       voters[uid()] = optionIdx;
       counts[optionIdx] = (counts[optionIdx] || 0) + 1;
 
-      t.update(ref, {
-        "poll.voters": voters,
-        "poll.counts": counts
-      });
+      poll.voters = voters;
+      poll.counts = counts;
+
+      t.update(ref, { poll: poll });
     });
   } catch(e) {
     console.error("castPollVote failed", e);
     toast("حدث خطأ أثناء تسجيل صوتك");
+  }
+}
+
+async function castTeamRoomPollVote(teamName, msgId, optionIdx){
+  if(!uid()) return;
+  const ref = db.collection('team_chats').doc(teamName).collection('messages').doc(msgId);
+
+  try{
+    await db.runTransaction(async t => {
+      const doc = await t.get(ref);
+      if(!doc.exists) return;
+      const data = doc.data();
+      const poll = data.poll;
+      if(!poll) return;
+
+      const voters = poll.voters || {};
+      const counts = poll.counts || [0, 0];
+      const currentVote = voters[uid()];
+
+      if(currentVote === optionIdx) return;
+
+      if(currentVote !== undefined && currentVote !== null){
+        counts[currentVote] = Math.max(0, (counts[currentVote] || 1) - 1);
+      }
+
+      voters[uid()] = optionIdx;
+      counts[optionIdx] = (counts[optionIdx] || 0) + 1;
+
+      poll.voters = voters;
+      poll.counts = counts;
+
+      t.update(ref, { poll: poll });
+    });
+  } catch(e) {
+    console.error("castTeamRoomPollVote failed", e);
   }
 }
 /* ===================== BADGES / ACHIEVEMENTS ===================== */
@@ -4548,7 +5072,7 @@ async function renderProfilePanel(otherUidParam){
       <div class="player-card" style="background:${bg.css}">
         ${u.favTeam?`<img class="pc-crest-bg" id="pcCrestBg" src="${fallbackTeamAvatar(u.favTeam)}">`:""}
         <div class="pc-top">
-          <div class="pc-avatar"><img src="${esc(u.photoURL||'')}" onerror="this.style.background='#1c211c'"></div>
+          <div class="pc-avatar"><img src="${esc(u.photoURL||'')}" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%2322303f%27 stroke=%27%232f6fed%27 stroke-width=%274%27/><circle cx=%2750%27 cy=%2740%27 r=%2716%27 fill=%27%23ffffff%27/><path d=%27M20 92 Q20 62 50 62 Q80 62 80 92 Z%27 fill=%27%23ffffff%27/></svg>'"></div>
           <div class="pc-followers"><b>${fmtNum(u.followersCount)}</b><span>جماهير</span></div>
         </div>
         <div class="pc-name">${esc(u.displayName)}${verifiedBadge(u.verified)}</div>
@@ -4983,7 +5507,7 @@ async function openVideoSheet(videoId){
       
       <div class="sheet-body" id="videoSheetBody" style="display:flex; flex-direction:column; padding:10px 14px; overflow-y:auto;">
         <!-- مشغل الفيديو بابعاد 9:16 العرضية المضبوطة -->
-        <div style="width:100%; max-height:380px; aspect-ratio:9/16; background:#000; border-radius:14px; overflow:hidden; margin:0 auto; display:flex; align-items:center; justify-content:center; border:1px solid var(--line);">
+        <div style="width:100%; max-height:70vh; aspect-ratio:9/16; background:#000; border-radius:14px; overflow:hidden; margin:0 auto; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); width:100%;">
           <video id="sheetVideoPlayer" src="${esc(v.videoURL)}" controls playsinline autoplay loop style="width:100%; height:100%; object-fit:contain; background:#000;"></video>
         </div>
 
@@ -5108,6 +5632,42 @@ async function loadMatchesBySelectedDate(dateStr) {
   }
   applyMatchTeamFilter();
 }
+/* ===================== FULLSCREEN IMAGE LIGHTBOX ===================== */
+function openImageLightbox(src) {
+  if (!src) return;
+  
+  // إزالة أي نافذة قديمة إن وجدت
+  const oldOverlay = document.getElementById("lightboxOverlay");
+  if(oldOverlay) oldOverlay.remove();
+
+  const el = document.createElement("div");
+  el.className = "lightbox-backdrop";
+  el.id = "lightboxOverlay";
+  el.innerHTML = `
+    <button class="lightbox-close-btn" id="closeLightboxBtn" title="إغلاق">✕</button>
+    <img src="${esc(src)}" class="lightbox-img">
+  `;
+
+  document.body.appendChild(el);
+
+  const close = () => {
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 150);
+  };
+
+  el.querySelector("#closeLightboxBtn").addEventListener("click", close);
+  el.addEventListener("click", (e) => {
+    if (e.target.id === "lightboxOverlay") close();
+  });
+}
+
+// 💡 التنصت التلقائي على كل صور المنشورات والشات والـ VAR في التطبيق
+document.addEventListener("click", (e) => {
+  const img = e.target.closest(".post-img, .var-card img, #directChatMessages img, #groupChatMessages img, #chatMainWindow img");
+  if (img && img.src && !img.classList.contains("team-img") && !img.closest(".pc-avatar")) {
+    openImageLightbox(img.src);
+  }
+});
 </script>
 </body>
 </html>
