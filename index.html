@@ -1338,6 +1338,7 @@ let activeMatchFilter = 'all';
 let matchTeamSearchQuery = '';
 let lastLoadedMatchesContainer = null;
 let activeStandingsLeague = 'PL';
+let isGlobalMuted = true; // متغيّر يتحكم في حالة الصوت في التطبيق كله
 
 const processingPostLikes = new Set();
 
@@ -2915,20 +2916,22 @@ function setupFeedObserver(){
       if(!vidEl) return;
 
       if(en.isIntersecting && en.intersectionRatio > 0.6) {
-        // 1. لو المستخدم أدى سحب سريع وعدى الفيديو، بنلغي أي مؤقتات سابقة
         if(videoLoadTimers[vId]) clearTimeout(videoLoadTimers[vId]);
 
-        // 2. انتظر 280 مللي ثانية قبل بدء التحميل (عشان نضمن إن المستخدم استقر مش بيقلب)
         videoLoadTimers[vId] = setTimeout(() => {
           if(!vidEl.src && vidEl.dataset.src) {
-            vidEl.src = vidEl.dataset.src; // تعيين المصدر فقط عند الاستقرار
+            vidEl.src = vidEl.dataset.src;
           }
           
+          // 🔴 السطرين دول هما اللي بتسأل عليهم (تطبيق حالة الصوت العامة قبل تشغيل الفيديو)
+          vidEl.muted = isGlobalMuted;
+          const muteBtn = slide.querySelector(".mute-btn");
+          if(muteBtn) muteBtn.innerHTML = isGlobalMuted ? icon('muteOff') : icon('mute');
+
           vidEl.play().then(() => {
             activeVideoIndex = feedVideos.findIndex(v => v.id === vId);
             maybeCountView(vId);
 
-            // 3. تحميل الشريحة القادمة مخفياً ولكن بعد 1.5 ثانية كاملة من مشاهدة الفيديو الحالي
             const idx = feedVideos.findIndex(v => v.id === vId);
             const nextSlide = document.querySelectorAll('.video-slide')[idx + 1];
             if(nextSlide) {
@@ -2937,15 +2940,14 @@ function setupFeedObserver(){
                 const nextVid = nextSlide.querySelector('video');
                 if(nextVid && !nextVid.src && nextVid.dataset.src) {
                   nextVid.src = nextVid.dataset.src;
-                  nextVid.load(); // تجهيز أول كام ثانية في الخلفية
+                  nextVid.load();
                 }
               }, 1500);
             }
           }).catch(() => {});
-        }, 280); // مهلة السحب السريع (280ms)
+        }, 280);
 
       } else {
-        // 4. بمجرد خروج الفيديو من الشاشة: إلغاء التحميل وفصل الاتصال فوراً
         if(videoLoadTimers[vId]) {
           clearTimeout(videoLoadTimers[vId]);
           delete videoLoadTimers[vId];
@@ -2955,11 +2957,10 @@ function setupFeedObserver(){
           delete nextPreloadTimers[vId];
         }
 
-        // إيقاف وتفريغ الفيديو فوراً لمنع استهلاك الباندويث في الخلفية
         vidEl.pause();
         if(vidEl.src) {
-          vidEl.removeAttribute('src'); // مسح الرابط لإلغاء طلب الشبكة النشط (Network Request)
-          vidEl.load(); // إجبار المتصفح على إغلاق اتصال الاستريم
+          vidEl.removeAttribute('src');
+          vidEl.load();
         }
       }
     });
@@ -3043,16 +3044,17 @@ function bindVideoSlide(slide, v){
   const vidEl = slide.querySelector("video");
   const muteBtn = slide.querySelector(".mute-btn");
 
-  // جعل الفيديو مكتوم افتراضياً لتخطّي حظر المتصفحات للصوت التلقائي
-  vidEl.muted = true;
-  if(muteBtn) muteBtn.innerHTML = icon('muteOff'); // إظهار أيكونة الصوت المكتوم
+  // تطبيق حالة الصوت العامة على الفيديو فوراً
+  vidEl.muted = isGlobalMuted;
+  if(muteBtn) muteBtn.innerHTML = isGlobalMuted ? icon('muteOff') : icon('mute');
 
   // زرار كتم/تشغيل الصوت
   if(muteBtn) {
     muteBtn.addEventListener("click", e => {
       e.stopPropagation();
-      vidEl.muted = !vidEl.muted;
-      muteBtn.innerHTML = vidEl.muted ? icon('muteOff') : icon('mute');
+      isGlobalMuted = !isGlobalMuted; // تغيير حالة الصوت للتطبيق كله
+      vidEl.muted = isGlobalMuted;
+      muteBtn.innerHTML = isGlobalMuted ? icon('muteOff') : icon('mute');
     });
   }
 
@@ -3060,16 +3062,17 @@ function bindVideoSlide(slide, v){
   const notifBtn = slide.querySelector(".notif-btn");
   if(notifBtn) notifBtn.addEventListener("click", e => { e.stopPropagation(); openNotificationsSheet(); });
 
-  // الضغط على الفيديو للتشغيل/الإيقاف أو تشغيل الصوت
+  // الضغط على الشاشة (فتح الصوت أو تشغيل/إيقاف)
   slide.addEventListener("click", e => {
     if(e.target.closest(".vs-top, .vs-side, .vs-bottom")) return;
     
-    // لو الصوت مكتوم، أول ضغطة على الشاشة بتشغل الصوت فوراً
-    if(vidEl.muted) {
+    // لو الصوت مكتوم، أول ضغطة بتفتحه وتخليه مفتوح لكل الفيديوهات الجاية
+    if(isGlobalMuted) {
+      isGlobalMuted = false;
       vidEl.muted = false;
       if(muteBtn) muteBtn.innerHTML = icon('mute');
     } else {
-      // لو الصوت شغال، الضغطة بتعمل تشغيل/إيقاف مؤقت
+      // لو الصوت مفتوح بالفعل، الضغطة بتعمل تشغيل/إيقاف مؤقت
       if(vidEl.paused) vidEl.play(); else vidEl.pause();
     }
   });
@@ -3080,7 +3083,7 @@ function bindVideoSlide(slide, v){
     spawnGoalPop(slide, e.clientX - slide.getBoundingClientRect().left, e.clientY - slide.getBoundingClientRect().top);
   });
 
-  // باقي أزرار التفاعل
+  // باقي الأزرار
   const goalBtn = slide.querySelector('[data-act="goal"]');
   if(goalBtn) goalBtn.addEventListener("click", () => doReaction(v.id, "goal"));
   
@@ -3113,6 +3116,7 @@ function bindVideoSlide(slide, v){
     setTimeout(() => { $("#searchInput").value = "#" + t.dataset.hashtag; runSearch("#" + t.dataset.hashtag); }, 50);
   }));
 }
+
 function spawnGoalPop(slide,x,y){
   const el=document.createElement("div"); el.className="goal-pop"; el.textContent="⚽";
   el.style.left=(x-35)+"px"; el.style.top=(y-35)+"px";
