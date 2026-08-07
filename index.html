@@ -1057,17 +1057,23 @@ a{color:inherit;}
   <div id="screen-auth" class="hidden">
     <div class="auth-logo brand">C<span>O</span>RNER</div>
     <div class="auth-sub">شبكة كورة. عيش كل هدف.</div>
+    
+    <!-- إنشاء حساب جديد -->
     <label class="photo-picker" id="photoPicker">
       <span class="ph">📷</span>
       <input type="file" accept="image/*" capture="user" id="photoInput" style="display:none">
     </label>
-    <input class="auth-input" id="nameInput" placeholder="اكتب اسمك" maxlength="30">
-    <button class="btn-primary" id="btnSignIn">دخول</button>
-    <div class="divider-or">أو</div>
-    <button class="btn-google" id="btnGoogle">
-      <span>G</span> الدخول بحساب جوجل
-    </button>
-    <button class="btn-ghost" id="btnGuest" style="margin-top:8px">تجربة سريعة (ضيف)</button>
+    <input class="auth-input" id="nameInput" placeholder="اكتب اسمك للبدء" maxlength="30">
+    <button class="btn-primary" id="btnSignIn">إنشاء حساب جديد</button>
+    <button class="btn-ghost" id="btnGuest" style="margin-top:4px">تجربة سريعة (ضيف)</button>
+
+    <!-- استرجاع حساب سابق بالـ ID -->
+    <div style="width:100%; max-width:300px; margin-top:16px; border-top:1px solid var(--line); padding-top:14px; text-align:center;">
+      <div style="font-size:12px; color:var(--muted); margin-bottom:8px; font-weight:800;">عالمك الكروي محفوظ؟ ادخل بالـ ID:</div>
+      <input class="auth-input" id="idLoginInput" placeholder="لصق الـ ID الخاص بحسابك" style="margin-bottom:8px; font-size:12.5px;">
+      <button class="btn-ghost" id="btnSignInId" style="width:100%; border-color:var(--gold); color:var(--gold); font-weight:800;">دخول برقم الحساب (ID)</button>
+    </div>
+
     <div class="auth-hint">بالدخول أنت توافق على استخدام اسمك وصورتك داخل التطبيق فقط.</div>
     <div class="footer-brand">CORNER by <b>BORKAN</b></div>
   </div>
@@ -1366,7 +1372,8 @@ function toast(msg){
   host.appendChild(el);
   setTimeout(()=>el.remove(),2200);
 }
-function uid(){return currentUser ? currentUser.uid : null;}
+let customUid = localStorage.getItem('corner_user_id') || null;
+function uid(){ return customUid || (currentUser ? currentUser.uid : null); }
 function verifiedBadge(isVerified){
   return isVerified ? `<span class="verified-badge" title="حساب موثّق">${icon('verified')}</span>` : '';
 }
@@ -1387,6 +1394,7 @@ $("#photoInput").addEventListener("change",e=>{
   $("#photoPicker").innerHTML=`<img src="${url}">`;
 });
 
+// زرار التسجيل بحساب جديد
 $("#btnSignIn").addEventListener("click", async ()=>{
   const name=sanitizeText($("#nameInput").value, 30);
   if(!name){toast("اكتب اسمك الأول");return;}
@@ -1396,9 +1404,44 @@ $("#btnSignIn").addEventListener("click", async ()=>{
     await finishProfileSetup(cred.user, name, pickedPhotoFile);
   }catch(err){
     console.error(err); toast("حصل خطأ: "+err.message);
-    $("#btnSignIn").textContent="دخول";
+    $("#btnSignIn").textContent="إنشاء حساب جديد";
   }
 });
+
+// زرار استرجاع الحساب والدخول بالـ ID
+const btnSignInId = document.getElementById("btnSignInId");
+if(btnSignInId) {
+  btnSignInId.addEventListener("click", async () => {
+    const inputId = sanitizeText($("#idLoginInput").value, 120);
+    if(!inputId) { toast("أدخل الـ ID الخاص بك أولاً"); return; }
+    
+    btnSignInId.textContent = "جاري التحقق...";
+    try {
+      const snap = await db.collection("users").doc(inputId).get();
+      if(!snap.exists) {
+        toast("❌ هذا الـ ID غير موجود! تأكد من الرقم مرة أخرى");
+        btnSignInId.textContent = "دخول برقم الحساب (ID)";
+        return;
+      }
+      
+      customUid = inputId;
+      localStorage.setItem('corner_user_id', inputId);
+      userData = snap.data();
+
+      if(!auth.currentUser) {
+        await auth.signInAnonymously().catch(() => {});
+      }
+
+      toast(`أهلاً بعودتك يا ${userData.displayName}! 👋`);
+      if(userData.onboarded) enterApp(); else showOnboarding();
+    } catch(err) {
+      console.error(err);
+      toast("حدث خطأ أثناء الاتصال بالخادم");
+    } finally {
+      if(btnSignInId) btnSignInId.textContent = "دخول برقم الحساب (ID)";
+    }
+  });
+}
 
 $("#btnGoogle").addEventListener("click", async ()=>{
   try{
@@ -1421,59 +1464,60 @@ $("#btnGuest").addEventListener("click", async ()=>{
   finally{ if($("#btnGuest")) $("#btnGuest").textContent = 'تجربة سريعة (ضيف)'; }
 });
 
-async function finishProfileSetup(user, name, file, existingPhotoURL){
-  let photoURL = existingPhotoURL || "";
-  if(file){
-    const ref = storage.ref(`profile_photos/${user.uid}.jpg`);
-    await ref.put(file);
-    photoURL = await ref.getDownloadURL();
-  }
-  await user.updateProfile({displayName:name, photoURL});
-  const userRef = db.collection("users").doc(user.uid);
-  const snap = await userRef.get();
-  if(!snap.exists){
-    await userRef.set({
-      uid:user.uid, displayName:name, displayNameLower:name.toLowerCase(),
-      photoURL, followersCount:0, followingCount:0, favTeam:null, followTeams:[],
-      cardBg:"night", onboarded:false, notifications:true, blockedUsers:[], searchHistory:[],
-      verified:false, videosCount:0, createdAt:FieldValue.serverTimestamp()
-    });
-  }
-  currentUser = user;
-  const fresh = await userRef.get();
-  userData = fresh.data();
+// تسجيل الدخول بـ ID مسبق
+const btnId = document.getElementById("btnSignInId");
+if(btnId) {
+  btnId.addEventListener("click", async () => {
+    const inputId = sanitizeText($("#idLoginInput").value, 120);
+    if(!inputId) { toast("أدخل الـ ID الخاص بك أولاً"); return; }
+    
+    btnId.textContent = "جاري التحقق...";
+    try {
+      const snap = await db.collection("users").doc(inputId).get();
+      if(!snap.exists) {
+        toast("❌ هذا الـ ID غير موجود! تأكد من الرقم مرة أخرى");
+        btnId.textContent = "دخول برقم الحساب (ID)";
+        return;
+      }
+      
+      // اعتماد الـ ID الجديد وحفظه
+      customUid = inputId;
+      localStorage.setItem('corner_user_id', inputId);
+      userData = snap.data();
 
-  try{
-    const pending = localStorage.getItem('pendingOnboard');
-    if(pending){
-      const p = JSON.parse(pending);
-      await userRef.update({
-        favTeam: p.favTeam || userData.favTeam,
-        followTeams: p.followTeams || userData.followTeams || [],
-        cardBg: p.cardBg || userData.cardBg || 'night',
-        onboarded: true
-      });
-      const refreshed = await userRef.get(); userData = refreshed.data();
-      localStorage.removeItem('pendingOnboard');
-      enterApp();
-      return;
+      if(!auth.currentUser) {
+        await auth.signInAnonymously().catch(() => {});
+      }
+
+      toast(`أهلاً بعودتك يا ${userData.displayName}! 👋`);
+      if(userData.onboarded) enterApp(); else showOnboarding();
+    } catch(err) {
+      console.error(err);
+      toast("حدث خطأ أثناء الاتصال بالخادم");
+    } finally {
+      if(btnId) btnId.textContent = "دخول برقم الحساب (ID)";
     }
-  }catch(e){ console.warn('applyPendingOnboard failed', e); }
-
-  if(!userData.onboarded){ showOnboarding(); } else { enterApp(); }
+  });
 }
 
-auth.onAuthStateChanged(async user=>{
-  if(user && !currentUser){
-    currentUser = user;
-    const snap = await db.collection("users").doc(user.uid).get();
-    if(snap.exists){
-      userData = snap.data();
-      if(userData.onboarded) enterApp(); else showOnboarding();
-      return;
-    }
+auth.onAuthStateChanged(async user => {
+  if(user) currentUser = user;
+  const savedId = localStorage.getItem('corner_user_id');
+  const targetId = savedId || (user ? user.uid : null);
+  
+  if(targetId) {
+    try {
+      const snap = await db.collection("users").doc(targetId).get();
+      if(snap.exists) {
+        customUid = targetId;
+        userData = snap.data();
+        if(userData.onboarded) enterApp(); else showOnboarding();
+        return;
+      }
+    } catch(e) { console.warn("Check saved ID failed", e); }
   }
-  if(!user){
+
+  if(!user && !savedId) {
     hideSplash();
     $("#screen-auth").classList.remove("hidden");
     $("#screen-onboard").classList.add("hidden");
@@ -5632,35 +5676,70 @@ function openOtherProfile(targetUid){
 /* ===================== SETTINGS ===================== */
 function renderSettingsPanel(){
   const panel=$("#panel-settings");
+  const currentId = uid() || "غير معروف";
+
   panel.innerHTML = `
     <div class="settings-wrap">
       <div class="top-header" style="padding-top:0;border:none;">
         <span class="back" id="setBack">${icon('back')}</span><span class="t">الإعدادات</span>
       </div>
+
+      <!-- قسم عرض ونسخ الـ ID -->
       <div class="set-section">
-        <div class="set-label">الحساب</div>
+        <div class="set-label">معرّف الحساب ورقم الاسترجاع</div>
+        <div class="set-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+          <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <span style="font-weight:800;">رقم الحساب (ID)</span>
+            <button id="copyIdBtn" style="background:var(--pitch); color:#08150d; border-radius:8px; padding:6px 12px; font-weight:900; font-size:12px; cursor:pointer;">📋 نسخ الـ ID</button>
+          </div>
+          <div style="font-size:11px; color:var(--gold); font-family:monospace; background:var(--bg-elev2); padding:8px 10px; border-radius:8px; width:100%; word-break:break-all; user-select:all;">
+            ${esc(currentId)}
+          </div>
+          <div style="font-size:10.5px; color:var(--muted); line-height:1.4;">⚠️ احتفظ بهذا الرقم في مكان آمن لاسترجاع حسابك بكل بياناتك في أي وقت بسهولة.</div>
+        </div>
+      </div>
+
+      <div class="set-section">
+        <div class="set-label">الحساب الشخصي</div>
         <div class="set-row"><span>الاسم</span><span>${esc(userData.displayName)}${verifiedBadge(userData.verified)}</span></div>
         <div class="set-row" id="changePhotoRow" style="cursor:pointer;"><span>تغيير الصورة</span><span>${icon('camera')}</span>
           <input type="file" accept="image/*" id="setPhotoInput" style="display:none"></div>
       </div>
+
       <div class="set-section">
         <div class="set-label">الإشعارات</div>
         <div class="set-row"><span>تفعيل الإشعارات</span><div class="toggle ${userData.notifications?'on':''}" id="notifToggle"></div></div>
       </div>
+
       <div class="set-section">
         <div class="set-label">الحساب والخصوصية</div>
         <button class="btn-danger" id="logoutBtn">تسجيل الخروج</button>
         <button class="btn-danger" id="deleteBtn">حذف الحساب نهائيًا</button>
       </div>
+
       <div class="footer-brand">CORNER by <b>BORKAN</b></div>
     </div>`;
+
   $("#setBack").addEventListener("click",()=>switchTab("profile"));
+
+  // برمجة زرار نسخ الـ ID
+  $("#copyIdBtn").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(currentId);
+      toast("✅ تم نسخ رقم الحساب (ID) بنجاح!");
+    } catch(e) {
+      toast(currentId);
+    }
+  });
+
   $("#notifToggle").addEventListener("click", async ()=>{
     userData.notifications = !userData.notifications;
     await db.collection("users").doc(uid()).update({notifications:userData.notifications});
     renderSettingsPanel();
   });
+
   $("#changePhotoRow").addEventListener("click",()=>$("#setPhotoInput").click());
+  
   $("#setPhotoInput").addEventListener("change", async e=>{
     const f=e.target.files[0]; if(!f) return;
     const ref=storage.ref(`profile_photos/${uid()}.jpg`);
@@ -5669,16 +5748,25 @@ function renderSettingsPanel(){
     await db.collection("users").doc(uid()).update({photoURL:url});
     userData.photoURL=url; toast("تم تحديث الصورة"); renderSettingsPanel();
   });
+
   $("#logoutBtn").addEventListener("click", async ()=>{
-    await auth.signOut(); location.reload();
+    localStorage.removeItem('corner_user_id'); // مسح الـ ID من المتصفح عند الخروج
+    customUid = null;
+    await auth.signOut(); 
+    location.reload();
   });
+
   $("#deleteBtn").addEventListener("click", async ()=>{
-    if(!confirm("هل أنت متأكد من حذف الحساب نهائيًا؟")) return;
+    if(!confirm("هل أنت متأكب من حذف الحساب نهائيًا؟")) return;
     try{
       await db.collection("users").doc(uid()).delete();
-      await currentUser.delete();
+      localStorage.removeItem('corner_user_id');
+      if(currentUser) await currentUser.delete();
       location.reload();
-    }catch(e){ toast("يلزم تسجيل دخول حديث لحذف الحساب. سجل خروج ثم ادخل تاني وجرب."); }
+    }catch(e){ 
+      localStorage.removeItem('corner_user_id');
+      location.reload();
+    }
   });
 }
 // =========================================================================
