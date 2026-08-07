@@ -1886,6 +1886,17 @@ function enterApp(){
   startNotificationsListener();
   openSharedVideoFromURL();
 }
+// 🛑 دالة لكتم وإيقاف جميع الفيديوهات في الخلفية فوراً
+function pauseAllBackgroundVideos() {
+  document.querySelectorAll('video').forEach(vd => {
+    if(vd.id !== 'fullVideoPlayer' && vd.id !== 'sheetVideoPlayer') {
+      try {
+        vd.pause();
+        vd.muted = true; // كتم صوت فيديو الصفحة الرئيسية في الخلفية
+      } catch(e) {}
+    }
+  });
+}
 function openSharedVideoFromURL(){
   try{
     const params = new URLSearchParams(location.search);
@@ -1900,6 +1911,10 @@ async function renderFullVideoPage(videoId){
   const snap = await db.collection('videos').doc(videoId).get();
   if(!snap.exists){ toast('الفيديو غير موجود'); return; }
   const v = snap.data();
+
+  // 🛑 1. كتم وإيقاف فيديو الصفحة الرئيسية في الخلفية فوراً
+  pauseAllBackgroundVideos();
+
   const overlay = document.createElement('div');
   overlay.id = 'fullVideoPageOverlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999;display:flex;flex-direction:column;';
@@ -1909,7 +1924,7 @@ async function renderFullVideoPage(videoId){
       <div style="font-weight:900;font-size:14px;color:#fff;">${esc(v.ownerName||'مستخدم')}${verifiedBadge(v.ownerVerified)}</div>
     </div>
     <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#000;">
-      <video id="fullVideoPlayer" src="${esc(v.videoURL)}" controls playsinline autoplay loop style="max-width:100%;max-height:100%;width:auto;height:100%;object-fit:contain;background:#000;"></video>
+      <video id="fullVideoPlayer" src="${esc(v.videoURL)}" controls playsinline autoplay style="max-width:100%;max-height:100%;width:auto;height:100%;object-fit:contain;background:#000;"></video>
     </div>
     <div style="padding:12px 16px;background:var(--bg-elev);border-top:1px solid var(--line);flex:none;">
       <div style="font-size:13.5px;color:#fff;line-height:1.5;">${renderHashtags(v.description||'')}</div>
@@ -1918,12 +1933,32 @@ async function renderFullVideoPage(videoId){
         <span>${icon('comment')} ${fmtNum(v.commentsCount||0)} تعليق</span>
       </div>
     </div>`;
-  document.querySelectorAll('video').forEach(vd=>{ try{ vd.pause(); }catch(e){} });
+
   document.body.appendChild(overlay);
+
+  // 🔊 2. تشغيل صوت فيديو الرابط المفتوح
+  const player = document.getElementById('fullVideoPlayer');
+  if(player) {
+    player.muted = false;
+    player.play().catch(() => {});
+  }
+
+  // 🔄 3. عند الضغط على رجوع: استعادة تشغيل فيديو الصفحة الرئيسية
   document.getElementById('fullVideoBackBtn').addEventListener('click', ()=>{
     overlay.remove();
     history.replaceState(null, '', location.pathname);
+    
+    // استعادة تشغيل فيديو الرئيسية مع احترام حالة الصوت المحددة
+    const activeSlide = document.querySelector('.video-slide');
+    if(activeSlide) {
+      const activeVid = activeSlide.querySelector('video');
+      if(activeVid) {
+        activeVid.muted = isGlobalMuted;
+        activeVid.play().catch(() => {});
+      }
+    }
   });
+
   maybeCountView(videoId);
 }
 function paintNavIcons(){
