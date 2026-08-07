@@ -130,6 +130,11 @@ a{color:inherit;}
   height: 100%;
   object-fit: contain;
   background: #000;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+.video-slide video.loaded{
+  opacity: 1;
 }
 .vs-top{position:absolute;top:calc(14px + var(--safe-top));left:14px;right:14px;display:flex;
   justify-content:space-between;z-index:5;}
@@ -1368,6 +1373,12 @@ function uid(){return currentUser ? currentUser.uid : null;}
 function verifiedBadge(isVerified){
   return isVerified ? `<span class="verified-badge" title="حساب موثّق">${icon('verified')}</span>` : '';
 }
+function generateUserId(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let id = '';
+  for(let i=0; i<8; i++){ id += chars.charAt(Math.floor(Math.random()*chars.length)); }
+  return id;
+}
 function sanitizeText(s, maxLen){
   if(typeof s !== 'string') return '';
   let t = s.trim();
@@ -1429,9 +1440,10 @@ async function finishProfileSetup(user, name, file, existingPhotoURL){
   await user.updateProfile({displayName:name, photoURL});
   const userRef = db.collection("users").doc(user.uid);
   const snap = await userRef.get();
-  if(!snap.exists){
+if(!snap.exists){
+    const generatedUserId = generateUserId();
     await userRef.set({
-      uid:user.uid, displayName:name, displayNameLower:name.toLowerCase(),
+      uid:user.uid, userId:generatedUserId, displayName:name, displayNameLower:name.toLowerCase(),
       photoURL, followersCount:0, followingCount:0, favTeam:null, followTeams:[],
       cardBg:"night", onboarded:false, notifications:true, blockedUsers:[], searchHistory:[],
       verified:false, videosCount:0, createdAt:FieldValue.serverTimestamp()
@@ -2906,7 +2918,10 @@ function setupFeedObserver(){
       const vidEl = en.target.querySelector("video");
       if(!vidEl) return;
       if(en.isIntersecting && en.intersectionRatio>0.6){
-        if(!vidEl.src && vidEl.dataset.src){ vidEl.src = vidEl.dataset.src; }
+        if(!vidEl.src && vidEl.dataset.src){
+          vidEl.src = vidEl.dataset.src;
+          vidEl.addEventListener('loadeddata', ()=>{ vidEl.classList.add('loaded'); }, {once:true});
+        }
         vidEl.play().catch(()=>{});
         const vId = en.target.dataset.id;
         activeVideoIndex = feedVideos.findIndex(v=>v.id===vId);
@@ -2956,7 +2971,7 @@ function videoSlideHTML(v,i){
   const following = (userData && userData.followingChannels && userData.followingChannels.includes(v.ownerUid));
   return `
     <div class="video-slide" data-id="${v.id}" data-owner="${v.ownerUid}">
-    <video data-src="${esc(v.videoURL)}" playsinline loop preload="none"></video>
+    <video data-src="${esc(v.videoURL)}" playsinline autoplay loop muted preload="metadata"></video>
     <div class="vs-top">
       <div class="vs-top-right">
         <div class="icon-btn notif-btn"><span class="notif-dot ${notifUnreadCount?'':'hidden'}"></span>${icon('bell')}</div>
@@ -5555,6 +5570,7 @@ function renderSettingsPanel(){
       <div class="set-section">
         <div class="set-label">الحساب</div>
         <div class="set-row"><span>الاسم</span><span>${esc(userData.displayName)}${verifiedBadge(userData.verified)}</span></div>
+        <div class="set-row" id="userIdRow" style="cursor:pointer;"><span>ID الخاص بك</span><span style="color:var(--gold);font-weight:900;">${esc(userData.userId||'---')} 📋</span></div>
         <div class="set-row" id="changePhotoRow" style="cursor:pointer;"><span>تغيير الصورة</span><span>${icon('camera')}</span>
           <input type="file" accept="image/*" id="setPhotoInput" style="display:none"></div>
       </div>
@@ -5570,6 +5586,13 @@ function renderSettingsPanel(){
       <div class="footer-brand">CORNER by <b>BORKAN</b></div>
     </div>`;
   $("#setBack").addEventListener("click",()=>switchTab("profile"));
+  const userIdRow = $("#userIdRow");
+  if(userIdRow){
+    userIdRow.addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText(userData.userId||''); toast('تم نسخ الـ ID'); }
+      catch(e){ toast(userData.userId||''); }
+    });
+  }
   $("#notifToggle").addEventListener("click", async ()=>{
     userData.notifications = !userData.notifications;
     await db.collection("users").doc(uid()).update({notifications:userData.notifications});
