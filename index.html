@@ -1443,16 +1443,7 @@ if(btnSignInId) {
   });
 }
 
-$("#btnGoogle").addEventListener("click", async ()=>{
-  try{
-    const provider=new firebase.auth.GoogleAuthProvider();
-    const cred = await auth.signInWithPopup(provider);
-    await finishProfileSetup(cred.user, cred.user.displayName||"لاعب كورنر", null, cred.user.photoURL);
-  }catch(err){
-    console.error(err);
-    toast("تعذر الدخول بجوجل (قد يكون بسبب النافذة المنبثقة). جرّب الاسم بدل كده.");
-  }
-});
+
 
 $("#btnGuest").addEventListener("click", async ()=>{
   try{
