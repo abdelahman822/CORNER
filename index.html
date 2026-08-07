@@ -6065,15 +6065,34 @@ function renderSettingsPanel(){
   });
 
   // تغيير الصورة
+// تغيير الصورة الشخصية مع رسائل الرفع الحية
   $("#changePhotoRow").addEventListener("click",()=>$("#setPhotoInput").click());
   
-  $("#setPhotoInput").addEventListener("change", async e=>{
-    const f=e.target.files[0]; if(!f) return;
-    const ref=storage.ref(`profile_photos/${uid()}.jpg`);
-    await ref.put(f); const url=await ref.getDownloadURL();
-    await currentUser.updateProfile({photoURL:url});
-    await db.collection("users").doc(uid()).update({photoURL:url});
-    userData.photoURL=url; toast("تم تحديث الصورة"); renderSettingsPanel();
+  $("#setPhotoInput").addEventListener("change", async e => {
+    const f = e.target.files[0]; 
+    if(!f) return;
+
+    toast("جاري رفع صورتك الجديدة... ⏳");
+
+    try {
+      const ref = storage.ref(`profile_photos/${uid()}_${Date.now()}.jpg`);
+      await ref.put(f); 
+      const url = await ref.getDownloadURL();
+      
+      if(currentUser) {
+        await currentUser.updateProfile({photoURL: url}).catch(()=>{});
+      }
+      
+      await db.collection("users").doc(uid()).update({photoURL: url});
+      userData.photoURL = url; 
+
+      toast("✅ تم تحديث صورتك الشخصية بنجاح!"); 
+      renderSettingsPanel();
+      if(activeTab === 'profile') renderProfilePanel();
+    } catch(err) {
+      console.error("Photo upload error:", err);
+      toast("❌ تعذر رفع الصورة، تأكد من الاتصال بالنت وحاول ثانيةً");
+    }
   });
 
   // تسجيل الخروج
