@@ -1045,6 +1045,27 @@ a{color:inherit;}
   visibility:visible!important;
 }
 .menu-btn{display:flex!important;}
+/* زرار المتابعين العلوي جنب الثلاث نقط */
+.following-tab-btn {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--line);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: all .2s ease;
+  margin-left: 4px;
+}
+.following-tab-btn.active {
+  background: var(--gold);
+  color: #3a2a05;
+  border-color: var(--gold);
+  font-weight: 900;
+  box-shadow: 0 0 10px rgba(231,179,62,.4);
+}
 </style>
 </head>
 <body>
@@ -1331,6 +1352,8 @@ const TEAM_WIKI_MAP = {
 
 /* ===================== STATE ===================== */
 let currentUser=null, userData=null, activeTab='home';
+let activeFeedFilter = 'all'; // لحفظ حالة الفلتر (الكل / المتابعين)
+let rawAllVideos = [];        // لتخزين الفيديوهات اللي جاية من السيرفر
 let feedUnsub=null, feedVideos=[], activeVideoIndex=0;
 let obSelectedLeague=LEAGUE_NAMES[0], obFavTeam=null, obFollowSet=new Set(), obBg="night";
 let currentCommentsVideoId=null, commentsUnsub=null, postCommentsUnsub=null;
@@ -1344,7 +1367,44 @@ let activeMatchFilter = 'all';
 let matchTeamSearchQuery = '';
 let lastLoadedMatchesContainer = null;
 let activeStandingsLeague = 'PL';
-let isGlobalMuted = true; // متغيّر يتحكم في حالة الصوت في التطبيق كله
+// 🔊 استرجاع تفضيل الصوت المحفوظ (افتراضياً الصوت شغال false)
+let savedMutePref = localStorage.getItem('corner_app_muted');
+let isGlobalMuted = (savedMutePref === '1') ? true : false; 
+
+// دالة تغيير وحفظ حالة الصوت في التطبيق والـ localStorage
+function setGlobalMute(mutedState) {
+  isGlobalMuted = !!mutedState;
+  localStorage.setItem('corner_app_muted', isGlobalMuted ? '1' : '0'); // حفظ الاختيار
+  
+  // تطبيق التغيير فوراً على جميع الفيديوهات الحالية
+  document.querySelectorAll('.video-slide').forEach(slide => {
+    const vidEl = slide.querySelector('video');
+    const muteBtn = slide.querySelector('.mute-btn');
+    if(vidEl) vidEl.muted = isGlobalMuted;
+    if(muteBtn) muteBtn.innerHTML = isGlobalMuted ? icon('muteOff') : icon('mute');
+  });
+}
+
+// 🔓 فك حظر الصوت تلقائياً مع أول لمسة للمستخدم على الشاشة لفك حظر المتصفحات
+function unlockAudioOnFirstTouch() {
+  const unlock = () => {
+    if(!isGlobalMuted) {
+      const activeSlide = document.querySelector('.video-slide');
+      if(activeSlide) {
+        const vidEl = activeSlide.querySelector('video');
+        if(vidEl) {
+          vidEl.muted = false;
+          vidEl.play().catch(() => {});
+        }
+      }
+    }
+    window.removeEventListener('click', unlock);
+    window.removeEventListener('touchstart', unlock);
+  };
+  window.addEventListener('click', unlock, { once: true });
+  window.addEventListener('touchstart', unlock, { once: true });
+}
+unlockAudioOnFirstTouch(); // متغيّر يتحكم في حالة الصوت في التطبيق كله
 
 const processingPostLikes = new Set();
 
@@ -1385,30 +1445,113 @@ function sanitizeText(s, maxLen){
 }
 
 /* ===================== AUTH FLOW ===================== */
-let pickedPhotoFile=null;
-$("#photoPicker").addEventListener("click",()=>$("#photoInput").click());
-$("#photoInput").addEventListener("change",e=>{
-  const f=e.target.files[0]; if(!f) return;
-  pickedPhotoFile=f;
-  const url=URL.createObjectURL(f);
-  $("#photoPicker").innerHTML=`<img src="${url}">`;
+/* ===================== AUTH FLOW & PROFILE SETUP ===================== */
+let pickedPhotoFile = null;
+
+// 1️⃣ اختيار الصورة الشخصية
+$("#photoPicker").addEventListener("click", () => $("#photoInput").click());
+$("#photoInput").addEventListener("change", e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  pickedPhotoFile = f;
+  const url = URL.createObjectURL(f);
+  $("#photoPicker").innerHTML = `<img src="${url}">`;
 });
 
-// زرار التسجيل بحساب جديد
-$("#btnSignIn").addEventListener("click", async ()=>{
-  const name=sanitizeText($("#nameInput").value, 30);
-  if(!name){toast("اكتب اسمك الأول");return;}
-  $("#btnSignIn").textContent="جاري الدخول...";
-  try{
+// 2️⃣ دالة إكمال وتخزين بيانات الملف الشخصي
+async function finishProfileSetup(user, name, file, existingPhotoURL) {
+  customUid = user.uid;
+  localStorage.setItem('corner_user_id', user.uid);
+
+  let photoURL = existingPhotoURL || "";
+  if(file) {
+    try {
+      const ref = storage.ref(`profile_photos/${user.uid}.jpg`);
+      await ref.put(file);
+      photoURL = await ref.getDownloadURL();
+    } catch(e) {
+      console.warn("Upload photo failed", e);
+    }
+  }
+
+  try {
+    await user.updateProfile({ displayName: name, photoURL });
+  } catch(e) {}
+
+  const userRef = db.collection("users").doc(user.uid);
+  const snap = await userRef.get();
+
+  if(!snap.exists) {
+    await userRef.set({
+      uid: user.uid,
+      displayName: name,
+      displayNameLower: name.toLowerCase(),
+      photoURL,
+      followersCount: 0,
+      followingCount: 0,
+      favTeam: null,
+      followTeams: [],
+      cardBg: "night",
+      onboarded: false,
+      notifications: true,
+      blockedUsers: [],
+      searchHistory: [],
+      verified: false,
+      videosCount: 0,
+      xp: 0,
+      unlockedPlayers: [],
+      createdAt: FieldValue.serverTimestamp()
+    });
+  }
+
+  currentUser = user;
+  const fresh = await userRef.get();
+  userData = fresh.data();
+
+  try {
+    const pending = localStorage.getItem('pendingOnboard');
+    if(pending) {
+      const p = JSON.parse(pending);
+      await userRef.update({
+        favTeam: p.favTeam || userData.favTeam,
+        followTeams: p.followTeams || userData.followTeams || [],
+        cardBg: p.cardBg || userData.cardBg || 'night',
+        onboarded: true
+      });
+      const refreshed = await userRef.get();
+      userData = refreshed.data();
+      localStorage.removeItem('pendingOnboard');
+      enterApp();
+      return;
+    }
+  } catch(e) {
+    console.warn('applyPendingOnboard failed', e);
+  }
+
+  if(!userData.onboarded) {
+    showOnboarding();
+  } else {
+    enterApp();
+  }
+}
+
+// 3️⃣ زرار إنشاء حساب جديد
+$("#btnSignIn").addEventListener("click", async () => {
+  const name = sanitizeText($("#nameInput").value, 30);
+  if(!name) { toast("اكتب اسمك الأول"); return; }
+  $("#btnSignIn").textContent = "جاري إنشاء الحساب...";
+  try {
     const cred = await auth.signInAnonymously();
     await finishProfileSetup(cred.user, name, pickedPhotoFile);
-  }catch(err){
-    console.error(err); toast("حصل خطأ: "+err.message);
-    $("#btnSignIn").textContent="إنشاء حساب جديد";
+  } catch(err) {
+    console.error(err);
+    toast("حصل خطأ: " + err.message);
+    $("#btnSignIn").textContent = "إنشاء حساب جديد";
   }
 });
 
-// زرار استرجاع الحساب والدخول بالـ ID
+// 4️⃣ زرار استرجاع الحساب والدخول بالـ ID
+// زرار استرجاع الحساب والدخول بالـ ID (مُعدل ومضمون)
 const btnSignInId = document.getElementById("btnSignInId");
 if(btnSignInId) {
   btnSignInId.addEventListener("click", async () => {
@@ -1417,81 +1560,59 @@ if(btnSignInId) {
     
     btnSignInId.textContent = "جاري التحقق...";
     try {
+      // 1️⃣ تسجيل الدخول بالـ Auth أولاً لتفعيل الصلاحية مع السيرفر
+      if(!auth.currentUser) {
+        await auth.signInAnonymously();
+      }
+
+      // 2️⃣ البحث عن بيانات الـ ID في قاعدة البيانات
       const snap = await db.collection("users").doc(inputId).get();
-      if(!snap.exists) {
-        toast("❌ هذا الـ ID غير موجود! تأكد من الرقم مرة أخرى");
+      
+      if(!snap || !snap.exists) {
+        toast("❌ هذا الـ ID غير موجود! تأكد من الرقم كابيتال واسمول");
         btnSignInId.textContent = "دخول برقم الحساب (ID)";
         return;
       }
       
+      // 3️⃣ اعتماد الحساب وفتح التطبيق فوراً
       customUid = inputId;
       localStorage.setItem('corner_user_id', inputId);
       userData = snap.data();
 
-      if(!auth.currentUser) {
-        await auth.signInAnonymously().catch(() => {});
+      toast(`أهلاً بعودتك يا ${userData.displayName || "لاعب"}! 👋`);
+      
+      if(userData.onboarded) {
+        enterApp();
+      } else {
+        showOnboarding();
       }
-
-      toast(`أهلاً بعودتك يا ${userData.displayName}! 👋`);
-      if(userData.onboarded) enterApp(); else showOnboarding();
     } catch(err) {
-      console.error(err);
-      toast("حدث خطأ أثناء الاتصال بالخادم");
+      console.error("ID Login Error:", err);
+      toast("حدث خطأ أثناء الاتصال بالخادم: " + (err.message || ""));
     } finally {
       if(btnSignInId) btnSignInId.textContent = "دخول برقم الحساب (ID)";
     }
   });
 }
-
-
-
-$("#btnGuest").addEventListener("click", async ()=>{
-  try{
-    $("#btnGuest").textContent = 'جاري...';
-    const cred = await auth.signInAnonymously();
-    const gname = 'ضيف-' + Math.random().toString(36).slice(2,7);
-    await finishProfileSetup(cred.user, gname, null);
-  }catch(e){ console.error(e); toast('تعذر إنشاء حساب الضيف'); }
-  finally{ if($("#btnGuest")) $("#btnGuest").textContent = 'تجربة سريعة (ضيف)'; }
-});
-
-// تسجيل الدخول بـ ID مسبق
-const btnId = document.getElementById("btnSignInId");
-if(btnId) {
-  btnId.addEventListener("click", async () => {
-    const inputId = sanitizeText($("#idLoginInput").value, 120);
-    if(!inputId) { toast("أدخل الـ ID الخاص بك أولاً"); return; }
-    
-    btnId.textContent = "جاري التحقق...";
+// 5️⃣ زرار التجربة السريعة (ضيف)
+const btnGuest = document.getElementById("btnGuest");
+if(btnGuest) {
+  btnGuest.addEventListener("click", async () => {
     try {
-      const snap = await db.collection("users").doc(inputId).get();
-      if(!snap.exists) {
-        toast("❌ هذا الـ ID غير موجود! تأكد من الرقم مرة أخرى");
-        btnId.textContent = "دخول برقم الحساب (ID)";
-        return;
-      }
-      
-      // اعتماد الـ ID الجديد وحفظه
-      customUid = inputId;
-      localStorage.setItem('corner_user_id', inputId);
-      userData = snap.data();
-
-      if(!auth.currentUser) {
-        await auth.signInAnonymously().catch(() => {});
-      }
-
-      toast(`أهلاً بعودتك يا ${userData.displayName}! 👋`);
-      if(userData.onboarded) enterApp(); else showOnboarding();
-    } catch(err) {
-      console.error(err);
-      toast("حدث خطأ أثناء الاتصال بالخادم");
+      btnGuest.textContent = 'جاري...';
+      const cred = await auth.signInAnonymously();
+      const gname = 'ضيف-' + Math.random().toString(36).slice(2, 7);
+      await finishProfileSetup(cred.user, gname, null);
+    } catch(e) {
+      console.error(e);
+      toast('تعذر إنشاء حساب الضيف');
     } finally {
-      if(btnId) btnId.textContent = "دخول برقم الحساب (ID)";
+      if(btnGuest) btnGuest.textContent = 'تجربة سريعة (ضيف)';
     }
   });
 }
 
-// دالة إظهار شاشة الدخول بأمان وإخفاء الـ Splash
+// 6️⃣ دالة إظهار شاشة الدخول بأمان وإخفاء الـ Splash
 function showAuthScreen() {
   hideSplash();
   const authScr = $("#screen-auth");
@@ -1502,7 +1623,7 @@ function showAuthScreen() {
   if(shellScr) shellScr.classList.add("hidden");
 }
 
-// مراقب حالة التسجيل الآمن والمطور ضد التعليق
+// 7️⃣ مراقب حالة التسجيل الآمن والمطور ضد التعليق
 auth.onAuthStateChanged(async user => {
   if(user) currentUser = user;
   const savedId = localStorage.getItem('corner_user_id');
@@ -1522,9 +1643,16 @@ auth.onAuthStateChanged(async user => {
     }
   }
 
-  // لو الحساب مش موجود أو حصل خطأ -> افتح شاشة الدخول فوراً
   showAuthScreen();
 });
+
+// 8️⃣ صمام أمان للتأكد من عدم التعليق
+setTimeout(() => {
+  const splash = $("#screen-splash");
+  if(splash && !splash.classList.contains("hidden") && !userData) {
+    showAuthScreen();
+  }
+}, 3500);
 
 // 🛡️ صمام أمان (Safety Timeout): لو الفايربيس تأخر أكتر من 3 ثواني، اخفي شاشة التحميل فوراً
 setTimeout(() => {
@@ -2766,6 +2894,8 @@ function prioritizeHomeFeed(videos){
   return selected.concat(remainder).slice(0, HOME_FEED_LIMIT);
 }
 
+/* ===================== HOME FEED WITH DYNAMIC FOLLOWING FILTER ===================== */
+/* ===================== HOME FEED WITH DYNAMIC FOLLOWING FILTER ===================== */
 function renderHomeFeed(){
   const panel=$("#panel-home");
   if(!panel) return;
@@ -2782,31 +2912,88 @@ function renderHomeFeed(){
         return;
       }
 
-      try {
-        let allVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
+      let allVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
 
-        allVideos.sort((a,b) => {
-          const tA = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
-          const tB = b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
-          return tB - tA;
-        });
+      allVideos.sort((a,b) => {
+        const tA = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
+        const tB = b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
+        return tB - tA;
+      });
 
-        if(allVideos.length === 0){
-          scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
-          return;
-        }
-
-        feedVideos = prioritizeHomeFeed(allVideos);
-        drawFeed();
-      } catch(err) {
-        console.error("Error drawing feed:", err);
-        scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>حدث خطأ أثناء عرض الفيديوهات</div>`;
+      if(allVideos.length === 0){
+        scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>لسه مفيش فيديوهات<br>كن أول واحد ينزل فيديو</div>`;
+        return;
       }
+
+      rawAllVideos = allVideos;
+      applyFeedFilterAndDraw();
     }, err=>{
       console.error("Feed snapshot error:", err);
       const scrollEl=$("#feedScroll");
-      if(scrollEl) scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>تعذر الاتصال بالسيرفر حالياً</div>`;
+      if(scrollEl) scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>تعذر جلب الفيديوهات حالياً</div>`;
     });
+}
+
+function applyFeedFilterAndDraw(){
+  const followingUids = (userData && Array.isArray(userData.followingChannels)) ? userData.followingChannels : [];
+  
+  // فحص هل المتابَعين عندهم فيديوهات فعلياً أم لا
+  const followedVideosCount = rawAllVideos.filter(v => followingUids.includes(v.ownerUid)).length;
+  const hasFollowedVideos = followingUids.length > 0 && followedVideosCount > 0;
+
+  if(activeFeedFilter === 'following' && hasFollowedVideos) {
+    feedVideos = rawAllVideos.filter(v => followingUids.includes(v.ownerUid));
+  } else {
+    activeFeedFilter = 'all';
+    feedVideos = prioritizeHomeFeed(rawAllVideos);
+  }
+
+  drawFeed();
+
+  // إظهار أو إخفاء زرار المتابعين تلقائياً حسب الشرط
+  document.querySelectorAll('.video-slide').forEach(slide => {
+    const folBtn = slide.querySelector('[data-act="toggle-following-feed"]');
+    if(folBtn) {
+      if(hasFollowedVideos) {
+        folBtn.classList.remove('hidden');
+        folBtn.classList.toggle('active', activeFeedFilter === 'following');
+        folBtn.textContent = activeFeedFilter === 'following' ? '★ المتابَعين' : 'المتابَعين';
+      } else {
+        folBtn.classList.add('hidden'); // إخفاء الزرار لو مش متابع حد أو متابع حد مانزلش فيديو
+      }
+    }
+  });
+}
+
+function applyFeedFilterAndDraw(){
+  const followingUids = (userData && Array.isArray(userData.followingChannels)) ? userData.followingChannels : [];
+  
+  // فحص هل المتابَعين عندهم فيديوهات فعلياً أم لا
+  const followedVideosCount = rawAllVideos.filter(v => followingUids.includes(v.ownerUid)).length;
+  const hasFollowedVideos = followingUids.length > 0 && followedVideosCount > 0;
+
+  if(activeFeedFilter === 'following' && hasFollowedVideos) {
+    feedVideos = rawAllVideos.filter(v => followingUids.includes(v.ownerUid));
+  } else {
+    activeFeedFilter = 'all';
+    feedVideos = prioritizeHomeFeed(rawAllVideos);
+  }
+
+  drawFeed();
+
+  // تحديث حالة وحجم زرار المتابعين جنب الـ 3 نقط في كل الأشرطة
+  document.querySelectorAll('.video-slide').forEach(slide => {
+    const folBtn = slide.querySelector('[data-act="toggle-following-feed"]');
+    if(folBtn) {
+      if(hasFollowedVideos) {
+        folBtn.classList.remove('hidden');
+        folBtn.classList.toggle('active', activeFeedFilter === 'following');
+        folBtn.textContent = activeFeedFilter === 'following' ? '★ المتابَعين' : 'المتابَعين';
+      } else {
+        folBtn.classList.add('hidden'); // إخفاء الزرار تماماً لو الشرط لم يتحقق
+      }
+    }
+  });
 }
 
 function drawFeed(){
@@ -2890,12 +3077,13 @@ function prioritizeHomeFeed(videos){
   return selected.concat(remainder).slice(0, HOME_FEED_LIMIT);
 }
 /* ===================== BULLETPROOF HOME FEED ===================== */
+/* ===================== HOME FEED WITH DYNAMIC FOLLOWING FILTER ===================== */
 function renderHomeFeed(){
   const panel=$("#panel-home");
+  if(!panel) return;
   if(feedUnsub) return;
   panel.innerHTML = `<div class="feed-scroll" id="feedScroll"><div class="loader">جاري تحميل الفيديوهات...</div></div>`;
 
-  // جلب الفيديوهات وترتيبها أوتوماتيكياً في الذاكرة
   feedUnsub = db.collection("videos").limit(60)
     .onSnapshot(qs=>{
       const scrollEl=$("#feedScroll");
@@ -2908,7 +3096,6 @@ function renderHomeFeed(){
 
       let allVideos = qs.docs.map(d=>({id:d.id,...d.data()})).filter(v=>!isBlocked(v.ownerUid));
 
-      // ترتيب الفيديوهات بحسب الأحدث من الذاكرة لضمان عدم توقف الصفحة
       allVideos.sort((a,b) => {
         const tA = a.createdAt && a.createdAt.seconds ? a.createdAt.seconds : 0;
         const tB = b.createdAt && b.createdAt.seconds ? b.createdAt.seconds : 0;
@@ -2920,13 +3107,50 @@ function renderHomeFeed(){
         return;
       }
 
-      feedVideos = prioritizeHomeFeed(allVideos);
-      drawFeed();
+      rawAllVideos = allVideos;
+      applyFeedFilterAndDraw();
     }, err=>{
       console.error("Feed snapshot error:", err);
       const scrollEl=$("#feedScroll");
-      if(scrollEl) scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>تعذر جلب الفيديوهات حالياً، حاول مرة أخرى</div>`;
+      if(scrollEl) scrollEl.innerHTML=`<div class="empty-state"><div class="big">${icon('video')}</div>تعذر جلب الفيديوهات حالياً</div>`;
     });
+}
+
+function applyFeedFilterAndDraw(){
+  const followingUids = (userData && Array.isArray(userData.followingChannels)) ? userData.followingChannels : [];
+  
+  // تصفية فيديوهات الحسابات المتابَعة فقط
+  const followedVideos = rawAllVideos.filter(v => followingUids.includes(v.ownerUid));
+  const hasFollowedVideos = followingUids.length > 0 && followedVideos.length > 0;
+
+  if(activeFeedFilter === 'following' && hasFollowedVideos) {
+    feedVideos = followedVideos; // عرض فيديوهات المتابَعين فقط
+  } else {
+    activeFeedFilter = 'all';
+    feedVideos = prioritizeHomeFeed(rawAllVideos); // عرض كل الفيديوهات
+  }
+
+  // 🔴 السطر السحري: مسح الفيديوهات القديمة من الشاشة لإجبارها على إظهار المفلتر فقط
+  const scrollEl = $("#feedScroll");
+  if(scrollEl) {
+    scrollEl.innerHTML = "";
+  }
+
+  drawFeed();
+
+  // تحديث شكل وزرار المتابعين
+  document.querySelectorAll('.video-slide').forEach(slide => {
+    const folBtn = slide.querySelector('[data-act="toggle-following-feed"]');
+    if(folBtn) {
+      if(hasFollowedVideos) {
+        folBtn.classList.remove('hidden');
+        folBtn.classList.toggle('active', activeFeedFilter === 'following');
+        folBtn.textContent = activeFeedFilter === 'following' ? '★ المتابَعين' : 'المتابَعين';
+      } else {
+        folBtn.classList.add('hidden'); // إخفاء الزرار لو مفيش فيديوهات للمتابعين
+      }
+    }
+  });
 }
 
 function drawFeed(){
@@ -2972,34 +3196,39 @@ function setupFeedObserver(){
       if(en.isIntersecting && en.intersectionRatio > 0.6) {
         if(videoLoadTimers[vId]) clearTimeout(videoLoadTimers[vId]);
 
-        videoLoadTimers[vId] = setTimeout(() => {
-          if(!vidEl.src && vidEl.dataset.src) {
-            vidEl.src = vidEl.dataset.src;
-          }
-          
-          // 🔴 السطرين دول هما اللي بتسأل عليهم (تطبيق حالة الصوت العامة قبل تشغيل الفيديو)
-          vidEl.muted = isGlobalMuted;
-          const muteBtn = slide.querySelector(".mute-btn");
-          if(muteBtn) muteBtn.innerHTML = isGlobalMuted ? icon('muteOff') : icon('mute');
-
-          vidEl.play().then(() => {
-            activeVideoIndex = feedVideos.findIndex(v => v.id === vId);
-            maybeCountView(vId);
-
-            const idx = feedVideos.findIndex(v => v.id === vId);
-            const nextSlide = document.querySelectorAll('.video-slide')[idx + 1];
-            if(nextSlide) {
-              if(nextPreloadTimers[vId]) clearTimeout(nextPreloadTimers[vId]);
-              nextPreloadTimers[vId] = setTimeout(() => {
-                const nextVid = nextSlide.querySelector('video');
-                if(nextVid && !nextVid.src && nextVid.dataset.src) {
-                  nextVid.src = nextVid.dataset.src;
-                  nextVid.load();
-                }
-              }, 1500);
+videoLoadTimers[vId] = setTimeout(() => {
+            if(!vidEl.src && vidEl.dataset.src) {
+              vidEl.src = vidEl.dataset.src;
             }
-          }).catch(() => {});
-        }, 280);
+            
+            vidEl.muted = isGlobalMuted;
+            const muteBtn = slide.querySelector(".mute-btn");
+            if(muteBtn) muteBtn.innerHTML = isGlobalMuted ? icon('muteOff') : icon('mute');
+
+            vidEl.play().catch(err => {
+              // لو المتصفح حظر الصوت التلقائي قبل أول لمسة للمستخدم، شغل مكتوم مؤقتاً لحين اللمس
+              if(err.name === 'NotAllowedError' && !isGlobalMuted) {
+                vidEl.muted = true;
+                vidEl.play().catch(() => {});
+              }
+            }).then(() => {
+              activeVideoIndex = feedVideos.findIndex(v => v.id === vId);
+              maybeCountView(vId);
+
+              const idx = feedVideos.findIndex(v => v.id === vId);
+              const nextSlide = document.querySelectorAll('.video-slide')[idx + 1];
+              if(nextSlide) {
+                if(nextPreloadTimers[vId]) clearTimeout(nextPreloadTimers[vId]);
+                nextPreloadTimers[vId] = setTimeout(() => {
+                  const nextVid = nextSlide.querySelector('video');
+                  if(nextVid && !nextVid.src && nextVid.dataset.src) {
+                    nextVid.src = nextVid.dataset.src;
+                    nextVid.load();
+                  }
+                }, 1500);
+              }
+            }).catch(() => {});
+          }, 280);
 
       } else {
         if(videoLoadTimers[vId]) {
@@ -3048,6 +3277,7 @@ function maybeCountView(videoId){
 function videoSlideHTML(v,i){
   const myReaction = (v.reactions && v.reactions[uid()]) || null;
   const following = (userData && userData.followingChannels && userData.followingChannels.includes(v.ownerUid));
+  
   return `
     <div class="video-slide" data-id="${v.id}" data-owner="${v.ownerUid}">
     <video data-src="${esc(v.videoURL)}" playsinline loop preload="none" muted></video>
@@ -3055,9 +3285,10 @@ function videoSlideHTML(v,i){
       <div class="vs-top-right">
         <div class="icon-btn notif-btn"><span class="notif-dot ${notifUnreadCount?'':'hidden'}"></span>${icon('bell')}</div>
       </div>
-      <div class="vs-top-right">
+      <div class="vs-top-right" style="align-items:center;">
+        <!-- زرار المتابعين التفاعلي -->
+        <button class="following-tab-btn hidden" data-act="toggle-following-feed">المتابَعين</button>
         <div class="icon-btn mute-btn">${icon('mute')}</div>
-        <div class="icon-btn menu-btn">${icon('menu')}</div>
         <div class="icon-btn menu-btn">${icon('menu')}</div>
       </div>
     </div>
@@ -3098,7 +3329,7 @@ function bindVideoSlide(slide, v){
   const vidEl = slide.querySelector("video");
   const muteBtn = slide.querySelector(".mute-btn");
 
-  // تطبيق حالة الصوت العامة على الفيديو فوراً
+  // تطبيق حالة الصوت المحفوظة
   vidEl.muted = isGlobalMuted;
   if(muteBtn) muteBtn.innerHTML = isGlobalMuted ? icon('muteOff') : icon('mute');
 
@@ -3106,38 +3337,32 @@ function bindVideoSlide(slide, v){
   if(muteBtn) {
     muteBtn.addEventListener("click", e => {
       e.stopPropagation();
-      isGlobalMuted = !isGlobalMuted; // تغيير حالة الصوت للتطبيق كله
-      vidEl.muted = isGlobalMuted;
-      muteBtn.innerHTML = isGlobalMuted ? icon('muteOff') : icon('mute');
+      setGlobalMute(!isGlobalMuted); // تغيير وحفظ حالة الصوت عالمياً
     });
   }
 
-  // زر الإشعارات
-  const notifBtn = slide.querySelector(".notif-btn");
-  if(notifBtn) notifBtn.addEventListener("click", e => { e.stopPropagation(); openNotificationsSheet(); });
-
-  // الضغط على الشاشة (فتح الصوت أو تشغيل/إيقاف)
+  // الضغط على الشاشة
   slide.addEventListener("click", e => {
     if(e.target.closest(".vs-top, .vs-side, .vs-bottom")) return;
     
-    // لو الصوت مكتوم، أول ضغطة بتفتحه وتخليه مفتوح لكل الفيديوهات الجاية
+    // لو الصوت مكتوم، أول ضغطة تفتحه وتحفظه مفتوح
     if(isGlobalMuted) {
-      isGlobalMuted = false;
-      vidEl.muted = false;
-      if(muteBtn) muteBtn.innerHTML = icon('mute');
+      setGlobalMute(false);
     } else {
-      // لو الصوت مفتوح بالفعل، الضغطة بتعمل تشغيل/إيقاف مؤقت
+      // لو الصوت شغال، الضغطة تعمل تشغيل/إيقاف مؤقت
       if(vidEl.paused) vidEl.play(); else vidEl.pause();
     }
   });
 
-  // الضغط المزدوج للتفاعل بـ goal ⚽
+  // باقي الأزرار
+  const notifBtn = slide.querySelector(".notif-btn");
+  if(notifBtn) notifBtn.addEventListener("click", e => { e.stopPropagation(); openNotificationsSheet(); });
+
   slide.addEventListener("dblclick", e => {
     doReaction(v.id, "goal");
     spawnGoalPop(slide, e.clientX - slide.getBoundingClientRect().left, e.clientY - slide.getBoundingClientRect().top);
   });
 
-  // باقي الأزرار
   const goalBtn = slide.querySelector('[data-act="goal"]');
   if(goalBtn) goalBtn.addEventListener("click", () => doReaction(v.id, "goal"));
   
@@ -3161,6 +3386,20 @@ function bindVideoSlide(slide, v){
   
   const menuBtn = slide.querySelector('.menu-btn');
   if(menuBtn) menuBtn.addEventListener("click", () => openVideoMenuSheet(v));
+
+  const folBtn = slide.querySelector('[data-act="toggle-following-feed"]');
+  if(folBtn) {
+    folBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeFeedFilter = (activeFeedFilter === 'all') ? 'following' : 'all';
+      applyFeedFilterAndDraw();
+      if(activeFeedFilter === 'following') {
+        toast('عرض فيديوهات المتابَعين فقط ⭐');
+      } else {
+        toast('عرض جميع الفيديوهات 🌐');
+      }
+    });
+  }
   
   slide.querySelectorAll('[data-act="profile-open"]').forEach(b => b.addEventListener("click", () => openOtherProfile(v.ownerUid)));
   
@@ -5709,6 +5948,7 @@ function renderSettingsPanel(){
         </div>
       </div>
 
+      <!-- قسم الحساب الشخصي -->
       <div class="set-section">
         <div class="set-label">الحساب الشخصي</div>
         <div class="set-row"><span>الاسم</span><span>${esc(userData.displayName)}${verifiedBadge(userData.verified)}</span></div>
@@ -5716,11 +5956,7 @@ function renderSettingsPanel(){
           <input type="file" accept="image/*" id="setPhotoInput" style="display:none"></div>
       </div>
 
-      <div class="set-section">
-        <div class="set-label">الإشعارات</div>
-        <div class="set-row"><span>تفعيل الإشعارات</span><div class="toggle ${userData.notifications?'on':''}" id="notifToggle"></div></div>
-      </div>
-
+      <!-- قسم الحساب والخصوصية -->
       <div class="set-section">
         <div class="set-label">الحساب والخصوصية</div>
         <button class="btn-danger" id="logoutBtn">تسجيل الخروج</button>
@@ -5742,12 +5978,7 @@ function renderSettingsPanel(){
     }
   });
 
-  $("#notifToggle").addEventListener("click", async ()=>{
-    userData.notifications = !userData.notifications;
-    await db.collection("users").doc(uid()).update({notifications:userData.notifications});
-    renderSettingsPanel();
-  });
-
+  // تغيير الصورة
   $("#changePhotoRow").addEventListener("click",()=>$("#setPhotoInput").click());
   
   $("#setPhotoInput").addEventListener("change", async e=>{
@@ -5759,15 +5990,17 @@ function renderSettingsPanel(){
     userData.photoURL=url; toast("تم تحديث الصورة"); renderSettingsPanel();
   });
 
+  // تسجيل الخروج
   $("#logoutBtn").addEventListener("click", async ()=>{
-    localStorage.removeItem('corner_user_id'); // مسح الـ ID من المتصفح عند الخروج
+    localStorage.removeItem('corner_user_id');
     customUid = null;
     await auth.signOut(); 
     location.reload();
   });
 
+  // حذف الحساب
   $("#deleteBtn").addEventListener("click", async ()=>{
-    if(!confirm("هل أنت متأكب من حذف الحساب نهائيًا؟")) return;
+    if(!confirm("هل بأن متأكد من حذف الحساب نهائيًا؟")) return;
     try{
       await db.collection("users").doc(uid()).delete();
       localStorage.removeItem('corner_user_id');
