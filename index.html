@@ -4060,7 +4060,8 @@ function openSaveSheet(videoId){
 }
 
 function openShareSheet(videoId){
-  const link = location.origin + location.pathname + "?v=" + videoId;
+  // رابط المشاركة الرسمي الخاص بالديب لينكس
+  const link = "https://corner-e5b5e.web.app/?v=" + videoId;
   openSheet(`
     <div class="sheet" style="height:auto">
       <div class="sheet-handle"></div>
@@ -4072,35 +4073,20 @@ function openShareSheet(videoId){
       </div>
     </div>`);
 
-  // 1️⃣ نسخ الرابط
   $("#shareCopy").addEventListener("click", async ()=>{
-    try{ 
-      await navigator.clipboard.writeText(link); 
-      toast("تم نسخ رابط الفيديو بنجاح! 📋"); 
-    }catch(e){ 
-      toast(link); 
-    }
+    try{ await navigator.clipboard.writeText(link); toast("تم نسخ الرابط بنجاح! 📋"); }catch(e){ toast(link); }
     closeSheet();
   });
 
-  // 2️⃣ مشاركة الواتساب المباشرة
   $("#shareWA").addEventListener("click", ()=>{
     window.location.href = "whatsapp://send?text=" + encodeURIComponent("شاهد هذا الفيديو على تطبيق كورنر ⚽: " + link);
     closeSheet();
   });
 
-  // 3️⃣ المشاركة عبر تطبيقات الموبايل المختلفة
   $("#shareNative").addEventListener("click", async ()=>{
     if(navigator.share){
-      try{ 
-        await navigator.share({
-          title: 'CORNER', 
-          text: 'شاهد هذا الفيديو المميز على تطبيق كورنر ⚽', 
-          url: link
-        }); 
-      }catch(e){}
+      try{ await navigator.share({title: 'CORNER', text: 'شاهد هذا الفيديو على تطبيق كورنر ⚽', url: link}); }catch(e){}
     } else {
-      // بديل آمن لو الـ WebView مفيهاش navigator.share
       try {
         await navigator.clipboard.writeText(link);
         toast("تم نسخ الرابط! يمكنك لصقه ومشاركته في أي تطبيق 📋");
