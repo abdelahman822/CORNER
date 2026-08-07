@@ -4008,21 +4008,47 @@ function openShareSheet(videoId){
       <div class="sheet-title">مشاركة الفيديو</div>
       <div class="sheet-body">
         <div class="share-row" id="shareCopy"><span>📋</span> نسخ الرابط</div>
-        <div class="share-row" id="shareWA"><span>💬</span> واتساب</div>
+        <div class="share-row" id="shareWA"><span>💬</span> مشاركة عبر واتساب</div>
         <div class="share-row" id="shareNative"><span>↗️</span> مشاركة عبر التطبيقات</div>
       </div>
     </div>`);
+
+  // 1️⃣ نسخ الرابط
   $("#shareCopy").addEventListener("click", async ()=>{
-    try{ await navigator.clipboard.writeText(link); toast("تم نسخ الرابط"); }catch(e){ toast(link); }
+    try{ 
+      await navigator.clipboard.writeText(link); 
+      toast("تم نسخ رابط الفيديو بنجاح! 📋"); 
+    }catch(e){ 
+      toast(link); 
+    }
     closeSheet();
   });
+
+  // 2️⃣ مشاركة الواتساب المباشرة
   $("#shareWA").addEventListener("click", ()=>{
-    window.open("https://wa.me/?text="+encodeURIComponent(link),"_blank");
+    window.location.href = "whatsapp://send?text=" + encodeURIComponent("شاهد هذا الفيديو على تطبيق كورنر ⚽: " + link);
     closeSheet();
   });
+
+  // 3️⃣ المشاركة عبر تطبيقات الموبايل المختلفة
   $("#shareNative").addEventListener("click", async ()=>{
-    if(navigator.share){ try{ await navigator.share({url:link}); }catch(e){} }
-    else toast("المشاركة المباشرة غير مدعومة على هذا المتصفح");
+    if(navigator.share){
+      try{ 
+        await navigator.share({
+          title: 'CORNER', 
+          text: 'شاهد هذا الفيديو المميز على تطبيق كورنر ⚽', 
+          url: link
+        }); 
+      }catch(e){}
+    } else {
+      // بديل آمن لو الـ WebView مفيهاش navigator.share
+      try {
+        await navigator.clipboard.writeText(link);
+        toast("تم نسخ الرابط! يمكنك لصقه ومشاركته في أي تطبيق 📋");
+      } catch(e) {
+        toast("رابط الفيديو: " + link);
+      }
+    }
     closeSheet();
   });
 }
