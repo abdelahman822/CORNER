@@ -1066,6 +1066,27 @@ a{color:inherit;}
   font-weight: 900;
   box-shadow: 0 0 10px rgba(231,179,62,.4);
 }
+/* إخفاء أيقونة التشغيل البشعة الافتراضية من المتصفح والـ WebView */
+video::-webkit-media-controls-overlay-play-button,
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+}
+
+/* جعل خلفية الفيديوهات سوداء فخمة بدون أي لون رمادي */
+.video-slide {
+  background: #000000 !important;
+}
+
+.video-slide video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover !important; /* ملء الشاشة بسلاسة زي تيك توك وتيك توك ريلز */
+  background: #000000 !important;
+}
 </style>
 </head>
 <body>
@@ -3278,15 +3299,18 @@ function videoSlideHTML(v,i){
   const myReaction = (v.reactions && v.reactions[uid()]) || null;
   const following = (userData && userData.followingChannels && userData.followingChannels.includes(v.ownerUid));
   
+  // أول فيديو يفتح بالرابط فوراً وبدون أي تأخير لتشغيل لحظي زي يوتيوب شورتس
+  const initialSrc = (i === 0) ? `src="${esc(v.videoURL)}"` : '';
+  const preloadMode = (i === 0) ? 'auto' : 'none';
+
   return `
     <div class="video-slide" data-id="${v.id}" data-owner="${v.ownerUid}">
-    <video data-src="${esc(v.videoURL)}" playsinline loop preload="none" muted></video>
+    <video ${initialSrc} data-src="${esc(v.videoURL)}" playsinline webkit-playsinline loop preload="${preloadMode}" muted></video>
     <div class="vs-top">
       <div class="vs-top-right">
         <div class="icon-btn notif-btn"><span class="notif-dot ${notifUnreadCount?'':'hidden'}"></span>${icon('bell')}</div>
       </div>
       <div class="vs-top-right" style="align-items:center;">
-        <!-- زرار المتابعين التفاعلي -->
         <button class="following-tab-btn hidden" data-act="toggle-following-feed">المتابَعين</button>
         <div class="icon-btn mute-btn">${icon('mute')}</div>
         <div class="icon-btn menu-btn">${icon('menu')}</div>
