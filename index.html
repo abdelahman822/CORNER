@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -130,11 +131,6 @@ a{color:inherit;}
   height: 100%;
   object-fit: contain;
   background: #000;
-  opacity: 0;
-  transition: opacity .25s ease;
-}
-.video-slide video.loaded{
-  opacity: 1;
 }
 .vs-top{position:absolute;top:calc(14px + var(--safe-top));left:14px;right:14px;display:flex;
   justify-content:space-between;z-index:5;}
@@ -1373,12 +1369,6 @@ function uid(){return currentUser ? currentUser.uid : null;}
 function verifiedBadge(isVerified){
   return isVerified ? `<span class="verified-badge" title="حساب موثّق">${icon('verified')}</span>` : '';
 }
-function generateUserId(){
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let id = '';
-  for(let i=0; i<8; i++){ id += chars.charAt(Math.floor(Math.random()*chars.length)); }
-  return id;
-}
 function sanitizeText(s, maxLen){
   if(typeof s !== 'string') return '';
   let t = s.trim();
@@ -1440,10 +1430,9 @@ async function finishProfileSetup(user, name, file, existingPhotoURL){
   await user.updateProfile({displayName:name, photoURL});
   const userRef = db.collection("users").doc(user.uid);
   const snap = await userRef.get();
-if(!snap.exists){
-    const generatedUserId = generateUserId();
+  if(!snap.exists){
     await userRef.set({
-      uid:user.uid, userId:generatedUserId, displayName:name, displayNameLower:name.toLowerCase(),
+      uid:user.uid, displayName:name, displayNameLower:name.toLowerCase(),
       photoURL, followersCount:0, followingCount:0, favTeam:null, followTeams:[],
       cardBg:"night", onboarded:false, notifications:true, blockedUsers:[], searchHistory:[],
       verified:false, videosCount:0, createdAt:FieldValue.serverTimestamp()
@@ -2910,38 +2899,73 @@ function drawFeed(){
   setupFeedObserver();
 }
 
+/* ===================== SMART VIDEO STREAMING & LAZY LOADING ===================== */
 let feedObserver = null;
+const videoLoadTimers = {}; // مؤقتات للتأكد من استقرار المستخدم على الفيديو
+const nextPreloadTimers = {}; // مؤقت تحميل الفيديو التالي
+
 function setupFeedObserver(){
   if(feedObserver) feedObserver.disconnect();
-  feedObserver = new IntersectionObserver((entries)=>{
-    entries.forEach(en=>{
-      const vidEl = en.target.querySelector("video");
+
+  feedObserver = new IntersectionObserver((entries) => {
+    entries.forEach(en => {
+      const slide = en.target;
+      const vId = slide.dataset.id;
+      const vidEl = slide.querySelector("video");
       if(!vidEl) return;
-      if(en.isIntersecting && en.intersectionRatio>0.6){
-        if(!vidEl.src && vidEl.dataset.src){
-          vidEl.src = vidEl.dataset.src;
-          vidEl.addEventListener('loadeddata', ()=>{ vidEl.classList.add('loaded'); }, {once:true});
-        }
-        vidEl.play().catch(()=>{});
-        const vId = en.target.dataset.id;
-        activeVideoIndex = feedVideos.findIndex(v=>v.id===vId);
-        maybeCountView(vId);
-        const idx = feedVideos.findIndex(v=>v.id===vId);
-        const nextSlide = document.querySelectorAll('.video-slide')[idx+1];
-        if(nextSlide){
-          const nextVid = nextSlide.querySelector('video');
-          if(nextVid && !nextVid.src && nextVid.dataset.src){ nextVid.src = nextVid.dataset.src; }
-        }
+
+      if(en.isIntersecting && en.intersectionRatio > 0.6) {
+        // 1. لو المستخدم أدى سحب سريع وعدى الفيديو، بنلغي أي مؤقتات سابقة
+        if(videoLoadTimers[vId]) clearTimeout(videoLoadTimers[vId]);
+
+        // 2. انتظر 280 مللي ثانية قبل بدء التحميل (عشان نضمن إن المستخدم استقر مش بيقلب)
+        videoLoadTimers[vId] = setTimeout(() => {
+          if(!vidEl.src && vidEl.dataset.src) {
+            vidEl.src = vidEl.dataset.src; // تعيين المصدر فقط عند الاستقرار
+          }
+          
+          vidEl.play().then(() => {
+            activeVideoIndex = feedVideos.findIndex(v => v.id === vId);
+            maybeCountView(vId);
+
+            // 3. تحميل الشريحة القادمة مخفياً ولكن بعد 1.5 ثانية كاملة من مشاهدة الفيديو الحالي
+            const idx = feedVideos.findIndex(v => v.id === vId);
+            const nextSlide = document.querySelectorAll('.video-slide')[idx + 1];
+            if(nextSlide) {
+              if(nextPreloadTimers[vId]) clearTimeout(nextPreloadTimers[vId]);
+              nextPreloadTimers[vId] = setTimeout(() => {
+                const nextVid = nextSlide.querySelector('video');
+                if(nextVid && !nextVid.src && nextVid.dataset.src) {
+                  nextVid.src = nextVid.dataset.src;
+                  nextVid.load(); // تجهيز أول كام ثانية في الخلفية
+                }
+              }, 1500);
+            }
+          }).catch(() => {});
+        }, 280); // مهلة السحب السريع (280ms)
+
       } else {
+        // 4. بمجرد خروج الفيديو من الشاشة: إلغاء التحميل وفصل الاتصال فوراً
+        if(videoLoadTimers[vId]) {
+          clearTimeout(videoLoadTimers[vId]);
+          delete videoLoadTimers[vId];
+        }
+        if(nextPreloadTimers[vId]) {
+          clearTimeout(nextPreloadTimers[vId]);
+          delete nextPreloadTimers[vId];
+        }
+
+        // إيقاف وتفريغ الفيديو فوراً لمنع استهلاك الباندويث في الخلفية
         vidEl.pause();
-        if(en.intersectionRatio===0 && vidEl.src){
-          vidEl.removeAttribute('src');
-          vidEl.load();
+        if(vidEl.src) {
+          vidEl.removeAttribute('src'); // مسح الرابط لإلغاء طلب الشبكة النشط (Network Request)
+          vidEl.load(); // إجبار المتصفح على إغلاق اتصال الاستريم
         }
       }
     });
-  },{threshold:[0,0.6]});
-  document.querySelectorAll(".video-slide").forEach(s=>feedObserver.observe(s));
+  }, { threshold: [0, 0.6] });
+
+  document.querySelectorAll(".video-slide").forEach(s => feedObserver.observe(s));
 }
 
 function updateSlideFromData(slide, v){
@@ -2971,7 +2995,7 @@ function videoSlideHTML(v,i){
   const following = (userData && userData.followingChannels && userData.followingChannels.includes(v.ownerUid));
   return `
     <div class="video-slide" data-id="${v.id}" data-owner="${v.ownerUid}">
-    <video data-src="${esc(v.videoURL)}" playsinline autoplay loop muted preload="metadata"></video>
+    <video data-src="${esc(v.videoURL)}" playsinline loop preload="none" muted></video>
     <div class="vs-top">
       <div class="vs-top-right">
         <div class="icon-btn notif-btn"><span class="notif-dot ${notifUnreadCount?'':'hidden'}"></span>${icon('bell')}</div>
@@ -3018,33 +3042,75 @@ function videoSlideHTML(v,i){
 function bindVideoSlide(slide, v){
   const vidEl = slide.querySelector("video");
   const muteBtn = slide.querySelector(".mute-btn");
-  vidEl.muted = false;
-  muteBtn.innerHTML = vidEl.muted ? icon('muteOff') : icon('mute');
-  muteBtn.addEventListener("click",e=>{
-    e.stopPropagation(); vidEl.muted=!vidEl.muted; e.currentTarget.innerHTML = vidEl.muted?icon('muteOff'):icon('mute');
+
+  // جعل الفيديو مكتوم افتراضياً لتخطّي حظر المتصفحات للصوت التلقائي
+  vidEl.muted = true;
+  if(muteBtn) muteBtn.innerHTML = icon('muteOff'); // إظهار أيكونة الصوت المكتوم
+
+  // زرار كتم/تشغيل الصوت
+  if(muteBtn) {
+    muteBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      vidEl.muted = !vidEl.muted;
+      muteBtn.innerHTML = vidEl.muted ? icon('muteOff') : icon('mute');
+    });
+  }
+
+  // زر الإشعارات
+  const notifBtn = slide.querySelector(".notif-btn");
+  if(notifBtn) notifBtn.addEventListener("click", e => { e.stopPropagation(); openNotificationsSheet(); });
+
+  // الضغط على الفيديو للتشغيل/الإيقاف أو تشغيل الصوت
+  slide.addEventListener("click", e => {
+    if(e.target.closest(".vs-top, .vs-side, .vs-bottom")) return;
+    
+    // لو الصوت مكتوم، أول ضغطة على الشاشة بتشغل الصوت فوراً
+    if(vidEl.muted) {
+      vidEl.muted = false;
+      if(muteBtn) muteBtn.innerHTML = icon('mute');
+    } else {
+      // لو الصوت شغال، الضغطة بتعمل تشغيل/إيقاف مؤقت
+      if(vidEl.paused) vidEl.play(); else vidEl.pause();
+    }
   });
-  slide.querySelector(".notif-btn").addEventListener("click", e=>{ e.stopPropagation(); openNotificationsSheet(); });
-  slide.addEventListener("click",e=>{
-    if(e.target.closest(".vs-top,.vs-side,.vs-bottom")) return;
-    if(vidEl.paused) vidEl.play(); else vidEl.pause();
-  });
-  slide.addEventListener("dblclick",e=>{
-    doReaction(v.id,"goal");
+
+  // الضغط المزدوج للتفاعل بـ goal ⚽
+  slide.addEventListener("dblclick", e => {
+    doReaction(v.id, "goal");
     spawnGoalPop(slide, e.clientX - slide.getBoundingClientRect().left, e.clientY - slide.getBoundingClientRect().top);
   });
-  slide.querySelector('[data-act="goal"]').addEventListener("click",()=>doReaction(v.id,"goal"));
-  slide.querySelector('[data-act="red"]').addEventListener("click",()=>doReaction(v.id,"red"));
-  slide.querySelector('[data-act="comments"]').addEventListener("click",()=>openCommentsSheet(v.id));
-  slide.querySelector('[data-act="save"]').addEventListener("click",()=>openSaveSheet(v.id));
-  slide.querySelector('[data-act="share"]').addEventListener("click",()=>openShareSheet(v.id));
-  slide.querySelector('[data-act="follow"]').addEventListener("click",()=>toggleFollowChannel(v.ownerUid));
-  slide.querySelector('[data-act="message"]').addEventListener("click",()=>openChatSheet(v.ownerUid, v.ownerName, v.ownerPhoto));
-  slide.querySelector('.menu-btn').addEventListener("click",()=>openVideoMenuSheet(v));
-  slide.querySelectorAll('[data-act="profile-open"]').forEach(b=>b.addEventListener("click",()=>openOtherProfile(v.ownerUid)));
-  slide.querySelectorAll(".tag").forEach(t=>t.addEventListener("click",e=>{
+
+  // باقي أزرار التفاعل
+  const goalBtn = slide.querySelector('[data-act="goal"]');
+  if(goalBtn) goalBtn.addEventListener("click", () => doReaction(v.id, "goal"));
+  
+  const redBtn = slide.querySelector('[data-act="red"]');
+  if(redBtn) redBtn.addEventListener("click", () => doReaction(v.id, "red"));
+  
+  const commBtn = slide.querySelector('[data-act="comments"]');
+  if(commBtn) commBtn.addEventListener("click", () => openCommentsSheet(v.id));
+  
+  const saveBtn = slide.querySelector('[data-act="save"]');
+  if(saveBtn) saveBtn.addEventListener("click", () => openSaveSheet(v.id));
+  
+  const shareBtn = slide.querySelector('[data-act="share"]');
+  if(shareBtn) shareBtn.addEventListener("click", () => openShareSheet(v.id));
+  
+  const followBtn = slide.querySelector('[data-act="follow"]');
+  if(followBtn) followBtn.addEventListener("click", () => toggleFollowChannel(v.ownerUid));
+  
+  const msgBtn = slide.querySelector('[data-act="message"]');
+  if(msgBtn) msgBtn.addEventListener("click", () => openChatSheet(v.ownerUid, v.ownerName, v.ownerPhoto));
+  
+  const menuBtn = slide.querySelector('.menu-btn');
+  if(menuBtn) menuBtn.addEventListener("click", () => openVideoMenuSheet(v));
+  
+  slide.querySelectorAll('[data-act="profile-open"]').forEach(b => b.addEventListener("click", () => openOtherProfile(v.ownerUid)));
+  
+  slide.querySelectorAll(".tag").forEach(t => t.addEventListener("click", e => {
     e.stopPropagation();
     switchTab("search");
-    setTimeout(()=>{ $("#searchInput").value="#"+t.dataset.hashtag; runSearch("#"+t.dataset.hashtag); },50);
+    setTimeout(() => { $("#searchInput").value = "#" + t.dataset.hashtag; runSearch("#" + t.dataset.hashtag); }, 50);
   }));
 }
 function spawnGoalPop(slide,x,y){
@@ -5570,7 +5636,6 @@ function renderSettingsPanel(){
       <div class="set-section">
         <div class="set-label">الحساب</div>
         <div class="set-row"><span>الاسم</span><span>${esc(userData.displayName)}${verifiedBadge(userData.verified)}</span></div>
-        <div class="set-row" id="userIdRow" style="cursor:pointer;"><span>ID الخاص بك</span><span style="color:var(--gold);font-weight:900;">${esc(userData.userId||'---')} 📋</span></div>
         <div class="set-row" id="changePhotoRow" style="cursor:pointer;"><span>تغيير الصورة</span><span>${icon('camera')}</span>
           <input type="file" accept="image/*" id="setPhotoInput" style="display:none"></div>
       </div>
@@ -5586,13 +5651,6 @@ function renderSettingsPanel(){
       <div class="footer-brand">CORNER by <b>BORKAN</b></div>
     </div>`;
   $("#setBack").addEventListener("click",()=>switchTab("profile"));
-  const userIdRow = $("#userIdRow");
-  if(userIdRow){
-    userIdRow.addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText(userData.userId||''); toast('تم نسخ الـ ID'); }
-      catch(e){ toast(userData.userId||''); }
-    });
-  }
   $("#notifToggle").addEventListener("click", async ()=>{
     userData.notifications = !userData.notifications;
     await db.collection("users").doc(uid()).update({notifications:userData.notifications});
