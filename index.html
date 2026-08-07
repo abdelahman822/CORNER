@@ -1500,6 +1500,18 @@ if(btnId) {
   });
 }
 
+// دالة إظهار شاشة الدخول بأمان وإخفاء الـ Splash
+function showAuthScreen() {
+  hideSplash();
+  const authScr = $("#screen-auth");
+  const obScr = $("#screen-onboard");
+  const shellScr = $("#screen-shell");
+  if(authScr) authScr.classList.remove("hidden");
+  if(obScr) obScr.classList.add("hidden");
+  if(shellScr) shellScr.classList.add("hidden");
+}
+
+// مراقب حالة التسجيل الآمن والمطور ضد التعليق
 auth.onAuthStateChanged(async user => {
   if(user) currentUser = user;
   const savedId = localStorage.getItem('corner_user_id');
@@ -1508,22 +1520,29 @@ auth.onAuthStateChanged(async user => {
   if(targetId) {
     try {
       const snap = await db.collection("users").doc(targetId).get();
-      if(snap.exists) {
+      if(snap && snap.exists) {
         customUid = targetId;
         userData = snap.data();
         if(userData.onboarded) enterApp(); else showOnboarding();
         return;
       }
-    } catch(e) { console.warn("Check saved ID failed", e); }
+    } catch(e) {
+      console.warn("Check saved ID failed:", e);
+    }
   }
 
-  if(!user && !savedId) {
-    hideSplash();
-    $("#screen-auth").classList.remove("hidden");
-    $("#screen-onboard").classList.add("hidden");
-    $("#screen-shell").classList.add("hidden");
-  }
+  // لو الحساب مش موجود أو حصل خطأ -> افتح شاشة الدخول فوراً
+  showAuthScreen();
 });
+
+// 🛡️ صمام أمان (Safety Timeout): لو الفايربيس تأخر أكتر من 3 ثواني، اخفي شاشة التحميل فوراً
+setTimeout(() => {
+  const splash = $("#screen-splash");
+  if(splash && !splash.classList.contains("hidden") && !userData) {
+    console.warn("Splash safety timeout triggered");
+    showAuthScreen();
+  }
+}, 3000);
 
 /* ===================== ONBOARDING ===================== */
 function buildLeagueTabs(container, onPick){
